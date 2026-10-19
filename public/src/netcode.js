@@ -42,6 +42,17 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     audio?.play('pickup');
     callbacks.archiveCollected?.(data);
   });
+  socket.on('party:state', (party) => {
+    state.party = party;
+    callbacks.partyState?.(party);
+  });
+  socket.on('party:invite', (invite) => callbacks.partyInvite?.(invite));
+  socket.on('party:invite:sent', (data) => callbacks.partyNotice?.('Squad invite sent to ' + data.targetName + '.'));
+  socket.on('party:notice', (message) => callbacks.partyNotice?.(message));
+  socket.on('party:error', (message) => callbacks.partyError?.(message));
+  socket.on('party:reward', (reward) => callbacks.partyReward?.(reward));
+  socket.on('chat:message', (message) => callbacks.chatMessage?.(message));
+  socket.on('chat:error', (message) => callbacks.chatError?.(message));
   socket.on('player:position', (position) => {
     if (state.localPlayer) Object.assign(state.localPlayer, position);
   });
@@ -56,6 +67,10 @@ export function createNetcode(state, callbacks = {}, audio = null) {
       if (name === 'shield') socket.emit('player:shield');
     },
     upgrade: (stat) => socket.emit('player:upgrade', stat),
-    selectDomain: (domain) => socket.emit('player:color', domain)
+    selectDomain: (domain) => socket.emit('player:color', domain),
+    invitePlayer: (playerId) => socket.emit('party:invite:send', playerId),
+    respondParty: (inviteId, accept) => socket.emit('party:respond', { inviteId, accept }),
+    leaveParty: () => socket.emit('party:leave'),
+    sendChat: (channel, text) => socket.emit('chat:send', { channel, text })
   };
 }
