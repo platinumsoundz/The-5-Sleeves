@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "1.0",
   "active_features": [
@@ -15,7 +15,9 @@
     "Optional image assets with procedural rendering fallback",
     "Archive Echoes",
     "Web Audio SFX Engine",
-    "Perimeter Fog Boundaries"
+    "Perimeter Fog Boundaries",
+    "Operative Squads (Parties)",
+    "Multi-Channel Real-Time Chat"
   ],
   "upcoming_features": [
     "Archive Fragment Lore Pickups",
