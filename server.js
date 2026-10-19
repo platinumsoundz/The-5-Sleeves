@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const { Server } = require('socket.io');
 
@@ -8,14 +9,34 @@ const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
 const WORLD = { width: 1000, height: 700 };
 const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
+const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
 const players = {};
 const projectiles = {};
+let profiles = {};
 let nextProjectileId = 1;
 let lastTick = Date.now();
 
+try {
+  profiles = JSON.parse(fs.readFileSync(PROFILE_FILE, 'utf8'));
+  if (!profiles || typeof profiles !== 'object' || Array.isArray(profiles)) profiles = {};
+} catch (error) {
+  if (error.code !== 'ENOENT') console.error('Could not load player profiles:', error.message);
+  profiles = {};
+}
+
+function saveProfiles() {
+  const tempFile = PROFILE_FILE + '.tmp';
+  try {
+    fs.writeFileSync(tempFile, JSON.stringify(profiles, null, 2));
+    fs.renameSync(tempFile, PROFILE_FILE);
+  } catch (error) {
+    console.error('Could not save player profiles:', error.message);
+    try { fs.unlinkSync(tempFile); } catch (_) {}
+  }
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/health', (_request, response) => response.json({ status: 'ok', players: Object.keys(players).length }));
-
 function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 function broadcastState() {
@@ -27,36 +48,71 @@ function validDirection(direction) {
   const length = Math.hypot(direction.x, direction.y);
   return length > 0.01 ? { x: direction.x / length, y: direction.y / length } : null;
 }
+function persistPlayer(player) {
+  if (!player) return;
+  profiles[player.name.toLowerCase()] = {
+    name: player.name,
+    corePoints: player.corePoints,
+    coreCharge: player.coreCharge,
+    maxHp: player.maxHp,
+    updatedAt: new Date().toISOString()
+  };
+  saveProfiles();
+}
 
 io.on('connection', (socket) => {
-  const player = {
-    id: socket.id,
-    name: 'Sleeve-' + socket.id.slice(0, 4),
-    x: 100 + Math.random() * (WORLD.width - 200),
-    y: 100 + Math.random() * (WORLD.height - 200),
-    color: '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'),
-    hp: 100,
-    maxHp: 100,
-    shieldUntil: 0,
-    coreCharge: 0,
-    corePoints: 0,
-    inCore: false,
-    lastAttackAt: 0,
-    lastDashAt: 0,
-    lastShieldAt: 0
-  };
-  players[socket.id] = player;
-  console.log('Operative connected: ' + socket.id);
+  let player = null;
+  console.log('Client connected: ' + socket.id);
   socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: WORLD, core: CORE });
-  broadcastState();
+
+  socket.on('player:join', (requestedName) => {
+    if (player) return;
+    if (typeof requestedName !== 'string') {
+      socket.emit('name_error', { message: 'Enter a character name.' });
+      return;
+    }
+    const name = requestedName.trim().replace(/\s+/g, ' ');
+    if (name.length < 2 || name.length > 18 || !/^[\p{L}\p{N}_ -]+$/u.test(name)) {
+      socket.emit('name_error', { message: 'Use 2–18 letters, numbers, spaces, _ or -.' });
+      return;
+    }
+    const nameKey = name.toLowerCase();
+    const isTaken = Object.values(players).some((activePlayer) => activePlayer.name.toLowerCase() === nameKey);
+    if (isTaken) {
+      socket.emit('name_taken', { message: 'Name already taken! Choose another name.' });
+      return;
+    }
+
+    const profile = profiles[nameKey] || {};
+    player = {
+      id: socket.id,
+      name,
+      x: 100 + Math.random() * (WORLD.width - 200),
+      y: 100 + Math.random() * (WORLD.height - 200),
+      color: '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'),
+      hp: Number.isFinite(profile.hp) ? clamp(profile.hp, 1, 100) : 100,
+      maxHp: Number.isFinite(profile.maxHp) ? clamp(profile.maxHp, 1, 100) : 100,
+      shieldUntil: 0,
+      coreCharge: Number.isFinite(profile.coreCharge) ? clamp(profile.coreCharge, 0, 99.99) : 0,
+      corePoints: Number.isFinite(profile.corePoints) ? Math.max(0, profile.corePoints) : 0,
+      inCore: false,
+      lastAttackAt: 0,
+      lastDashAt: 0,
+      lastShieldAt: 0
+    };
+    players[socket.id] = player;
+    socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints } });
+    broadcastState();
+    console.log('Operative joined: ' + player.name + ' (' + socket.id + ')');
+  });
 
   socket.on('player:move', (position) => {
-    if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y) || player.hp <= 0) return;
+    if (!player || !position || !Number.isFinite(position.x) || !Number.isFinite(position.y) || player.hp <= 0) return;
     player.x = clamp(position.x, 20, WORLD.width - 20);
     player.y = clamp(position.y, 20, WORLD.height - 20);
   });
-
   socket.on('player:attack', (direction) => {
+    if (!player) return;
     const aim = validDirection(direction);
     const now = Date.now();
     if (!aim || player.hp <= 0 || now - player.lastAttackAt < 450) return;
@@ -64,8 +120,8 @@ io.on('connection', (socket) => {
     const id = String(nextProjectileId++);
     projectiles[id] = { id, ownerId: player.id, x: player.x + aim.x * 22, y: player.y + aim.y * 22, vx: aim.x * 520, vy: aim.y * 520, radius: 9, expiresAt: now + 1100, color: player.color };
   });
-
   socket.on('player:dash', (direction) => {
+    if (!player) return;
     const aim = validDirection(direction);
     const now = Date.now();
     if (!aim || player.hp <= 0 || now - player.lastDashAt < 1300) return;
@@ -74,18 +130,22 @@ io.on('connection', (socket) => {
     player.y = clamp(player.y + aim.y * 120, 20, WORLD.height - 20);
     socket.emit('player:position', { x: player.x, y: player.y });
   });
-
   socket.on('player:shield', () => {
+    if (!player) return;
     const now = Date.now();
     if (player.hp <= 0 || now - player.lastShieldAt < 4000) return;
     player.lastShieldAt = now;
     player.shieldUntil = now + 1800;
   });
-
   socket.on('disconnect', (reason) => {
-    delete players[socket.id];
-    broadcastState();
-    console.log('Operative disconnected: ' + socket.id + ' (' + reason + ')');
+    if (player) {
+      persistPlayer(player);
+      delete players[socket.id];
+      broadcastState();
+      console.log('Operative disconnected: ' + player.name + ' (' + reason + ')');
+    } else {
+      console.log('Unjoined client disconnected: ' + socket.id + ' (' + reason + ')');
+    }
   });
 });
 
@@ -106,22 +166,21 @@ setInterval(() => {
       player.coreCharge = Math.max(0, player.coreCharge - deltaSeconds * 10);
     }
   }
-
   for (const [id, projectile] of Object.entries(projectiles)) {
     projectile.x += projectile.vx * deltaSeconds;
     projectile.y += projectile.vy * deltaSeconds;
     let hit = false;
     for (const target of Object.values(players)) {
       if (target.id === projectile.ownerId || target.hp <= 0 || distance(target, projectile) > 21) continue;
-      const damage = now < target.shieldUntil ? 8 : 20;
-      target.hp = Math.max(0, target.hp - damage);
+      target.hp = Math.max(0, target.hp - (now < target.shieldUntil ? 8 : 20));
       delete projectiles[id];
       hit = true;
       break;
     }
     if (!hit && (now > projectile.expiresAt || projectile.x < 0 || projectile.x > WORLD.width || projectile.y < 0 || projectile.y > WORLD.height)) delete projectiles[id];
   }
+  for (const player of Object.values(players)) persistPlayer(player);
   broadcastState();
-}, 50);
+}, 1000);
 
 httpServer.listen(PORT, '0.0.0.0', () => console.log('The 5 Sleeves server is running at http://localhost:' + PORT));
