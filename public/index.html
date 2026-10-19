@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#09111f" />
+    <title>The 5 Sleeves Online</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #09111f; }
+      body { font-family: system-ui, sans-serif; touch-action: none; }
+      canvas { display: block; width: 100%; height: 100%; }
+      #status {
+        position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px;
+        padding: 6px 10px; border: 1px solid #42f5c5; border-radius: 999px;
+        background: rgba(9, 17, 31, .82); color: #bfffee; font-size: 12px;
+      }
+      #status.offline { border-color: #ff6b7a; color: #ffc1c8; }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" aria-label="The 5 Sleeves game area"></canvas>
+    <div id="status" class="offline">Connecting…</div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/client.js"></script>
+  </body>
+</html>
