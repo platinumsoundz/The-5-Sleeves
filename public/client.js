@@ -15,6 +15,7 @@ const state = {
   projectiles: {},
   localPlayer: null,
   archiveEchoes: {},
+  party: null,
   lastAim: { x: 1, y: 0 }
 };
 
@@ -26,14 +27,25 @@ const network = createNetcode(state, {
   joinAccepted: (payload) => ui?.joinAccepted(payload),
   joinError: (message) => ui?.joinError(message),
   playerUpdate: (player) => ui?.updatePlayer(player),
-  archiveCollected: (data) => ui?.showArchiveToast(data.lore)
+  archiveCollected: (data) => ui?.showArchiveToast(data.lore),
+  partyState: (party) => ui?.updateParty(party),
+  partyInvite: (invite) => ui?.showPartyInvite(invite),
+  partyNotice: (message) => ui?.partyNotice(message),
+  partyError: (message) => ui?.partyError(message),
+  partyReward: (reward) => ui?.partyReward(reward),
+  chatMessage: (message) => ui?.chatMessage(message),
+  chatError: (message) => ui?.chatError(message)
 }, audio);
 ui = createUIManager({
   join: (name) => network.join(name),
   upgrade: (stat) => network.upgrade(stat),
   selectDomain: (domain) => network.selectDomain(domain),
   toggleMenu: (open) => ui.toggleMenu(open),
-  getPlayer: () => state.players[state.playerId]
+  getPlayer: () => state.players[state.playerId],
+  getWorld: () => state.world,
+  leaveParty: () => network.leaveParty(),
+  sendChat: (channel, text) => network.sendChat(channel, text),
+  respondParty: (inviteId, accept) => network.respondParty(inviteId, accept)
 });
 
 function performAction(action) {
@@ -70,5 +82,24 @@ function frame(time) {
   renderFrame(canvas, context, state, time);
   requestAnimationFrame(frame);
 }
+
+canvas.addEventListener('click', (event) => {
+  if (!state.playerId || !state.localPlayer) return;
+  const rect = canvas.getBoundingClientRect();
+  const scale = Math.min(rect.width / state.world.width, rect.height / state.world.height, 1);
+  const offsetX = (rect.width - state.world.width * scale) / 2;
+  const offsetY = (rect.height - state.world.height * scale) / 2;
+  const worldX = (event.clientX - rect.left - offsetX) / scale;
+  const worldY = (event.clientY - rect.top - offsetY) / scale;
+  let target = null, nearest = Infinity;
+  for (const player of Object.values(state.players)) {
+    if (player.id === state.playerId) continue;
+    const dx = player.x - worldX, dy = player.y - worldY;
+    if (Math.abs(dx) <= 24 && Math.abs(dy) <= 28 && Math.hypot(dx, dy) < nearest) {
+      target = player; nearest = Math.hypot(dx, dy);
+    }
+  }
+  if (target) network.invitePlayer(target.id);
+});
 
 requestAnimationFrame(frame);
