@@ -9,6 +9,7 @@ const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
 const WORLD = { width: 1000, height: 700 };
 const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
+const SLEEVE_COLORS = { azure: '#43b9ff', emerald: '#45f29a', crimson: '#ff536b', violet: '#c875ff' };
 const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
 const players = {};
 const projectiles = {};
@@ -57,6 +58,11 @@ function persistPlayer(player) {
     coreCharge: player.coreCharge,
     hp: player.hp,
     maxHp: player.maxHp,
+    atk: player.atk,
+    plating: player.plating,
+    overclock: player.overclock,
+    skillPoints: player.skillPoints,
+    energyColor: player.energyColor,
     updatedAt: new Date().toISOString()
   };
   saveProfiles();
@@ -91,9 +97,14 @@ io.on('connection', (socket) => {
       name,
       x: 100 + Math.random() * (WORLD.width - 200),
       y: 100 + Math.random() * (WORLD.height - 200),
-      color: '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'),
-      hp: Number.isFinite(profile.hp) ? clamp(profile.hp, 1, 100) : 100,
-      maxHp: Number.isFinite(profile.maxHp) ? clamp(profile.maxHp, 1, 100) : 100,
+      energyColor: Object.hasOwn(SLEEVE_COLORS, profile.energyColor) ? profile.energyColor : 'azure',
+      color: SLEEVE_COLORS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor) ? profile.energyColor : 'azure'],
+      atk: Number.isInteger(profile.atk) ? clamp(profile.atk, 0, 99) : 0,
+      plating: Number.isInteger(profile.plating) ? clamp(profile.plating, 0, 99) : 0,
+      overclock: Number.isInteger(profile.overclock) ? clamp(profile.overclock, 0, 99) : 0,
+      skillPoints: Number.isInteger(profile.skillPoints) ? Math.max(0, profile.skillPoints) : 0,
+      hp: Number.isFinite(profile.hp) ? clamp(profile.hp, 1, Number.isFinite(profile.maxHp) ? profile.maxHp : 100) : 100,
+      maxHp: Number.isFinite(profile.maxHp) ? clamp(profile.maxHp, 100, 1585) : 100,
       shieldUntil: 0,
       coreCharge: Number.isFinite(profile.coreCharge) ? clamp(profile.coreCharge, 0, 99.99) : 0,
       corePoints: Number.isFinite(profile.corePoints) ? Math.max(0, profile.corePoints) : 0,
@@ -103,7 +114,7 @@ io.on('connection', (socket) => {
       lastShieldAt: 0
     };
     players[socket.id] = player;
-    socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints } });
+    socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor } });
     broadcastState();
     console.log('Operative joined: ' + player.name + ' (' + socket.id + ')');
   });
@@ -113,6 +124,27 @@ io.on('connection', (socket) => {
     player.x = clamp(position.x, 20, WORLD.width - 20);
     player.y = clamp(position.y, 20, WORLD.height - 20);
   });
+  socket.on('player:upgrade', (stat) => {
+    if (!player || player.skillPoints <= 0) return;
+    if (!['atk', 'plating', 'overclock'].includes(stat) || player[stat] >= 99) return;
+    player.skillPoints -= 1;
+    player[stat] += 1;
+    if (stat === 'plating') {
+      player.maxHp = Math.min(1585, player.maxHp + 15);
+      player.hp = Math.min(player.maxHp, player.hp + 15);
+    }
+    persistPlayer(player);
+    broadcastState();
+  });
+
+  socket.on('player:color', (colorKey) => {
+    if (!player || !Object.hasOwn(SLEEVE_COLORS, colorKey)) return;
+    player.energyColor = colorKey;
+    player.color = SLEEVE_COLORS[colorKey];
+    persistPlayer(player);
+    broadcastState();
+  });
+
   socket.on('player:attack', (direction) => {
     if (!player) return;
     const aim = validDirection(direction);
@@ -126,7 +158,7 @@ io.on('connection', (socket) => {
     if (!player) return;
     const aim = validDirection(direction);
     const now = Date.now();
-    if (!aim || player.hp <= 0 || now - player.lastDashAt < 1300) return;
+    if (!aim || player.hp <= 0 || now - player.lastDashAt < Math.max(250, 1300 * Math.pow(0.9, player.overclock))) return;
     player.lastDashAt = now;
     player.x = clamp(player.x + aim.x * 120, 20, WORLD.width - 20);
     player.y = clamp(player.y + aim.y * 120, 20, WORLD.height - 20);
@@ -135,7 +167,7 @@ io.on('connection', (socket) => {
   socket.on('player:shield', () => {
     if (!player) return;
     const now = Date.now();
-    if (player.hp <= 0 || now - player.lastShieldAt < 4000) return;
+    if (player.hp <= 0 || now - player.lastShieldAt < Math.max(500, 4000 * Math.pow(0.9, player.overclock))) return;
     player.lastShieldAt = now;
     player.shieldUntil = now + 1800;
   });
@@ -163,6 +195,7 @@ setInterval(() => {
       if (player.coreCharge >= 100) {
         player.coreCharge -= 100;
         player.corePoints += 1;
+        player.skillPoints += 1;
       }
     } else {
       player.coreCharge = Math.max(0, player.coreCharge - deltaSeconds * 10);
@@ -174,7 +207,7 @@ setInterval(() => {
     let hit = false;
     for (const target of Object.values(players)) {
       if (target.id === projectile.ownerId || target.hp <= 0 || distance(target, projectile) > 21) continue;
-      target.hp = Math.max(0, target.hp - (now < target.shieldUntil ? 8 : 20));
+      target.hp = Math.max(0, target.hp - (now < target.shieldUntil ? 8 : 20 + 3 * (players[projectile.ownerId]?.atk || 0)));
       delete projectiles[id];
       hit = true;
       break;
@@ -189,6 +222,11 @@ setInterval(() => {
         coreCharge: player.coreCharge,
         hp: player.hp,
         maxHp: player.maxHp,
+        atk: player.atk,
+        plating: player.plating,
+        overclock: player.overclock,
+        skillPoints: player.skillPoints,
+        energyColor: player.energyColor,
         updatedAt: new Date().toISOString()
       };
     }
