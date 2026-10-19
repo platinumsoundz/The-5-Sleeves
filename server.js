@@ -9,7 +9,19 @@ const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
 const WORLD = { width: 1000, height: 700 };
 const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
-const SLEEVE_COLORS = { azure: '#43b9ff', emerald: '#45f29a', crimson: '#ff536b', violet: '#c875ff' };
+const SLEEVE_COLORS = {
+  cipher: '#39d8cf',
+  wind: '#52e787',
+  water: '#1687f8',
+  fire: '#ff602e',
+  earth: '#cc843e',
+  dark: '#bd38f5',
+  azure: '#43b9ff',
+  emerald: '#45f29a',
+  crimson: '#ff536b',
+  violet: '#c875ff'
+};
+const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
 const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
 const players = {};
 const projectiles = {};
@@ -97,8 +109,12 @@ io.on('connection', (socket) => {
       name,
       x: 100 + Math.random() * (WORLD.width - 200),
       y: 100 + Math.random() * (WORLD.height - 200),
-      energyColor: Object.hasOwn(SLEEVE_COLORS, profile.energyColor) ? profile.energyColor : 'azure',
-      color: SLEEVE_COLORS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor) ? profile.energyColor : 'azure'],
+      energyColor: Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
+        ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
+        : 'cipher',
+      color: SLEEVE_COLORS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
+        ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
+        : 'cipher'],
       atk: Number.isInteger(profile.atk) ? clamp(profile.atk, 0, 99) : 0,
       plating: Number.isInteger(profile.plating) ? clamp(profile.plating, 0, 99) : 0,
       overclock: Number.isInteger(profile.overclock) ? clamp(profile.overclock, 0, 99) : 0,
