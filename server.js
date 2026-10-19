@@ -55,6 +55,7 @@ function persistPlayer(player) {
     name: player.name,
     corePoints: player.corePoints,
     coreCharge: player.coreCharge,
+    hp: player.hp,
     maxHp: player.maxHp,
     updatedAt: new Date().toISOString()
   };
@@ -186,6 +187,7 @@ setInterval(() => {
         name: player.name,
         corePoints: player.corePoints,
         coreCharge: player.coreCharge,
+        hp: player.hp,
         maxHp: player.maxHp,
         updatedAt: new Date().toISOString()
       };
