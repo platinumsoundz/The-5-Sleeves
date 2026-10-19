@@ -10,12 +10,12 @@ const PORT = process.env.PORT || 3000;
 const WORLD = { width: 1000, height: 700 };
 const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
 const SLEEVE_COLORS = {
-  cipher: '#39d8cf',
-  wind: '#52e787',
-  water: '#1687f8',
-  fire: '#ff602e',
-  earth: '#cc843e',
-  dark: '#bd38f5',
+  cipher: '#00ffff',
+  wind: '#00ff88',
+  water: '#0088ff',
+  fire: '#ff4400',
+  earth: '#cc7722',
+  dark: '#9900ff',
   azure: '#43b9ff',
   emerald: '#45f29a',
   crimson: '#ff536b',
