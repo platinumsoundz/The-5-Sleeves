@@ -13,6 +13,7 @@ const specsButton = document.getElementById('specs-button');
 const characterMenu = document.getElementById('character-menu');
 const menuClose = document.getElementById('menu-close');
 const skillPointsLabel = document.getElementById('skill-points');
+const controlHints = document.getElementById('control-hints');
 const PROFILE_KEY = 'the5sleeves.profile.v1';
 const socket = io();
 
@@ -36,6 +37,10 @@ let lastFrameTime = 0;
 let lastSendTime = 0;
 let lastAim = { x: 1, y: 0 };
 const heldDirections = new Set();
+const hasTouchInput = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+let activeInputMode = hasTouchInput ? 'touch' : 'keyboard';
+let previousGamepadButtons = [];
+let currentGamepadVector = { x: 0, y: 0 };
 
 socket.on('connect', () => {
   status.textContent = 'Connected to the Conduit';
@@ -111,11 +116,25 @@ function updateCharacterMenu(player) {
   });
 }
 
-specsButton.addEventListener('click', () => {
+function setInputMode(mode) {
+  activeInputMode = mode;
+  document.body.dataset.inputMode = mode;
+  if (mode === 'keyboard') {
+    controlHints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">C</span> Specs';
+  } else if (mode === 'controller') {
+    controlHints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">R1</span> Blast<br /><span class="control-badge">X</span> Dash &nbsp; <span class="control-badge">L1</span> Shield &nbsp; <span class="control-badge">START / SELECT / Y</span> Specs';
+  } else {
+    controlHints.textContent = '';
+  }
+}
+function toggleSpecsMenu() {
   if (!players[playerId]) return;
-  updateCharacterMenu(players[playerId]);
-  characterMenu.classList.remove('hidden');
-});
+  const shouldOpen = characterMenu.classList.contains('hidden');
+  if (shouldOpen) updateCharacterMenu(players[playerId]);
+  characterMenu.classList.toggle('hidden', !shouldOpen);
+}
+setInputMode(activeInputMode);
+specsButton.addEventListener('click', toggleSpecsMenu);
 menuClose.addEventListener('click', () => characterMenu.classList.add('hidden'));
 characterMenu.addEventListener('click', (event) => {
   if (event.target === characterMenu) characterMenu.classList.add('hidden');
