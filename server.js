@@ -22,6 +22,7 @@ const SLEEVE_COLORS = {
   violet: '#c875ff'
 };
 const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
+const ACTIVE_DOMAINS = new Set(['cipher', 'wind', 'water', 'fire', 'earth', 'dark']);
 const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
 const players = {};
 const projectiles = {};
@@ -154,7 +155,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('player:color', (colorKey) => {
-    if (!player || !Object.hasOwn(SLEEVE_COLORS, colorKey)) return;
+    if (!player || !ACTIVE_DOMAINS.has(colorKey)) return;
     player.energyColor = colorKey;
     player.color = SLEEVE_COLORS[colorKey];
     persistPlayer(player);
