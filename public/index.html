@@ -57,6 +57,9 @@
       body[data-input-mode="keyboard"] #dpad, body[data-input-mode="keyboard"] #actions, body[data-input-mode="controller"] #dpad, body[data-input-mode="controller"] #actions { display:none; }
       .control-badge { display:inline-block; padding:1px 5px; border:1px solid #54aeaa; border-radius:5px; color:#8dffe7; font-weight:800; }
       .domain-option { text-align:left; font-size:12px; line-height:1.4; }
+      #mute-button { position:fixed; z-index:3; top:max(12px,env(safe-area-inset-top)); right:max(150px,calc(env(safe-area-inset-right) + 150px)); padding:9px 11px; border:1px solid #527f83; border-radius:9px; background:rgba(8,25,38,.9); color:#cffff5; font:700 11px system-ui,sans-serif; }
+      #archive-toast { position:fixed; z-index:4; top:max(54px,calc(env(safe-area-inset-top) + 48px)); left:50%; transform:translate(-50%,-12px); width:min(560px,calc(100vw - 30px)); padding:12px 16px; border:1px solid rgba(116,255,224,.7); border-radius:10px; background:rgba(5,19,29,.95); color:#dffff8; text-align:center; font-size:13px; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 0 26px rgba(49,232,197,.2); }
+      #archive-toast.visible { opacity:1; transform:translate(-50%,0); }
     </style>
   </head>
   <body>
@@ -72,6 +75,8 @@
       </form>
     </div>
     <div id="status" class="offline">Connecting…</div>
+    <div id="archive-toast" role="status" aria-live="polite"></div>
+    <button id="mute-button" type="button">SFX: ON</button>
     <div id="control-hints" aria-live="polite"></div>
     <button id="specs-button" type="button">SPECS / SKILLS</button>
     <section id="character-menu" class="hidden" aria-modal="true" role="dialog" aria-labelledby="menu-title">
@@ -83,11 +88,11 @@
         <div class="skill-row"><div><strong>Overclock (SPD)</strong><small>Dash and Shield cooldowns −10% per level</small></div><span class="skill-level" id="overclock-level">Lv 0</span><button class="upgrade-button" data-upgrade="overclock" type="button" aria-label="Upgrade Overclock">+</button></div>
         <h3 class="menu-section-title">SLEEVE ENERGY COLOR</h3>
         <div id="color-options">
-          <button class="color-option domain-option" data-color="cipher" style="--swatch:linear-gradient(135deg,#39d8cf 50%,#78ff5f 50%)" type="button">Cipher Sleeve<br /><small>(Ajaye's Beta)<br />Restrained cyan-blue / electric green</small></button>
-          <button class="color-option domain-option" data-color="wind" style="--swatch:#52e787" type="button">Wind Domain<br /><small>(Korb's Sleeve)<br />Emerald kinetic trails</small></button>
-          <button class="color-option domain-option" data-color="water" style="--swatch:#1687f8" type="button">Water Domain<br /><small>(Tide)<br />Deep oceanic blue</small></button>
-          <button class="color-option domain-option" data-color="fire" style="--swatch:#ff602e" type="button">Fire Domain<br /><small>Volatile flame red / orange</small></button>
-          <button class="color-option domain-option" data-color="earth" style="--swatch:#cc843e" type="button">Earth Domain<br /><small>Amber / terracotta</small></button>
+          <button class="color-option domain-option" data-color="cipher" style="--swatch:linear-gradient(135deg,#00ffff 50%,#78ff5f 50%)" type="button">Cipher Sleeve<br /><small>(Ajaye's Beta)<br />Restrained cyan-blue / electric green</small></button>
+          <button class="color-option domain-option" data-color="wind" style="--swatch:#00ff88" type="button">Wind Domain<br /><small>(Korb's Sleeve)<br />Emerald kinetic trails</small></button>
+          <button class="color-option domain-option" data-color="water" style="--swatch:#0088ff" type="button">Water Domain<br /><small>(Tide)<br />Deep oceanic blue</small></button>
+          <button class="color-option domain-option" data-color="fire" style="--swatch:#ff4400" type="button">Fire Domain<br /><small>Volatile flame red / orange</small></button>
+          <button class="color-option domain-option" data-color="earth" style="--swatch:#cc7722" type="button">Earth Domain<br /><small>Amber / terracotta</small></button>
           <button class="color-option domain-option" data-color="dark" style="--swatch:linear-gradient(135deg,#292334 50%,#ff29d6 50%)" type="button">Dark Spirit<br /><small>(6th Extension / Void)<br />Obsidian / corrupted magenta</small></button>
         </div>
         <div id="menu-hint">Earn a Skill Point each time you score at the Cipher Core.</div>
