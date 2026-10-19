@@ -1,5 +1,6 @@
-import { CORE_DEFAULT, MOVE_SPEED, SEND_INTERVAL, WORLD_DEFAULT } from './src/config.js';
+import { CORE_DEFAULT, MOVE_SPEED, PERIMETER_MARGIN, SEND_INTERVAL, WORLD_DEFAULT } from './src/config.js';
 import { createInputManager } from './src/inputManager.js';
+import { createAudioManager } from './src/audioManager.js';
 import { createNetcode } from './src/netcode.js';
 import { renderFrame } from './src/renderer.js';
 import { createUIManager } from './src/uiManager.js';
@@ -13,17 +14,20 @@ const state = {
   players: {},
   projectiles: {},
   localPlayer: null,
+  archiveEchoes: {},
   lastAim: { x: 1, y: 0 }
 };
 
 let ui;
 let input;
+const audio = createAudioManager(document.getElementById('mute-button'));
 const network = createNetcode(state, {
   status: (message, connected) => ui?.setStatus(message, connected),
   joinAccepted: (payload) => ui?.joinAccepted(payload),
   joinError: (message) => ui?.joinError(message),
-  playerUpdate: (player) => ui?.updatePlayer(player)
-});
+  playerUpdate: (player) => ui?.updatePlayer(player),
+  archiveCollected: (data) => ui?.showArchiveToast(data.lore)
+}, audio);
 ui = createUIManager({
   join: (name) => network.join(name),
   upgrade: (stat) => network.upgrade(stat),
@@ -40,7 +44,8 @@ function performAction(action) {
 input = createInputManager({
   onAction: performAction,
   onMenu: (open) => ui.toggleMenu(open),
-  onMode: (mode) => ui.setInputMode(mode)
+  onMode: (mode) => ui.setInputMode(mode),
+  audio
 });
 
 let lastFrame = 0;
@@ -54,8 +59,8 @@ function frame(time) {
   const player = state.localPlayer;
   if (player && player.hp > 0 && (direction.x || direction.y)) {
     state.lastAim = { ...direction };
-    player.x = Math.max(20, Math.min(state.world.width - 20, player.x + direction.x * MOVE_SPEED * dt));
-    player.y = Math.max(20, Math.min(state.world.height - 20, player.y + direction.y * MOVE_SPEED * dt));
+    player.x = Math.max(PERIMETER_MARGIN, Math.min(state.world.width - PERIMETER_MARGIN, player.x + direction.x * MOVE_SPEED * dt));
+    player.y = Math.max(PERIMETER_MARGIN, Math.min(state.world.height - PERIMETER_MARGIN, player.y + direction.y * MOVE_SPEED * dt));
     state.players[state.playerId] = player;
     if (time - lastPositionSend >= SEND_INTERVAL) {
       network.move(player.x, player.y);
