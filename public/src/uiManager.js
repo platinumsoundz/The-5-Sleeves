@@ -78,10 +78,10 @@ export function createUIManager(actions) {
       else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">A / R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">START / SELECT / Y</span> Specs';
       else hints.textContent = '';
     },
-    toggleMenu() {
+    toggleMenu(forceOpen) {
       if (!joined) return;
-      const open = menu.classList.contains('hidden');
-      if (open) updateMenu(window.gameState?.players?.[window.gameState?.playerId]);
+      const open = typeof forceOpen === 'boolean' ? forceOpen : menu.classList.contains('hidden');
+      if (open) updateMenu(actions.getPlayer?.());
       menu.classList.toggle('hidden', !open);
     }
   };
