@@ -122,7 +122,7 @@ function setInputMode(mode) {
   if (mode === 'keyboard') {
     controlHints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">C</span> Specs';
   } else if (mode === 'controller') {
-    controlHints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">R1</span> Blast<br /><span class="control-badge">X</span> Dash &nbsp; <span class="control-badge">L1</span> Shield &nbsp; <span class="control-badge">START / SELECT / Y</span> Specs';
+    controlHints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">START / SELECT / Y</span> Specs';
   } else {
     controlHints.textContent = '';
   }
