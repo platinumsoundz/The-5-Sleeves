@@ -4,6 +4,8 @@ export const MOVE_SPEED = 220;
 export const SEND_INTERVAL = 50;
 export const PROFILE_KEY = 'the5sleeves.profile.v1';
 export const TILE_SIZE = 40;
+export const PERIMETER_MARGIN = 40;
+export const MAX_ARCHIVE_ECHOES = 5;
 export const DOMAINS = Object.freeze({
   cipher: { label: 'Cipher Sleeve', primary: '#00ffff', accent: '#78ff5f' },
   wind: { label: 'Wind Domain', primary: '#00ff88', accent: '#a7ffd0' },
