@@ -110,6 +110,8 @@ function validDirection(direction) {
   const length = Math.hypot(direction.x, direction.y);
   return length > 0.01 ? { x: direction.x / length, y: direction.y / length } : null;
 }
+for (let i = 0; i < MAX_ARCHIVE_ECHOES; i += 1) spawnArchiveEcho();
+
 function persistPlayer(player) {
   if (!player) return;
   profiles[player.name.toLowerCase()] = {
@@ -132,6 +134,7 @@ io.on('connection', (socket) => {
   let player = null;
   console.log('Client connected: ' + socket.id);
   socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: WORLD, core: CORE });
+  socket.emit('archive:echoes', archiveEchoes);
 
   socket.on('player:join', (requestedName) => {
     if (player) return;
@@ -181,6 +184,7 @@ io.on('connection', (socket) => {
       lastShieldAt: 0
     };
     players[socket.id] = player;
+    playerSockets[player.id] = socket;
     socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor } });
     broadcastState();
     console.log('Operative joined: ' + player.name + ' (' + socket.id + ')');
@@ -188,8 +192,8 @@ io.on('connection', (socket) => {
 
   socket.on('player:move', (position) => {
     if (!player || !position || !Number.isFinite(position.x) || !Number.isFinite(position.y) || player.hp <= 0) return;
-    player.x = clamp(position.x, 20, WORLD.width - 20);
-    player.y = clamp(position.y, 20, WORLD.height - 20);
+    player.x = clamp(position.x, PERIMETER_MARGIN, WORLD.width - PERIMETER_MARGIN);
+    player.y = clamp(position.y, PERIMETER_MARGIN, WORLD.height - PERIMETER_MARGIN);
   });
   socket.on('player:upgrade', (stat) => {
     if (!player || player.skillPoints <= 0) return;
@@ -228,8 +232,8 @@ io.on('connection', (socket) => {
     const now = Date.now();
     if (!aim || player.hp <= 0 || now - player.lastDashAt < Math.max(250, 1300 * Math.pow(0.9, player.overclock))) return;
     player.lastDashAt = now;
-    player.x = clamp(player.x + aim.x * 120, 20, WORLD.width - 20);
-    player.y = clamp(player.y + aim.y * 120, 20, WORLD.height - 20);
+    player.x = clamp(player.x + aim.x * 120, PERIMETER_MARGIN, WORLD.width - PERIMETER_MARGIN);
+    player.y = clamp(player.y + aim.y * 120, PERIMETER_MARGIN, WORLD.height - PERIMETER_MARGIN);
     socket.emit('player:position', { x: player.x, y: player.y });
   });
   socket.on('player:shield', () => {
@@ -243,6 +247,7 @@ io.on('connection', (socket) => {
     if (player) {
       persistPlayer(player);
       delete players[socket.id];
+      delete playerSockets[socket.id];
       broadcastState();
       console.log('Operative disconnected: ' + player.name + ' (' + reason + ')');
     } else {
@@ -256,8 +261,10 @@ setInterval(() => {
   const deltaSeconds = Math.min((now - lastTick) / 1000, 0.1);
   lastTick = now;
 
+  let echoesChanged = false;
   for (const player of Object.values(players)) {
     player.inCore = player.hp > 0 && distance(player, CORE) <= CORE.radius;
+    if (collectArchiveEchoes(player)) echoesChanged = true;
     if (player.inCore) {
       player.coreCharge += deltaSeconds * 25;
       if (player.coreCharge >= 100) {
@@ -282,6 +289,7 @@ setInterval(() => {
     }
     if (!hit && (now > projectile.expiresAt || projectile.x < 0 || projectile.x > WORLD.width || projectile.y < 0 || projectile.y > WORLD.height)) delete projectiles[id];
   }
+  if (echoesChanged) broadcastEchoes();
   if (now - lastProfileSave >= 10000 && Object.keys(players).length > 0) {
     for (const player of Object.values(players)) {
       profiles[player.name.toLowerCase()] = {
@@ -303,5 +311,9 @@ setInterval(() => {
   }
   broadcastState();
 }, 50);
+
+setInterval(() => {
+  if (Object.keys(archiveEchoes).length < MAX_ARCHIVE_ECHOES && spawnArchiveEcho()) broadcastEchoes();
+}, 7000);
 
 httpServer.listen(PORT, '0.0.0.0', () => console.log('The 5 Sleeves server is running at http://localhost:' + PORT));
