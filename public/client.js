@@ -9,6 +9,10 @@ const joinForm = document.getElementById('join-form');
 const usernameInput = document.getElementById('username-input');
 const enterButton = document.getElementById('enter-button');
 const nameError = document.getElementById('name-error');
+const specsButton = document.getElementById('specs-button');
+const characterMenu = document.getElementById('character-menu');
+const menuClose = document.getElementById('menu-close');
+const skillPointsLabel = document.getElementById('skill-points');
 const PROFILE_KEY = 'the5sleeves.profile.v1';
 const socket = io();
 
@@ -45,6 +49,7 @@ socket.on('server:welcome', ({ message, playerId: id, world: serverWorld, core: 
 });
 socket.on('join:accepted', ({ name, stats }) => {
   savedProfile = { ...savedProfile, name, ...stats };
+  updateCharacterMenu(players[playerId] || savedProfile);
   try { localStorage.setItem(PROFILE_KEY, JSON.stringify(savedProfile)); } catch (_) {}
   nameError.textContent = '';
   titleScreen.classList.add('hidden');
@@ -63,7 +68,8 @@ socket.on('players', (nextPlayers) => {
   players = nextPlayers;
   if (players[playerId]) {
     const current = players[playerId];
-    savedProfile = { name: current.name, hp: current.hp, maxHp: current.maxHp, coreCharge: current.coreCharge, corePoints: current.corePoints };
+    savedProfile = { name: current.name, hp: current.hp, maxHp: current.maxHp, coreCharge: current.coreCharge, corePoints: current.corePoints, skillPoints: current.skillPoints, atk: current.atk, plating: current.plating, overclock: current.overclock, energyColor: current.energyColor };
+    updateCharacterMenu(current);
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(savedProfile)); } catch (_) {}
     if (!localPlayer) localPlayer = { ...players[playerId] };
     else Object.assign(localPlayer, players[playerId], { x: localPlayer.x, y: localPlayer.y });
@@ -80,7 +86,7 @@ socket.on('disconnect', () => {
 
 joinForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  const name = usernameInput.value.trim().replace(/\\s+/g, ' ');
+  const name = usernameInput.value.trim();
   if (!name) {
     nameError.textContent = 'Enter a character name.';
     return;
@@ -201,8 +207,11 @@ function drawHealthBar(player) {
   context.fillRect(player.x - width / 2, player.y - 30, width * Math.max(0, player.hp / player.maxHp), 5);
 }
 function drawPlayer(player) {
+  context.shadowBlur = 14;
+  context.shadowColor = player.color;
   context.fillStyle = player.color;
   context.fillRect(player.x - 12, player.y - 12, 24, 24);
+  context.shadowBlur = 0;
   context.strokeStyle = player.id === playerId ? '#ffffff' : '#07121a';
   context.lineWidth = 3; context.strokeRect(player.x - 12, player.y - 12, 24, 24);
   if (Date.now() < player.shieldUntil) {
@@ -224,7 +233,7 @@ function drawPlayer(player) {
 function drawProjectiles() {
   for (const projectile of Object.values(projectiles)) {
     context.shadowBlur = 18; context.shadowColor = projectile.color;
-    context.fillStyle = '#d9ffff'; context.beginPath(); context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2); context.fill();
+    context.fillStyle = projectile.color || '#d9ffff'; context.beginPath(); context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2); context.fill();
     context.shadowBlur = 0;
   }
 }
