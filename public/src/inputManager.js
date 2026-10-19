@@ -1,4 +1,4 @@
-export function createInputManager({ onAction, onMenu, onMode }) {
+export function createInputManager({ onAction, onMenu, onMode, audio }) {
   const held = new Set();
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let mode = hasTouch ? 'touch' : 'keyboard';
@@ -6,12 +6,13 @@ export function createInputManager({ onAction, onMenu, onMode }) {
   let previousButtons = [];
   const setMode = (next) => { mode = next; onMode(next); };
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
+  const triggerAction = (name) => { audio?.unlock(); audio?.play(name); onAction(name); };
   const directionButtons = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
 
   document.querySelectorAll('.dpad-button').forEach((button) => {
     const direction = button.dataset.direction;
     button.addEventListener('pointerdown', (event) => {
-      event.preventDefault(); setMode('touch'); button.setPointerCapture(event.pointerId);
+      event.preventDefault(); audio?.unlock(); setMode('touch'); button.setPointerCapture(event.pointerId);
       button.classList.add('active'); setDirection(direction, true);
     });
     const release = () => { button.classList.remove('active'); setDirection(direction, false); };
@@ -21,7 +22,7 @@ export function createInputManager({ onAction, onMenu, onMode }) {
   });
   document.querySelectorAll('.action-button').forEach((button) => {
     button.addEventListener('pointerdown', (event) => {
-      event.preventDefault(); setMode('touch'); onAction(button.dataset.action);
+      event.preventDefault(); setMode('touch'); triggerAction(button.dataset.action);
     });
   });
 
@@ -29,9 +30,9 @@ export function createInputManager({ onAction, onMenu, onMode }) {
     if (event.target?.closest?.('input, textarea')) return;
     const direction = directionButtons[event.key];
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, true); }
-    if (event.code === 'Space') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) onAction('attack'); }
-    if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) onAction('dash'); }
-    if (event.code === 'KeyE') { setMode('keyboard'); if (!event.repeat) onAction('shield'); }
+    if (event.code === 'Space') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('attack'); }
+    if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('dash'); }
+    if (event.code === 'KeyE') { setMode('keyboard'); if (!event.repeat) triggerAction('shield'); }
     if (event.code === 'KeyC') { setMode('keyboard'); if (!event.repeat) onMenu(); }
     if (event.code === 'Escape') onMenu(false);
   });
@@ -56,9 +57,9 @@ export function createInputManager({ onAction, onMenu, onMode }) {
     const pressed = Array.from({ length: pad.buttons.length }, (_, index) => isPressed(pad, index));
     const edge = (buttons) => buttons.some((index) => pressed[index] && !previousButtons[index]);
     if (magnitude || pressed.some(Boolean)) setMode('controller');
-    if (edge([0, 5])) onAction('attack');
-    if (edge([2, 4])) onAction('dash');
-    if (edge([1, 6])) onAction('shield');
+    if (edge([0, 5])) triggerAction('attack');
+    if (edge([2, 4])) triggerAction('dash');
+    if (edge([1, 6])) triggerAction('shield');
     if (edge([9, 8, 3])) onMenu();
     previousButtons = pressed;
   }
