@@ -60,6 +60,35 @@
       #mute-button { position:fixed; z-index:3; top:max(12px,env(safe-area-inset-top)); right:max(150px,calc(env(safe-area-inset-right) + 150px)); padding:9px 11px; border:1px solid #527f83; border-radius:9px; background:rgba(8,25,38,.9); color:#cffff5; font:700 11px system-ui,sans-serif; }
       #archive-toast { position:fixed; z-index:4; top:max(54px,calc(env(safe-area-inset-top) + 48px)); left:50%; transform:translate(-50%,-12px); width:min(560px,calc(100vw - 30px)); padding:12px 16px; border:1px solid rgba(116,255,224,.7); border-radius:10px; background:rgba(5,19,29,.95); color:#dffff8; text-align:center; font-size:13px; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 0 26px rgba(49,232,197,.2); }
       #archive-toast.visible { opacity:1; transform:translate(-50%,0); }
+      #party-widget { position:fixed; z-index:3; top:110px; left:12px; width:min(230px,calc(100vw - 24px)); padding:10px; border:1px solid rgba(100,242,212,.55); border-radius:10px; background:rgba(6,18,28,.9); color:#dcfff6; }
+      #party-widget.hidden { display:none; }
+      .party-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:12px; font-weight:800; letter-spacing:.08em; color:#76ffe0; }
+      #party-leave { border:1px solid #506c72; border-radius:6px; padding:4px 7px; background:#142630; color:#d9eeed; font-size:10px; }
+      #party-minimap { display:block; width:100%; height:84px; border:1px solid rgba(129,171,154,.3); border-radius:5px; background:#111b1b; image-rendering:pixelated; }
+      #party-members { display:grid; gap:5px; margin-top:8px; }
+      .party-member { display:grid; grid-template-columns:minmax(0,1fr) 62px; gap:4px 8px; align-items:center; font-size:11px; }
+      .party-member-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .party-member-name.leader::after { content:' ★'; color:#f3d879; }
+      .party-health { height:5px; border-radius:5px; background:#40242c; overflow:hidden; }
+      .party-health-fill { height:100%; background:#55e89e; }
+      .party-xp { grid-column:1 / -1; color:#92b1af; font-size:9px; }
+      #chat-panel { position:fixed; z-index:5; left:12px; bottom:calc(210px + env(safe-area-inset-bottom)); width:min(310px,calc(100vw - 24px)); height:176px; display:flex; flex-direction:column; border:1px solid rgba(92,174,169,.55); border-radius:10px; background:rgba(5,14,23,.91); color:#e3f7f1; overflow:hidden; }
+      body[data-input-mode="keyboard"] #chat-panel, body[data-input-mode="controller"] #chat-panel { bottom:max(12px,env(safe-area-inset-bottom)); }
+      #chat-tabs { display:flex; gap:4px; padding:6px; border-bottom:1px solid rgba(105,157,163,.2); }
+      .chat-tab { flex:1; padding:5px 3px; border:1px solid transparent; border-radius:5px; background:transparent; color:#9ab5b6; font-size:10px; }
+      .chat-tab.selected { border-color:#4baba2; background:#12333a; color:#a5ffeb; }
+      #chat-messages { flex:1; overflow-y:auto; list-style:none; margin:0; padding:5px 8px; font-size:11px; line-height:1.4; touch-action:pan-y; }
+      #chat-messages li { margin:2px 0; overflow-wrap:anywhere; }
+      .chat-channel { color:#72eacb; font-weight:800; }
+      .chat-system { color:#e5c477; }
+      #chat-form { display:flex; gap:5px; padding:6px; border-top:1px solid rgba(105,157,163,.2); }
+      #chat-input { flex:1; min-width:0; padding:7px; border:1px solid #355761; border-radius:6px; outline:0; background:#0b1a25; color:white; font:12px system-ui,sans-serif; touch-action:auto; }
+      #chat-send { padding:5px 9px; border:1px solid #48b9a4; border-radius:6px; background:#124b49; color:#ddfff4; font-size:11px; }
+      #party-invite-toast { position:fixed; z-index:7; top:110px; left:50%; transform:translateX(-50%); width:min(360px,calc(100vw - 24px)); padding:12px; border:1px solid #76ffe0; border-radius:10px; background:rgba(4,18,28,.97); color:#eafffa; box-shadow:0 0 22px rgba(61,229,192,.2); }
+      #party-invite-toast.hidden { display:none; }
+      #party-invite-actions { display:flex; gap:8px; margin-top:9px; }
+      #party-invite-actions button { flex:1; padding:7px; border:1px solid #4ba99b; border-radius:6px; background:#123c3c; color:#eafffa; }
+      #party-invite-actions #party-decline { border-color:#754c58; background:#34202a; }
     </style>
   </head>
   <body>
@@ -76,6 +105,24 @@
     </div>
     <div id="status" class="offline">Connecting…</div>
     <div id="archive-toast" role="status" aria-live="polite"></div>
+    <aside id="party-widget" class="hidden" aria-label="Operative squad">
+      <div class="party-header"><span>OPERATIVE SQUAD</span><button id="party-leave" type="button">LEAVE</button></div>
+      <canvas id="party-minimap" width="180" height="84" aria-label="Squad member positions"></canvas>
+      <div id="party-members"></div>
+    </aside>
+    <section id="party-invite-toast" class="hidden" role="dialog" aria-live="polite">
+      <div id="party-invite-message"></div>
+      <div id="party-invite-actions"><button id="party-accept" type="button">ACCEPT</button><button id="party-decline" type="button">DECLINE</button></div>
+    </section>
+    <section id="chat-panel" aria-label="Real-time chat">
+      <div id="chat-tabs" role="tablist" aria-label="Chat channel">
+        <button class="chat-tab selected" data-chat-channel="global" type="button">GLOBAL</button>
+        <button class="chat-tab" data-chat-channel="squad" type="button">SQUAD</button>
+        <button class="chat-tab" data-chat-channel="faction" type="button">FACTION</button>
+      </div>
+      <ol id="chat-messages" aria-live="polite"></ol>
+      <form id="chat-form"><input id="chat-input" type="text" maxlength="240" placeholder="Message… (/s, /g, /f, !)" aria-label="Chat message" /><button id="chat-send" type="submit">SEND</button></form>
+    </section>
     <button id="mute-button" type="button">SFX: ON</button>
     <div id="control-hints" aria-live="polite"></div>
     <button id="specs-button" type="button">SPECS / SKILLS</button>
