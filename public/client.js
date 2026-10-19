@@ -161,6 +161,7 @@ document.querySelectorAll('.dpad-button').forEach((button) => {
   const direction = button.dataset.direction;
   button.addEventListener('pointerdown', (event) => {
     event.preventDefault();
+    setInputMode('touch');
     button.setPointerCapture(event.pointerId);
     button.classList.add('active');
     setDirection(direction, true);
@@ -176,22 +177,78 @@ document.querySelectorAll('.dpad-button').forEach((button) => {
 });
 
 function moveVector() {
+  if (activeInputMode === 'controller') return { ...currentGamepadVector };
   let x = (heldDirections.has('right') ? 1 : 0) - (heldDirections.has('left') ? 1 : 0);
   let y = (heldDirections.has('down') ? 1 : 0) - (heldDirections.has('up') ? 1 : 0);
   const length = Math.hypot(x, y);
-  if (length) { x /= length; y /= length; }
+  if (length > 1) { x /= length; y /= length; }
   return { x, y };
 }
 
-const keyMap = { ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down', ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right' };
+const keyMap = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
 window.addEventListener('keydown', (event) => {
+  if (event.target && event.target.closest('input, textarea')) return;
   const direction = keyMap[event.key];
-  if (direction) { event.preventDefault(); setDirection(direction, true); }
-  if (event.code === 'Space') { event.preventDefault(); performAction('attack'); }
+  if (direction) {
+    setInputMode('keyboard');
+    event.preventDefault();
+    setDirection(direction, true);
+  }
+  if (event.code === 'Space') { setInputMode('keyboard'); event.preventDefault(); if (!event.repeat) performAction('attack'); }
+  if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') { setInputMode('keyboard'); event.preventDefault(); if (!event.repeat) performAction('dash'); }
+  if (event.code === 'KeyE') { setInputMode('keyboard'); if (!event.repeat) performAction('shield'); }
+  if (event.code === 'KeyC') { setInputMode('keyboard'); if (!event.repeat) toggleSpecsMenu(); }
+  if (event.code === 'Escape' && !characterMenu.classList.contains('hidden')) characterMenu.classList.add('hidden');
 });
 window.addEventListener('keyup', (event) => {
   const direction = keyMap[event.key];
-  if (direction) { event.preventDefault(); setDirection(direction, false); }
+  if (direction) { setInputMode('keyboard'); event.preventDefault(); setDirection(direction, false); }
+});
+
+function isPressed(gamepad, index) {
+  const button = gamepad.buttons[index];
+  return !!button && (button.pressed || button.value > 0.5);
+}
+function pollGamepad() {
+  if (!navigator.getGamepads) return;
+  const pads = navigator.getGamepads();
+  const gamepad = Array.from(pads).find((pad) => pad && pad.connected);
+  if (!gamepad) { currentGamepadVector = { x: 0, y: 0 }; return; }
+
+  let x = gamepad.axes[0] || 0;
+  let y = gamepad.axes[1] || 0;
+  if (Math.abs(x) < 0.18) x = 0;
+  if (Math.abs(y) < 0.18) y = 0;
+  const left = isPressed(gamepad, 14), right = isPressed(gamepad, 15);
+  const up = isPressed(gamepad, 12), down = isPressed(gamepad, 13);
+  if (left || right) x = (right ? 1 : 0) - (left ? 1 : 0);
+  if (up || down) y = (down ? 1 : 0) - (up ? 1 : 0);
+  const magnitude = Math.hypot(x, y);
+  if (magnitude > 1) { x /= magnitude; y /= magnitude; }
+  currentGamepadVector = { x, y };
+
+  const indices = [...Array(gamepad.buttons.length).keys()];
+  const nowPressed = indices.map((index) => isPressed(gamepad, index));
+  const edge = (indicesToCheck) => indicesToCheck.some((index) => nowPressed[index] && !previousGamepadButtons[index]);
+  if (edge([0, 5])) performAction('attack');
+  if (edge([2, 4])) performAction('dash');
+  if (edge([1, 6])) performAction('shield');
+  if (edge([9, 8, 3])) toggleSpecsMenu();
+  const hasInput = magnitude > 0 || nowPressed.some(Boolean);
+  if (hasInput) setInputMode('controller');
+  previousGamepadButtons = nowPressed;
+}
+window.addEventListener('gamepadconnected', () => {
+  previousGamepadButtons = [];
+  setInputMode('controller');
+  status.textContent = 'Controller connected';
+});
+window.addEventListener('gamepaddisconnected', () => {
+  previousGamepadButtons = [];
+  currentGamepadVector = { x: 0, y: 0 };
+  const anotherPad = navigator.getGamepads && Array.from(navigator.getGamepads()).some((pad) => pad && pad.connected);
+  if (!anotherPad) setInputMode(hasTouchInput ? 'touch' : 'keyboard');
+  status.textContent = 'Controller disconnected';
 });
 
 function performAction(action) {
