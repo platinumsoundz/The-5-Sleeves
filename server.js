@@ -21,6 +21,7 @@ const SLEEVE_COLORS = {
   crimson: '#ff536b',
   violet: '#c875ff'
 };
+const SLEEVE_ACCENTS = { cipher: '#78ff5f', wind: '#a7ffd0', water: '#71d5ff', fire: '#ffb347', earth: '#f0b768', dark: '#ff29d6', azure: '#8ce0ff', emerald: '#a7ffd0', crimson: '#ffb347', violet: '#ff29d6' };
 const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
 const ACTIVE_DOMAINS = new Set(['cipher', 'wind', 'water', 'fire', 'earth', 'dark']);
 const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
@@ -116,6 +117,9 @@ io.on('connection', (socket) => {
       color: SLEEVE_COLORS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
         ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
         : 'cipher'],
+      accentColor: SLEEVE_ACCENTS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
+        ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
+        : 'cipher'],
       atk: Number.isInteger(profile.atk) ? clamp(profile.atk, 0, 99) : 0,
       plating: Number.isInteger(profile.plating) ? clamp(profile.plating, 0, 99) : 0,
       overclock: Number.isInteger(profile.overclock) ? clamp(profile.overclock, 0, 99) : 0,
@@ -158,6 +162,7 @@ io.on('connection', (socket) => {
     if (!player || !ACTIVE_DOMAINS.has(colorKey)) return;
     player.energyColor = colorKey;
     player.color = SLEEVE_COLORS[colorKey];
+    player.accentColor = SLEEVE_ACCENTS[colorKey];
     persistPlayer(player);
     broadcastState();
   });
@@ -169,7 +174,7 @@ io.on('connection', (socket) => {
     if (!aim || player.hp <= 0 || now - player.lastAttackAt < 450) return;
     player.lastAttackAt = now;
     const id = String(nextProjectileId++);
-    projectiles[id] = { id, ownerId: player.id, x: player.x + aim.x * 22, y: player.y + aim.y * 22, vx: aim.x * 520, vy: aim.y * 520, radius: 9, expiresAt: now + 1100, color: player.color };
+    projectiles[id] = { id, ownerId: player.id, x: player.x + aim.x * 22, y: player.y + aim.y * 22, vx: aim.x * 520, vy: aim.y * 520, radius: 9, expiresAt: now + 1100, color: player.color, accentColor: player.accentColor };
   });
   socket.on('player:dash', (direction) => {
     if (!player) return;
