@@ -7,21 +7,30 @@
     <title>The 5 Sleeves Online</title>
     <style>
       :root { color-scheme: dark; }
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
       html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #09111f; }
       body { font-family: system-ui, sans-serif; touch-action: none; }
       canvas { display: block; width: 100%; height: 100%; }
-      #status {
-        position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px;
-        padding: 6px 10px; border: 1px solid #42f5c5; border-radius: 999px;
-        background: rgba(9, 17, 31, .82); color: #bfffee; font-size: 12px;
-      }
+      #status { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px; padding: 6px 10px; border: 1px solid #42f5c5; border-radius: 999px; background: rgba(9, 17, 31, .82); color: #bfffee; font-size: 12px; pointer-events: none; }
       #status.offline { border-color: #ff6b7a; color: #ffc1c8; }
+      #dpad { position: fixed; left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); display: grid; grid-template: repeat(3, 58px) / repeat(3, 58px); gap: 4px; }
+      .dpad-button { border: 1px solid rgba(151, 255, 230, .6); border-radius: 14px; background: rgba(11, 47, 61, .82); color: #dffff6; font-size: 23px; font-weight: bold; touch-action: none; user-select: none; }
+      .dpad-button:active, .dpad-button.active { background: #168e86; transform: scale(.94); }
+      [data-direction="up"] { grid-column: 2; grid-row: 1; }
+      [data-direction="left"] { grid-column: 1; grid-row: 2; }
+      [data-direction="right"] { grid-column: 3; grid-row: 2; }
+      [data-direction="down"] { grid-column: 2; grid-row: 3; }
     </style>
   </head>
   <body>
     <canvas id="gameCanvas" aria-label="The 5 Sleeves game area"></canvas>
     <div id="status" class="offline">Connecting…</div>
+    <div id="dpad" aria-label="Movement controls">
+      <button class="dpad-button" data-direction="up" aria-label="Move up">▲</button>
+      <button class="dpad-button" data-direction="left" aria-label="Move left">◀</button>
+      <button class="dpad-button" data-direction="right" aria-label="Move right">▶</button>
+      <button class="dpad-button" data-direction="down" aria-label="Move down">▼</button>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/client.js"></script>
   </body>
