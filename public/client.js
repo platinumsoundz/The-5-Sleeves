@@ -78,6 +78,18 @@ socket.on('disconnect', () => {
   status.classList.add('offline');
 });
 
+joinForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const name = usernameInput.value.trim().replace(/\\s+/g, ' ');
+  if (!name) {
+    nameError.textContent = 'Enter a character name.';
+    return;
+  }
+  nameError.textContent = '';
+  enterButton.disabled = true;
+  socket.emit('player:join', name);
+});
+
 function resizeCanvas() {
   const scale = window.devicePixelRatio || 1;
   canvas.width = Math.floor(window.innerWidth * scale);
