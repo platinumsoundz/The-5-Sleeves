@@ -15,6 +15,7 @@ const projectiles = {};
 let profiles = {};
 let nextProjectileId = 1;
 let lastTick = Date.now();
+let lastProfileSave = Date.now();
 
 try {
   profiles = JSON.parse(fs.readFileSync(PROFILE_FILE, 'utf8'));
@@ -179,7 +180,19 @@ setInterval(() => {
     }
     if (!hit && (now > projectile.expiresAt || projectile.x < 0 || projectile.x > WORLD.width || projectile.y < 0 || projectile.y > WORLD.height)) delete projectiles[id];
   }
-  for (const player of Object.values(players)) persistPlayer(player);
+  if (now - lastProfileSave >= 10000 && Object.keys(players).length > 0) {
+    for (const player of Object.values(players)) {
+      profiles[player.name.toLowerCase()] = {
+        name: player.name,
+        corePoints: player.corePoints,
+        coreCharge: player.coreCharge,
+        maxHp: player.maxHp,
+        updatedAt: new Date().toISOString()
+      };
+    }
+    saveProfiles();
+    lastProfileSave = now;
+  }
   broadcastState();
 }, 1000);
 
