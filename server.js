@@ -347,7 +347,7 @@ io.on('connection', (socket) => {
 
   socket.on('chat:send', (payload) => {
     if (!player || !payload || typeof payload.text !== 'string') return;
-    const text = payload.text.replace(/[\\u0000-\\u001f\\u007f]/g, ' ').trim().slice(0, 240);
+    const text = Array.from(payload.text).filter((character) => { const code = character.charCodeAt(0); return code >= 32 && code !== 127; }).join('').trim().slice(0, 240);
     const channel = payload.channel;
     if (!text) return;
     if (!['global', 'squad', 'faction'].includes(channel)) {
