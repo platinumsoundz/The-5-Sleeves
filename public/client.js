@@ -230,12 +230,12 @@ function pollGamepad() {
   const indices = [...Array(gamepad.buttons.length).keys()];
   const nowPressed = indices.map((index) => isPressed(gamepad, index));
   const edge = (indicesToCheck) => indicesToCheck.some((index) => nowPressed[index] && !previousGamepadButtons[index]);
+  const hasInput = magnitude > 0 || nowPressed.some(Boolean);
+  if (hasInput) setInputMode('controller');
   if (edge([0, 5])) performAction('attack');
   if (edge([2, 4])) performAction('dash');
   if (edge([1, 6])) performAction('shield');
   if (edge([9, 8, 3])) toggleSpecsMenu();
-  const hasInput = magnitude > 0 || nowPressed.some(Boolean);
-  if (hasInput) setInputMode('controller');
   previousGamepadButtons = nowPressed;
 }
 window.addEventListener('gamepadconnected', () => {
@@ -259,6 +259,7 @@ function performAction(action) {
 document.querySelectorAll('.action-button').forEach((button) => {
   button.addEventListener('pointerdown', (event) => {
     event.preventDefault();
+    setInputMode('touch');
     performAction(button.dataset.action);
   });
 });
@@ -313,7 +314,29 @@ function drawHealthBar(player) {
   context.fillStyle = player.hp > 35 ? '#4ef2a1' : '#ff596d';
   context.fillRect(player.x - width / 2, player.y - 30, width * Math.max(0, player.hp / player.maxHp), 5);
 }
-function drawPlayer(player) {
+function drawEnergyParticles(player, time) {
+  const domain = player.energyColor || 'cipher';
+  const drift = domain === 'wind' ? 0.004 : domain === 'fire' ? -0.003 : 0.0018;
+  context.save();
+  context.globalAlpha = 0.78;
+  for (let i = 0; i < 5; i += 1) {
+    const angle = time * drift + i * (Math.PI * 2 / 5);
+    const jitter = domain === 'dark' ? Math.sin(time * 0.045 + i * 17) * 5 : 0;
+    const radius = 20 + Math.sin(time * 0.006 + i * 2) * 3;
+    const px = player.x + Math.cos(angle) * (radius + jitter);
+    const py = player.y + Math.sin(angle) * (radius + jitter);
+    context.fillStyle = player.color;
+    if (domain === 'dark' && i % 2 === 0) context.fillRect(px - 3, py - 3, 6, 6);
+    else {
+      context.beginPath();
+      context.arc(px, py, domain === 'fire' ? 2 + (i % 2) : 2.5, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+  context.restore();
+}
+function drawPlayer(player, time) {
+  drawEnergyParticles(player, time);
   context.shadowBlur = 14;
   context.shadowColor = player.color;
   context.fillStyle = player.color;
@@ -363,6 +386,7 @@ function drawHud() {
 function render(time) {
   const deltaSeconds = Math.min((time - lastFrameTime) / 1000 || 0, 0.05);
   lastFrameTime = time;
+  pollGamepad();
   updateLocalPlayer(deltaSeconds, time);
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -372,7 +396,7 @@ function render(time) {
   context.save();
   context.translate((width - world.width * scale) / 2, (height - world.height * scale) / 2);
   context.scale(scale, scale);
-  drawGrid(); drawCipherCore(time); drawProjectiles(); Object.values(players).forEach(drawPlayer);
+  drawGrid(); drawCipherCore(time); drawProjectiles(); Object.values(players).forEach((player) => drawPlayer(player, time));
   context.restore();
   drawHud();
   requestAnimationFrame(render);
