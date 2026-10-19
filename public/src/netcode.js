@@ -1,4 +1,4 @@
-export function createNetcode(state, callbacks = {}) {
+export function createNetcode(state, callbacks = {}, audio = null) {
   const socketFactory = window.io;
   if (typeof socketFactory !== 'function') throw new Error('Socket.io client did not load.');
   const socket = socketFactory();
@@ -14,8 +14,15 @@ export function createNetcode(state, callbacks = {}) {
   socket.on('join:accepted', (data) => callbacks.joinAccepted?.(data));
   socket.on('name_taken', (data) => callbacks.joinError?.(data?.message || 'Name already taken! Choose another name.'));
   socket.on('name_error', (data) => callbacks.joinError?.(data?.message || 'Enter a valid character name.'));
-  socket.on('players', (players) => {
-    state.players = players || {};
+  socket.on('players', (nextPlayers) => {
+    const previous = state.players || {};
+    for (const [id, player] of Object.entries(nextPlayers || {})) {
+      const before = previous[id];
+      if (!before || id === state.playerId) continue;
+      if (Math.hypot(player.x - before.x, player.y - before.y) > 90) audio?.play('dash');
+      if (player.shieldUntil > before.shieldUntil && player.shieldUntil > Date.now()) audio?.play('shield');
+    }
+    state.players = nextPlayers || {};
     const serverPlayer = state.players[state.playerId];
     if (serverPlayer) {
       if (!state.localPlayer) state.localPlayer = { ...serverPlayer };
@@ -23,7 +30,18 @@ export function createNetcode(state, callbacks = {}) {
       callbacks.playerUpdate?.(state.localPlayer);
     }
   });
-  socket.on('projectiles', (projectiles) => { state.projectiles = projectiles || {}; });
+  socket.on('projectiles', (nextProjectiles) => {
+    const previous = state.projectiles || {};
+    for (const [id, projectile] of Object.entries(nextProjectiles || {})) {
+      if (!previous[id] && projectile.ownerId !== state.playerId) audio?.play('attack');
+    }
+    state.projectiles = nextProjectiles || {};
+  });
+  socket.on('archive:echoes', (echoes) => { state.archiveEchoes = echoes || {}; });
+  socket.on('archive:collected', (data) => {
+    audio?.play('pickup');
+    callbacks.archiveCollected?.(data);
+  });
   socket.on('player:position', (position) => {
     if (state.localPlayer) Object.assign(state.localPlayer, position);
   });
