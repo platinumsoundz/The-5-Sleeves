@@ -95,7 +95,7 @@ canvas.addEventListener('click', (event) => {
   for (const player of Object.values(state.players)) {
     if (player.id === state.playerId) continue;
     const dx = player.x - worldX, dy = player.y - worldY;
-    if (Math.abs(dx) <= 24 && Math.abs(dy) <= 28 && Math.hypot(dx, dy) < nearest) {
+    if (Math.abs(dx) <= 60 && Math.abs(dy) <= 48 && Math.hypot(dx, dy) < nearest) {
       target = player; nearest = Math.hypot(dx, dy);
     }
   }
