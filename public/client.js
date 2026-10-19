@@ -325,7 +325,7 @@ function drawEnergyParticles(player, time) {
     const radius = 20 + Math.sin(time * 0.006 + i * 2) * 3;
     const px = player.x + Math.cos(angle) * (radius + jitter);
     const py = player.y + Math.sin(angle) * (radius + jitter);
-    context.fillStyle = player.color;
+    context.fillStyle = i % 2 === 0 ? player.color : (player.accentColor || player.color);
     if (domain === 'dark' && i % 2 === 0) context.fillRect(px - 3, py - 3, 6, 6);
     else {
       context.beginPath();
@@ -362,7 +362,7 @@ function drawPlayer(player, time) {
 }
 function drawProjectiles() {
   for (const projectile of Object.values(projectiles)) {
-    context.shadowBlur = 18; context.shadowColor = projectile.color;
+    context.shadowBlur = 18; context.shadowColor = projectile.accentColor || projectile.color;
     context.fillStyle = projectile.color || '#d9ffff'; context.beginPath(); context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2); context.fill();
     context.shadowBlur = 0;
   }
