@@ -4,7 +4,21 @@
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
 const status = document.getElementById('status');
+const titleScreen = document.getElementById('title-screen');
+const joinForm = document.getElementById('join-form');
+const usernameInput = document.getElementById('username-input');
+const enterButton = document.getElementById('enter-button');
+const nameError = document.getElementById('name-error');
+const PROFILE_KEY = 'the5sleeves.profile.v1';
 const socket = io();
+
+let savedProfile = {};
+try {
+  savedProfile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {};
+} catch (_) {
+  savedProfile = {};
+}
+if (typeof savedProfile.name === 'string') usernameInput.value = savedProfile.name;
 const MOVE_SPEED = 220;
 const SEND_INTERVAL = 50;
 
@@ -29,9 +43,28 @@ socket.on('server:welcome', ({ message, playerId: id, world: serverWorld, core: 
   core = serverCore || core;
   console.info(message, playerId);
 });
+socket.on('join:accepted', ({ name, stats }) => {
+  savedProfile = { ...savedProfile, name, ...stats };
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(savedProfile)); } catch (_) {}
+  nameError.textContent = '';
+  titleScreen.classList.add('hidden');
+  enterButton.disabled = false;
+  status.textContent = 'Welcome, ' + name;
+});
+socket.on('name_taken', (error) => {
+  nameError.textContent = error.message || 'Name already taken! Choose another name.';
+  enterButton.disabled = false;
+});
+socket.on('name_error', (error) => {
+  nameError.textContent = error.message || 'Please enter a valid character name.';
+  enterButton.disabled = false;
+});
 socket.on('players', (nextPlayers) => {
   players = nextPlayers;
   if (players[playerId]) {
+    const current = players[playerId];
+    savedProfile = { name: current.name, hp: current.hp, maxHp: current.maxHp, coreCharge: current.coreCharge, corePoints: current.corePoints };
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(savedProfile)); } catch (_) {}
     if (!localPlayer) localPlayer = { ...players[playerId] };
     else Object.assign(localPlayer, players[playerId], { x: localPlayer.x, y: localPlayer.y });
   }
