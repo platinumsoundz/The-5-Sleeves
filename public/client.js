@@ -1,407 +1,69 @@
-/* global io */
-'use strict';
+import { CORE_DEFAULT, MOVE_SPEED, SEND_INTERVAL, WORLD_DEFAULT } from './src/config.js';
+import { createInputManager } from './src/inputManager.js';
+import { createNetcode } from './src/netcode.js';
+import { renderFrame } from './src/renderer.js';
+import { createUIManager } from './src/uiManager.js';
 
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
-const status = document.getElementById('status');
-const titleScreen = document.getElementById('title-screen');
-const joinForm = document.getElementById('join-form');
-const usernameInput = document.getElementById('username-input');
-const enterButton = document.getElementById('enter-button');
-const nameError = document.getElementById('name-error');
-const specsButton = document.getElementById('specs-button');
-const characterMenu = document.getElementById('character-menu');
-const menuClose = document.getElementById('menu-close');
-const skillPointsLabel = document.getElementById('skill-points');
-const controlHints = document.getElementById('control-hints');
-const PROFILE_KEY = 'the5sleeves.profile.v1';
-const socket = io();
+const state = {
+  playerId: null,
+  world: WORLD_DEFAULT,
+  core: CORE_DEFAULT,
+  players: {},
+  projectiles: {},
+  localPlayer: null,
+  lastAim: { x: 1, y: 0 }
+};
 
-let savedProfile = {};
-try {
-  savedProfile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {};
-} catch (_) {
-  savedProfile = {};
-}
-if (typeof savedProfile.name === 'string') usernameInput.value = savedProfile.name;
-const MOVE_SPEED = 220;
-const SEND_INTERVAL = 50;
-
-let playerId = null;
-let world = { width: 1000, height: 700 };
-let core = { x: 500, y: 350, radius: 90 };
-let players = {};
-let projectiles = {};
-let localPlayer = null;
-let lastFrameTime = 0;
-let lastSendTime = 0;
-let lastAim = { x: 1, y: 0 };
-const heldDirections = new Set();
-const hasTouchInput = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-let activeInputMode = hasTouchInput ? 'touch' : 'keyboard';
-let previousGamepadButtons = [];
-let currentGamepadVector = { x: 0, y: 0 };
-
-socket.on('connect', () => {
-  status.textContent = 'Connected to the Conduit';
-  status.classList.remove('offline');
+let ui;
+let input;
+const network = createNetcode(state, {
+  status: (message, connected) => ui?.setStatus(message, connected),
+  joinAccepted: (payload) => ui?.joinAccepted(payload),
+  joinError: (message) => ui?.joinError(message),
+  playerUpdate: (player) => ui?.updatePlayer(player)
 });
-socket.on('server:welcome', ({ message, playerId: id, world: serverWorld, core: serverCore }) => {
-  playerId = id;
-  world = serverWorld;
-  core = serverCore || core;
-  console.info(message, playerId);
-});
-socket.on('join:accepted', ({ name, stats }) => {
-  savedProfile = { ...savedProfile, name, ...stats };
-  updateCharacterMenu(players[playerId] || savedProfile);
-  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(savedProfile)); } catch (_) {}
-  nameError.textContent = '';
-  titleScreen.classList.add('hidden');
-  enterButton.disabled = false;
-  status.textContent = 'Welcome, ' + name;
-});
-socket.on('name_taken', (error) => {
-  nameError.textContent = error.message || 'Name already taken! Choose another name.';
-  enterButton.disabled = false;
-});
-socket.on('name_error', (error) => {
-  nameError.textContent = error.message || 'Please enter a valid character name.';
-  enterButton.disabled = false;
-});
-socket.on('players', (nextPlayers) => {
-  players = nextPlayers;
-  if (players[playerId]) {
-    const current = players[playerId];
-    savedProfile = { name: current.name, hp: current.hp, maxHp: current.maxHp, coreCharge: current.coreCharge, corePoints: current.corePoints, skillPoints: current.skillPoints, atk: current.atk, plating: current.plating, overclock: current.overclock, energyColor: current.energyColor };
-    updateCharacterMenu(current);
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(savedProfile)); } catch (_) {}
-    if (!localPlayer) localPlayer = { ...players[playerId] };
-    else Object.assign(localPlayer, players[playerId], { x: localPlayer.x, y: localPlayer.y });
-  }
-});
-socket.on('player:position', (position) => {
-  if (localPlayer) Object.assign(localPlayer, position);
-});
-socket.on('projectiles', (nextProjectiles) => { projectiles = nextProjectiles; });
-socket.on('disconnect', () => {
-  status.textContent = 'Connection lost';
-  status.classList.add('offline');
-});
-
-joinForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const name = usernameInput.value.trim();
-  if (!name) {
-    nameError.textContent = 'Enter a character name.';
-    return;
-  }
-  nameError.textContent = '';
-  enterButton.disabled = true;
-  socket.emit('player:join', name);
-});
-
-function updateCharacterMenu(player) {
-  if (!player) return;
-  const points = Number(player.skillPoints) || 0;
-  skillPointsLabel.textContent = 'Skill Points: ' + points;
-  document.getElementById('atk-level').textContent = 'Lv ' + (player.atk || 0);
-  document.getElementById('plating-level').textContent = 'Lv ' + (player.plating || 0);
-  document.getElementById('overclock-level').textContent = 'Lv ' + (player.overclock || 0);
-  document.querySelectorAll('.upgrade-button').forEach((button) => {
-    button.disabled = points <= 0 || (Number(player[button.dataset.upgrade]) || 0) >= 99;
-  });
-  document.querySelectorAll('.color-option').forEach((button) => {
-    button.classList.toggle('selected', button.dataset.color === player.energyColor);
-  });
-}
-
-function setInputMode(mode) {
-  activeInputMode = mode;
-  document.body.dataset.inputMode = mode;
-  if (mode === 'keyboard') {
-    controlHints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">C</span> Specs';
-  } else if (mode === 'controller') {
-    controlHints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">START / SELECT / Y</span> Specs';
-  } else {
-    controlHints.textContent = '';
-  }
-}
-function toggleSpecsMenu() {
-  if (!players[playerId]) return;
-  const shouldOpen = characterMenu.classList.contains('hidden');
-  if (shouldOpen) updateCharacterMenu(players[playerId]);
-  characterMenu.classList.toggle('hidden', !shouldOpen);
-}
-setInputMode(activeInputMode);
-specsButton.addEventListener('click', toggleSpecsMenu);
-menuClose.addEventListener('click', () => characterMenu.classList.add('hidden'));
-characterMenu.addEventListener('click', (event) => {
-  if (event.target === characterMenu) characterMenu.classList.add('hidden');
-});
-document.querySelectorAll('.upgrade-button').forEach((button) => {
-  button.addEventListener('click', () => socket.emit('player:upgrade', button.dataset.upgrade));
-});
-document.querySelectorAll('.color-option').forEach((button) => {
-  button.addEventListener('click', () => socket.emit('player:color', button.dataset.color));
-});
-
-function resizeCanvas() {
-  const scale = window.devicePixelRatio || 1;
-  canvas.width = Math.floor(window.innerWidth * scale);
-  canvas.height = Math.floor(window.innerHeight * scale);
-  context.setTransform(scale, 0, 0, scale, 0, 0);
-}
-function setDirection(direction, isHeld) {
-  if (isHeld) heldDirections.add(direction);
-  else heldDirections.delete(direction);
-}
-
-document.querySelectorAll('.dpad-button').forEach((button) => {
-  const direction = button.dataset.direction;
-  button.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    setInputMode('touch');
-    button.setPointerCapture(event.pointerId);
-    button.classList.add('active');
-    setDirection(direction, true);
-  });
-  const release = (event) => {
-    if (event) event.preventDefault();
-    button.classList.remove('active');
-    setDirection(direction, false);
-  };
-  button.addEventListener('pointerup', release);
-  button.addEventListener('pointercancel', release);
-  button.addEventListener('lostpointercapture', release);
-});
-
-function moveVector() {
-  if (activeInputMode === 'controller') return { ...currentGamepadVector };
-  let x = (heldDirections.has('right') ? 1 : 0) - (heldDirections.has('left') ? 1 : 0);
-  let y = (heldDirections.has('down') ? 1 : 0) - (heldDirections.has('up') ? 1 : 0);
-  const length = Math.hypot(x, y);
-  if (length > 1) { x /= length; y /= length; }
-  return { x, y };
-}
-
-const keyMap = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
-window.addEventListener('keydown', (event) => {
-  if (event.target && event.target.closest('input, textarea')) return;
-  const direction = keyMap[event.key];
-  if (direction) {
-    setInputMode('keyboard');
-    event.preventDefault();
-    setDirection(direction, true);
-  }
-  if (event.code === 'Space') { setInputMode('keyboard'); event.preventDefault(); if (!event.repeat) performAction('attack'); }
-  if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') { setInputMode('keyboard'); event.preventDefault(); if (!event.repeat) performAction('dash'); }
-  if (event.code === 'KeyE') { setInputMode('keyboard'); if (!event.repeat) performAction('shield'); }
-  if (event.code === 'KeyC') { setInputMode('keyboard'); if (!event.repeat) toggleSpecsMenu(); }
-  if (event.code === 'Escape' && !characterMenu.classList.contains('hidden')) characterMenu.classList.add('hidden');
-});
-window.addEventListener('keyup', (event) => {
-  const direction = keyMap[event.key];
-  if (direction) { setInputMode('keyboard'); event.preventDefault(); setDirection(direction, false); }
-});
-
-function isPressed(gamepad, index) {
-  const button = gamepad.buttons[index];
-  return !!button && (button.pressed || button.value > 0.5);
-}
-function pollGamepad() {
-  if (!navigator.getGamepads) return;
-  const pads = navigator.getGamepads();
-  const gamepad = Array.from(pads).find((pad) => pad && pad.connected);
-  if (!gamepad) { currentGamepadVector = { x: 0, y: 0 }; return; }
-
-  let x = gamepad.axes[0] || 0;
-  let y = gamepad.axes[1] || 0;
-  if (Math.abs(x) < 0.18) x = 0;
-  if (Math.abs(y) < 0.18) y = 0;
-  const left = isPressed(gamepad, 14), right = isPressed(gamepad, 15);
-  const up = isPressed(gamepad, 12), down = isPressed(gamepad, 13);
-  if (left || right) x = (right ? 1 : 0) - (left ? 1 : 0);
-  if (up || down) y = (down ? 1 : 0) - (up ? 1 : 0);
-  const magnitude = Math.hypot(x, y);
-  if (magnitude > 1) { x /= magnitude; y /= magnitude; }
-  currentGamepadVector = { x, y };
-
-  const indices = [...Array(gamepad.buttons.length).keys()];
-  const nowPressed = indices.map((index) => isPressed(gamepad, index));
-  const edge = (indicesToCheck) => indicesToCheck.some((index) => nowPressed[index] && !previousGamepadButtons[index]);
-  const hasInput = magnitude > 0 || nowPressed.some(Boolean);
-  if (hasInput) setInputMode('controller');
-  if (edge([0, 5])) performAction('attack');
-  if (edge([2, 4])) performAction('dash');
-  if (edge([1, 6])) performAction('shield');
-  if (edge([9, 8, 3])) toggleSpecsMenu();
-  previousGamepadButtons = nowPressed;
-}
-window.addEventListener('gamepadconnected', () => {
-  previousGamepadButtons = [];
-  setInputMode('controller');
-  status.textContent = 'Controller connected';
-});
-window.addEventListener('gamepaddisconnected', () => {
-  previousGamepadButtons = [];
-  currentGamepadVector = { x: 0, y: 0 };
-  const anotherPad = navigator.getGamepads && Array.from(navigator.getGamepads()).some((pad) => pad && pad.connected);
-  if (!anotherPad) setInputMode(hasTouchInput ? 'touch' : 'keyboard');
-  status.textContent = 'Controller disconnected';
+ui = createUIManager({
+  join: (name) => network.join(name),
+  upgrade: (stat) => network.upgrade(stat),
+  selectDomain: (domain) => network.selectDomain(domain),
+  toggleMenu: (open) => ui.toggleMenu(open),
+  getPlayer: () => state.players[state.playerId]
 });
 
 function performAction(action) {
-  if (action === 'attack') socket.emit('player:attack', moveVector().x || moveVector().y ? moveVector() : lastAim);
-  if (action === 'dash') socket.emit('player:dash', moveVector().x || moveVector().y ? moveVector() : lastAim);
-  if (action === 'shield') socket.emit('player:shield');
+  const direction = input?.vector() || state.lastAim;
+  const aim = direction.x || direction.y ? direction : state.lastAim;
+  network.action(action, aim);
 }
-document.querySelectorAll('.action-button').forEach((button) => {
-  button.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    setInputMode('touch');
-    performAction(button.dataset.action);
-  });
+input = createInputManager({
+  onAction: performAction,
+  onMenu: (open) => ui.toggleMenu(open),
+  onMode: (mode) => ui.setInputMode(mode)
 });
 
-function updateLocalPlayer(deltaSeconds, time) {
-  if (!localPlayer) return;
-  const direction = moveVector();
-  if (!direction.x && !direction.y) return;
-  lastAim = direction;
-  localPlayer.x = Math.max(20, Math.min(world.width - 20, localPlayer.x + direction.x * MOVE_SPEED * deltaSeconds));
-  localPlayer.y = Math.max(20, Math.min(world.height - 20, localPlayer.y + direction.y * MOVE_SPEED * deltaSeconds));
-  players[playerId] = localPlayer;
-  if (time - lastSendTime >= SEND_INTERVAL) {
-    socket.emit('player:move', { x: localPlayer.x, y: localPlayer.y });
-    lastSendTime = time;
-  }
-}
+let lastFrame = 0;
+let lastPositionSend = 0;
+function frame(time) {
+  const dt = Math.min((time - lastFrame) / 1000 || 0, 0.05);
+  lastFrame = time;
+  input.update();
 
-function drawGrid() {
-  context.strokeStyle = 'rgba(89, 151, 182, 0.16)';
-  context.lineWidth = 1;
-  for (let x = 0; x <= world.width; x += 40) { context.beginPath(); context.moveTo(x, 0); context.lineTo(x, world.height); context.stroke(); }
-  for (let y = 0; y <= world.height; y += 40) { context.beginPath(); context.moveTo(0, y); context.lineTo(world.width, y); context.stroke(); }
-}
-
-function drawCipherCore(time) {
-  const pulse = 1 + Math.sin(time / 500) * 0.08;
-  context.beginPath();
-  context.arc(core.x, core.y, core.radius, 0, Math.PI * 2);
-  context.fillStyle = 'rgba(38, 220, 197, .08)';
-  context.fill();
-  context.setLineDash([9, 7]);
-  context.strokeStyle = 'rgba(94,255,222,.55)';
-  context.lineWidth = 2;
-  context.stroke();
-  context.setLineDash([]);
-  const glow = context.createRadialGradient(core.x, core.y, 8, core.x, core.y, 110 * pulse);
-  glow.addColorStop(0, 'rgba(176,255,241,.9)');
-  glow.addColorStop(.25, 'rgba(59,224,208,.35)');
-  glow.addColorStop(1, 'rgba(59,224,208,0)');
-  context.fillStyle = glow;
-  context.beginPath(); context.arc(core.x, core.y, 110 * pulse, 0, Math.PI * 2); context.fill();
-  context.fillStyle = '#72ffe2'; context.beginPath(); context.arc(core.x, core.y, 20 * pulse, 0, Math.PI * 2); context.fill();
-  context.fillStyle = '#edfffb'; context.beginPath(); context.arc(core.x, core.y, 8, 0, Math.PI * 2); context.fill();
-  context.fillStyle = '#c7fff4'; context.font = 'bold 14px system-ui'; context.textAlign = 'center';
-  context.fillText('CIPHER CORE', core.x, core.y + core.radius + 20);
-}
-
-function drawHealthBar(player) {
-  const width = 42;
-  context.fillStyle = '#311923'; context.fillRect(player.x - width / 2, player.y - 30, width, 5);
-  context.fillStyle = player.hp > 35 ? '#4ef2a1' : '#ff596d';
-  context.fillRect(player.x - width / 2, player.y - 30, width * Math.max(0, player.hp / player.maxHp), 5);
-}
-function drawEnergyParticles(player, time) {
-  const domain = player.energyColor || 'cipher';
-  const drift = domain === 'wind' ? 0.004 : domain === 'fire' ? -0.003 : 0.0018;
-  context.save();
-  context.globalAlpha = 0.78;
-  for (let i = 0; i < 5; i += 1) {
-    const angle = time * drift + i * (Math.PI * 2 / 5);
-    const jitter = domain === 'dark' ? Math.sin(time * 0.045 + i * 17) * 5 : 0;
-    const radius = 20 + Math.sin(time * 0.006 + i * 2) * 3;
-    const px = player.x + Math.cos(angle) * (radius + jitter);
-    const py = player.y + Math.sin(angle) * (radius + jitter);
-    context.fillStyle = i % 2 === 0 ? player.color : (player.accentColor || player.color);
-    if (domain === 'dark' && i % 2 === 0) context.fillRect(px - 3, py - 3, 6, 6);
-    else {
-      context.beginPath();
-      context.arc(px, py, domain === 'fire' ? 2 + (i % 2) : 2.5, 0, Math.PI * 2);
-      context.fill();
+  const direction = input.vector();
+  const player = state.localPlayer;
+  if (player && player.hp > 0 && (direction.x || direction.y)) {
+    state.lastAim = { ...direction };
+    player.x = Math.max(20, Math.min(state.world.width - 20, player.x + direction.x * MOVE_SPEED * dt));
+    player.y = Math.max(20, Math.min(state.world.height - 20, player.y + direction.y * MOVE_SPEED * dt));
+    state.players[state.playerId] = player;
+    if (time - lastPositionSend >= SEND_INTERVAL) {
+      network.move(player.x, player.y);
+      lastPositionSend = time;
     }
   }
-  context.restore();
-}
-function drawPlayer(player, time) {
-  drawEnergyParticles(player, time);
-  context.shadowBlur = 14;
-  context.shadowColor = player.color;
-  context.fillStyle = player.color;
-  context.fillRect(player.x - 12, player.y - 12, 24, 24);
-  context.shadowBlur = 0;
-  context.strokeStyle = player.id === playerId ? '#ffffff' : '#07121a';
-  context.lineWidth = 3; context.strokeRect(player.x - 12, player.y - 12, 24, 24);
-  if (Date.now() < player.shieldUntil) {
-    context.beginPath(); context.arc(player.x, player.y, 23, 0, Math.PI * 2);
-    context.strokeStyle = '#7bd8ff'; context.lineWidth = 3; context.stroke();
-  }
-  drawHealthBar(player);
-  context.fillStyle = '#ffffff'; context.font = '12px system-ui'; context.textAlign = 'center';
-  context.fillText(player.id === playerId ? 'You' : player.name, player.x, player.y - 37);
-  if (player.inCore) {
-    context.fillStyle = '#70ffe1'; context.font = '10px system-ui';
-    context.fillText('CHARGING ' + Math.floor(player.coreCharge) + '%  •  ' + player.corePoints + ' pts', player.x, player.y + 29);
-  }
-  if (player.hp <= 0) {
-    context.fillStyle = 'rgba(0,0,0,.7)'; context.fillRect(player.x - 14, player.y - 14, 28, 28);
-    context.fillStyle = '#ff9eaa'; context.fillText('DOWN', player.x, player.y + 28);
-  }
-}
-function drawProjectiles() {
-  for (const projectile of Object.values(projectiles)) {
-    context.shadowBlur = 18; context.shadowColor = projectile.accentColor || projectile.color;
-    context.fillStyle = projectile.color || '#d9ffff'; context.beginPath(); context.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2); context.fill();
-    context.shadowBlur = 0;
-  }
-}
-function drawHud() {
-  const me = players[playerId] || localPlayer;
-  if (!me) return;
-  context.save();
-  context.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  const x = 12;
-  const y = 56;
-  const width = Math.min(190, window.innerWidth - 24);
-  context.fillStyle = 'rgba(8,18,31,.78)'; context.fillRect(x, y, width, 45);
-  context.fillStyle = '#f25d75'; context.fillRect(x + 8, y + 8, (width - 16) * Math.max(0, me.hp / me.maxHp), 10);
-  context.fillStyle = '#fff'; context.font = '11px system-ui'; context.textAlign = 'left';
-  context.fillText('HP ' + Math.ceil(me.hp) + '/' + me.maxHp, x + 8, y + 31);
-  context.fillStyle = '#61ffe0'; context.fillText('CORE ' + Math.floor(me.coreCharge) + '%  •  ' + me.corePoints + ' pts', x + 82, y + 31);
-  context.restore();
+  renderFrame(canvas, context, state, time);
+  requestAnimationFrame(frame);
 }
 
-function render(time) {
-  const deltaSeconds = Math.min((time - lastFrameTime) / 1000 || 0, 0.05);
-  lastFrameTime = time;
-  pollGamepad();
-  updateLocalPlayer(deltaSeconds, time);
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  context.clearRect(0, 0, width, height);
-  context.fillStyle = '#09111f'; context.fillRect(0, 0, width, height);
-  const scale = Math.min(width / world.width, height / world.height, 1);
-  context.save();
-  context.translate((width - world.width * scale) / 2, (height - world.height * scale) / 2);
-  context.scale(scale, scale);
-  drawGrid(); drawCipherCore(time); drawProjectiles(); Object.values(players).forEach((player) => drawPlayer(player, time));
-  context.restore();
-  drawHud();
-  requestAnimationFrame(render);
-}
-
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-requestAnimationFrame(render);
+requestAnimationFrame(frame);
