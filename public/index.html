@@ -52,6 +52,11 @@
       .color-option::before { content:''; display:inline-block; width:12px; height:12px; margin-right:8px; border-radius:50%; background:var(--swatch); vertical-align:-1px; }
       .color-option.selected { border-color:#8ffff0; box-shadow:0 0 12px rgba(90,255,221,.25); }
       #menu-hint { margin-top:15px; color:#86a4ae; font-size:12px; }
+      #control-hints { display:none; position:fixed; z-index:2; right:12px; bottom:max(18px,env(safe-area-inset-bottom)); padding:10px 13px; max-width:calc(100vw - 24px); border:1px solid rgba(104,237,215,.45); border-radius:10px; background:rgba(5,18,29,.88); color:#d9fff7; font-size:12px; line-height:1.8; text-align:right; pointer-events:none; }
+      body[data-input-mode="keyboard"] #control-hints, body[data-input-mode="controller"] #control-hints { display:block; }
+      body[data-input-mode="keyboard"] #dpad, body[data-input-mode="keyboard"] #actions, body[data-input-mode="controller"] #dpad, body[data-input-mode="controller"] #actions { display:none; }
+      .control-badge { display:inline-block; padding:1px 5px; border:1px solid #54aeaa; border-radius:5px; color:#8dffe7; font-weight:800; }
+      .domain-option { text-align:left; font-size:12px; line-height:1.4; }
     </style>
   </head>
   <body>
@@ -67,6 +72,7 @@
       </form>
     </div>
     <div id="status" class="offline">Connecting…</div>
+    <div id="control-hints" aria-live="polite"></div>
     <button id="specs-button" type="button">SPECS / SKILLS</button>
     <section id="character-menu" class="hidden" aria-modal="true" role="dialog" aria-labelledby="menu-title">
       <div class="menu-panel">
@@ -77,10 +83,12 @@
         <div class="skill-row"><div><strong>Overclock (SPD)</strong><small>Dash and Shield cooldowns −10% per level</small></div><span class="skill-level" id="overclock-level">Lv 0</span><button class="upgrade-button" data-upgrade="overclock" type="button" aria-label="Upgrade Overclock">+</button></div>
         <h3 class="menu-section-title">SLEEVE ENERGY COLOR</h3>
         <div id="color-options">
-          <button class="color-option" data-color="azure" style="--swatch:#43b9ff" type="button">Azure Blue</button>
-          <button class="color-option" data-color="emerald" style="--swatch:#45f29a" type="button">Emerald Green</button>
-          <button class="color-option" data-color="crimson" style="--swatch:#ff536b" type="button">Crimson Red</button>
-          <button class="color-option" data-color="violet" style="--swatch:#c875ff" type="button">Violet Void</button>
+          <button class="color-option domain-option" data-color="cipher" style="--swatch:#39d8cf" type="button">Cipher Sleeve<br /><small>(Ajaye's Beta)</small></button>
+          <button class="color-option domain-option" data-color="wind" style="--swatch:#52e787" type="button">Wind Domain<br /><small>(Korb's Sleeve)</small></button>
+          <button class="color-option domain-option" data-color="water" style="--swatch:#1687f8" type="button">Water Domain<br /><small>(Tide)</small></button>
+          <button class="color-option domain-option" data-color="fire" style="--swatch:#ff602e" type="button">Fire Domain</button>
+          <button class="color-option domain-option" data-color="earth" style="--swatch:#cc843e" type="button">Earth Domain</button>
+          <button class="color-option domain-option" data-color="dark" style="--swatch:#bd38f5" type="button">Dark Spirit<br /><small>(6th Extension / Void)</small></button>
         </div>
         <div id="menu-hint">Earn a Skill Point each time you score at the Cipher Core.</div>
       </div>
