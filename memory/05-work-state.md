@@ -17,8 +17,9 @@ Last updated: 2026-10-19 (foundation chapter split).
 - 2 commits ahead of origin after the rebuild; **push regularly** and push
   soon so a local loss cannot repeat this.
 - Commit style: imperative summary line + bullet body explaining the system.
-- `npm test` now runs with `--test-concurrency=4`; uncapped parallel test
-  files oversubscribe the device and flake the respawn test.
+- `npm test` runs test files serially (`--test-concurrency=1`). Parallel
+  servers oversubscribe this device and make warden/respawn tests flake;
+  serial runs take about a minute and are reliable.
 
 ## Done (committed)
 
