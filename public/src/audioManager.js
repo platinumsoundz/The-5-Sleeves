@@ -52,6 +52,20 @@ export function createAudioManager(toggleButton) {
       tone(context, 740, now, 0.24, 'sine', 0.12, 1120);
       tone(context, 1110, now + 0.09, 0.3, 'sine', 0.09, 1480);
     }
+    if (effect === 'hit') {
+      tone(context, 320, now, 0.09, 'square', 0.1, 180);
+      tone(context, 960, now, 0.05, 'triangle', 0.05, 620);
+    }
+    if (effect === 'hurt') {
+      tone(context, 180, now, 0.18, 'sawtooth', 0.09, 90);
+    }
+    if (effect === 'capture') {
+      tone(context, 520, now, 0.4, 'triangle', 0.1, 900);
+      tone(context, 780, now + 0.12, 0.42, 'sine', 0.08, 1180);
+    }
+    if (effect === 'levelup') {
+      [523, 659, 784, 1046].forEach((frequency, index) => tone(context, frequency, now + index * 0.1, 0.36, 'triangle', 0.1));
+    }
   }
   function updateButton() {
     if (!toggleButton) return;

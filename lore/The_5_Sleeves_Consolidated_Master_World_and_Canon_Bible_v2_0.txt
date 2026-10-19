@@ -1,0 +1,1027 @@
+THE 5 SLEEVES CONSOLIDATED MASTER WORLD & CANON BIBLE Version 2.0 —
+Revised Working Canon Prepared: 14 October 2026
+
+PURPOSE This document consolidates the current worldbuilding rules,
+technology rules, spirit and ability mechanics, character continuity,
+timeline, established story events, and unresolved mysteries for The 5
+Sleeves. It replaces the previous Worldbuilding Bible as the primary
+world-and-canon reference once the project owner approves this version.
+
+This is a living reference. Its job is to prevent contradictions, not to
+silently invent answers. Existing source material and the project
+owner’s explicit decisions remain authoritative. If a point is not
+decided, it is labelled OPEN. If a point is a proposed explanation
+rather than a confirmed fact, it is labelled WORKING INTERPRETATION or
+PROPOSED CANON.
+
+IMPORTANT SOURCE AND STATUS RULES • ESTABLISHED CANON: directly stated
+in the source material or explicitly approved by the project owner. •
+WORKING INTERPRETATION: a practical reading of existing material, used
+to keep scenes coherent but not to close an open mystery. • PROPOSED
+CANON: a new rule or clarification discussed and accepted as a
+direction, but not necessarily yet checked against every older source or
+page. • OPEN: deliberately undecided. Do not invent a definitive answer
+or present it as known. • DRAFT: an unapproved generated image, prompt,
+page, scene, or idea. It is not canon until approved. • REJECTED:
+material the project owner has rejected. Do not reuse it as continuity.
+
+When sources conflict, do not silently merge them. Identify the exact
+conflict and ask the project owner to decide. Newer explicit decisions
+from the project owner take priority over older draft wording, but
+visual identity remains governed by approved character reference sheets.
+
+CONTENTS 1. Core premise and themes 2. Master timeline 3. The two
+catastrophes and the state of the world 4. Everyday life, survival,
+resources, and travel 5. Sleeves: consumer devices and ancient
+technology 6. Power, energy, hosts, and physical limits 7. Cipher and
+the Spirit Link 8. The spirits and their agency 9. The five identities,
+domains, and the sixth Dark spirit 10. The 25 original modules and the
+secret extensions 11. Module acquisition, transfer, and use 12. Towers
+and environmental systems 13. Artificial intelligence, virus, and
+antivirus 14. Character continuity 15. Current story events and
+continuity anchors 16. Five-book saga: high-level continuity only 17.
+Visual and production canon 18. Rules for writing and adapting scenes
+19. Open decisions and mysteries 20. Canon change log
+
+1.  CORE PREMISE AND THEMES
+
+The 5 Sleeves is a near-future science-fiction/fantasy saga set around
+2036, roughly five years after a modern collapse and ten years after
+commercial Sleeves launch. Everyday life should remain recognisably
+close to contemporary life. Extraordinary capability is concentrated in
+specialised Sleeve technology, ancient towers, spirit-linked modules,
+and remnants of an advanced civilisation.
+
+The world is not a generic far-future cyberpunk setting. People still
+repair household equipment, grow food, trade, argue, joke, raise
+families, use familiar vehicles and devices, and improvise with salvaged
+parts. What has changed is the reliability of infrastructure, the
+availability of knowledge, the condition of the environment, and the
+difficulty of reproducing complex technology.
+
+Core themes: • Technology can amplify human capability, but it cannot
+remove every human limit. • A society can become vulnerable when it
+loses the knowledge, independence, practical skills, and judgement
+needed to maintain its systems. • Power requires control, practice,
+responsibility, and sometimes cooperation. • Intelligent spirits are
+people-like agents with their own identities and choices, not tools that
+automatically obey. • Restoring a system is not automatically the same
+as making the world better. • A solution that depends on total control
+may repeat the very failures it claims to prevent. • Ajaye’s practical
+ingenuity matters because he experiments, repairs, learns, and
+adapts—not because he has instant answers.
+
+2.  MASTER TIMELINE
+
+ANCIENT PAST — EXACT DATE OPEN An earlier civilisation experiences a
+catastrophe. The towers become essential to restoring, regulating, or
+maintaining systems damaged by that catastrophe. The precise cause of
+the ancient catastrophe, the original purpose and full operation of the
+towers, and the creation dates of the original AI and spirits remain
+unresolved.
+
+BEFORE OCTOBER 2026 Apple and Samsung have secretly developed commercial
+Sleeve products over a period of years. The products are intended as
+advanced everyday personal devices, combining functions associated with
+phones and watches. Their precise technical relationship to the ancient
+ability-bearing Sleeve system is OPEN.
+
+14 OCTOBER 2026 — PROVISIONAL DATE ANCHOR Commercial Sleeves launch
+successfully. This is a working timeline anchor derived from the earlier
+source, not a requirement to display the date on-page.
+
+AROUND 2031 A modern catastrophe occurs after several years of
+widespread dependence on AI, cloud infrastructure, connected systems,
+and increasingly automated services. Tower-system failure is a central
+part of the disaster. Infrastructure, communications, manufacturing,
+environmental protections, and access to digital information are
+disrupted. The exact causal chain—including the roles and timing of the
+virus, tower failure, cloud/AI outages, and social breakdown—remains
+OPEN.
+
+AROUND 2036 Ajaye’s story begins approximately five years after the
+modern collapse. The world remains recognisably contemporary in many
+ways, but surviving technology is patched, infrastructure is unreliable,
+specialist knowledge and parts are scarce, and environmental dangers
+have returned in some regions.
+
+3.  THE TWO CATASTROPHES AND THE STATE OF THE WORLD
+
+3.1 The ancient catastrophe ESTABLISHED: • A catastrophe affected an
+earlier civilisation. • The towers had a meaningful purpose in the
+aftermath; they are not arbitrary dungeons. • The tower network is
+connected to systems that matter to environmental stability and
+recovery.
+
+OPEN: • What caused the ancient catastrophe. • What exact environmental
+or planetary systems the towers originally maintained. • Whether the
+original AI and spirits were created before or after the catastrophe. •
+How much the modern population knows about the ancient civilisation. •
+Whether the ancient catastrophe and modern collapse are directly related
+beyond the tower network’s role.
+
+Continuity rule: keep the ancient catastrophe distinct from the modern
+collapse unless a scene has evidence to connect them.
+
+3.2 The modern catastrophe ESTABLISHED: • The modern catastrophe occurs
+around 2031. • Society is heavily reliant on AI, cloud infrastructure,
+connected systems, and technology whose maintenance knowledge has become
+concentrated or inaccessible. • Tower-system failure is associated with
+the disaster. • The failure of infrastructure and environmental
+protections makes survival harder. • Some digital knowledge becomes
+inaccessible or is permanently lost.
+
+WORKING INTERPRETATION: Tower failure, Darkness-related corruption, and
+wider infrastructure collapse are connected, but the exact order of
+events must not be asserted until deliberately established.
+
+3.3 Why knowledge and infrastructure are lost • Much modern information
+is stored in cloud services, digital archives, and device-bound data
+rather than accessible paper records. • Cloud outages, corrupted
+systems, destroyed devices, power failures, and loss of communications
+make records inaccessible. • Data may survive on a module or device, but
+people may lack power, compatible software, permissions, interfaces,
+specialist tools, or the knowledge to retrieve it. • Supply chains and
+manufacturing degrade. Knowing what a machine does is not enough if its
+components cannot be reproduced. • Humanity has not become biologically
+less intelligent. It has lost access to information, institutions,
+specialist equipment, stable education systems, and practical skills at
+scale. • A cloud outage alone would not erase all knowledge. The story’s
+collapse also affects physical infrastructure, archives, manufacturing,
+education, power, communications, and the ability to operate complex
+systems.
+
+3.4 Environmental decline and clean-air zones ESTABLISHED: • When tower
+systems fail, environmental problems—including effects associated with
+global warming—begin to reassert themselves. • Some heavily populated
+regions have air unsafe to breathe without protection. • Clean-air zones
+protect populations in the most affected cities or areas.
+
+OPEN: • The precise technology maintaining clean-air zones after the
+collapse. • How zones are bounded, entered, powered, repaired, and
+policed. • How long people can safely remain outside them. • Which
+regions are most dangerous and how weather changes risk.
+
+Continuity rules: • Do not portray every outdoor location as instantly
+unbreathable. • Environmental conditions vary by region and weather. •
+Establish protection, filter use, route warnings, and exposure risk when
+relevant to the scene. • Crops, water, livestock, and wildlife may show
+uneven and recent signs of environmental instability. These are not
+automatically settled new biology; people may not know whether the
+changes will persist, spread, or disappear. • Most mutations associated
+with the earlier crisis had faded or been reduced while the towers
+stabilised the planet; the modern decline may be allowing unusual signs
+to return, but exact biology remains OPEN.
+
+4.  EVERYDAY LIFE, SURVIVAL, RESOURCES, AND TRAVEL
+
+4.1 Everyday life around 2036 The world should still contain families,
+markets, repair stalls, workshops, farms, fishing, livestock, dogs,
+ordinary homes, patched phones, laptops, cameras, familiar clothing,
+conventional vehicles, and community services. Survivors have not
+abandoned ordinary life; they have adapted it to unreliable
+infrastructure.
+
+Everyday technology may be modestly more advanced than 2026, but the
+world should not be filled with ubiquitous holograms, effortless flying
+cars, or futuristic technology that contradicts scarcity.
+
+4.2 Supplies must have credible sources Significant resources should
+come from a plausible source: • Food and clean water: carried stock,
+farming, fishing, rationing, scavenging, trade, settlement access, or a
+shown source. • Tools and replacement parts: salvage, barter, a
+workshop, a prior established cache, or a specific discovery. • Power
+and charging: a functioning source that exists in the scene or has
+already been established. • Medical items, filters, clean-air
+protection, and protective equipment: establish source and condition
+when survival depends on them. • Information: a person, surviving
+record, module, functioning terminal, spirit, or demonstrated inference.
+
+Do not obsessively track every minor item, but do not let a
+plot-critical item appear without being obtained, carried, traded for,
+earned, or discovered.
+
+There are no routine deliveries across wastelands. Any later help from
+home or a distant ally must be a specific event with a credible method
+and meaningful constraints.
+
+4.3 Travel has a cost Characters may walk, cycle, use rentable scooters
+or hover-assisted scooters on suitable routes, travel in shared utility
+vehicles, boats, ferries, cargo lifts, or repaired public transit. The
+availability of transport depends on location and local systems. Battery
+range, terrain, weather, charging, tolls, maintenance, spare parts, and
+route safety matter.
+
+Do not teleport between major locations. Show enough of each important
+journey to make its cost, distance, weather, fatigue, navigation, and
+decisions feel real.
+
+4.4 Resource continuity Track significant changes in supplies,
+equipment, batteries, filters, injuries, tools, and transport across
+scenes. Resources do not need a ledger in every panel, but consequences
+should be visible after major action scenes: pain, broken equipment,
+repair costs, fear, conflict, gratitude, or a changed reputation.
+
+5.  SLEEVES: CONSUMER DEVICES AND ANCIENT TECHNOLOGY
+
+5.1 Commercial Sleeves Commercial Sleeves launched in 2026 after years
+of secret development by Apple and Samsung. They became highly popular
+before the modern collapse. Survivors continue using existing devices
+after the collapse, even though advanced manufacturing and repairs are
+difficult.
+
+Commercial Sleeves are ordinary consumer devices. Their exact
+relationship to the ancient ability-bearing Sleeve system remains OPEN.
+Do not automatically treat a consumer Sleeve and an ancient
+spirit-linked Sleeve as the same technology.
+
+5.2 Ajaye’s beta Cipher Sleeve Ajaye discovers an ancient beta Sleeve
+associated with Cipher. It bonds to his arm and gives him access to
+technology that ordinary consumer Sleeves cannot readily access. Its
+unfinished or unusual beta architecture is important to Ajaye’s story
+and his ability to customise it.
+
+Visual continuity rule: Ajaye’s green Cipher Sleeve is worn on ONE arm
+only, as shown in the approved character reference and current approved
+continuity. Never duplicate it on both arms. Use the exact arm shown in
+the approved visual reference; do not flip or mirror the design to fit a
+composition.
+
+Ajaye’s Sleeve should not be treated as a magic object that can do
+anything. It has limited access, incomplete functions, dependencies, and
+unknowns. Its interface and appearance must remain consistent across
+pages.
+
+5.3 Ajaye as a fixer and technologist ESTABLISHED CHARACTER DIRECTION:
+Ajaye likes fixing things and is exceptionally good with technology. His
+intelligence should be shown through practical action: observing a
+failure, testing a theory, repairing a component, improvising a tool,
+learning from a mistake, or modifying a system. He learns best through
+demonstration, can rush ahead, and sometimes treats people like pieces
+in a puzzle.
+
+PROPOSED CANON: Because the Cipher Sleeve is a beta device, Ajaye can
+customise and improve it as his journey progresses. The beta design
+exposes interfaces, unfinished software, diagnostic pathways, and
+undocumented functions that ordinary consumer devices do not expose.
+
+His customisations may gradually improve: • Diagnostics and system
+visibility. • Energy management and efficiency. • Sensor interpretation.
+• Physical interfaces and adapters. • Communication with compatible
+devices and ancient systems. • Organisation, installation, testing, and
+switching between recovered modules. • The tools Cipher can use to
+investigate or interact with systems.
+
+Limits: • Ajaye needs parts, tools, time, physical access, data, and
+testing opportunities. • A theoretically correct application may fail if
+the hardware, permissions, credentials, interface, energy, or connection
+are missing. • A modification may fail, overheat, misread data, or
+create an unexpected side effect. • Cipher may help analyse or develop
+software, but Ajaye’s hands-on engineering and practical decisions
+remain essential. • Upgrades can improve efficiency or access; they
+cannot grant unlimited energy, erase every human limitation, or bypass
+every system restriction. • Do not introduce a major new Sleeve upgrade
+without showing or establishing how Ajaye obtained the knowledge, parts,
+access, and opportunity to build it.
+
+6.  POWER, ENERGY, HOSTS, AND PHYSICAL LIMITS
+
+This section incorporates the newly agreed working rules for Sleeve
+power and host condition.
+
+6.1 The three connected factors A Sleeve’s operation depends on three
+related but distinct factors: 1. INTERNAL ENERGY: the device has a
+finite energy reserve. 2. HOST CONDITION: demanding spirit-linked
+functions may place demands on the host’s physical and mental capacity.
+3. SPIRIT ACTIVITY: a spirit has its own intelligence and agency, but
+its ability to act through the Sleeve is constrained by energy,
+interfaces, permissions, connection quality, and host condition.
+
+These factors are related, but they are not interchangeable. Charging a
+Sleeve does not automatically restore a tired host. Sleeping helps a
+host recover, but does not necessarily recharge a depleted device.
+
+6.2 Internal energy PROPOSED CANON: Every Sleeve has a finite internal
+energy reserve. It can support ordinary functions without constantly
+exhausting its host. Demanding powers and intensive spirit-linked
+operations consume more resources and may also place demands on the
+host.
+
+The precise energy technology, capacity, charging rate, battery
+chemistry, and numerical measurements remain OPEN. Avoid assigning exact
+percentages, hours, or energy units until the system is deliberately
+defined.
+
+If the reserve becomes critically low: • Nonessential functions are
+reduced or shut down first. • Demanding scans and operations are
+throttled or suspended. • Essential monitoring and an existing Spirit
+Link are prioritised when possible. • If the reserve is fully depleted,
+even essential functions may eventually fail until power is restored.
+
+Do not portray unlimited operation or instant recharging unless the
+story establishes a specific mechanism and cost.
+
+6.3 Host condition ESTABLISHED: The Sleeve is connected to its host and
+can respond to the host’s condition. Ability performance depends on the
+user’s mental and physical capacity, including focus, emotional
+regulation, awareness, endurance, coordination, fatigue, and ability to
+tolerate exertion.
+
+A Sleeve may warn the host, regulate output, limit a manoeuvre, or
+interrupt an unsafe action. Exact safeguards depend on the function and
+remain to be specified.
+
+Physical and mental costs should be consistent, not appear only when the
+plot needs a limitation. Skill improves efficiency and control but does
+not erase the defined cost of a powerful or prolonged action.
+
+6.4 Unconsciousness and sleep PROPOSED CANON — APPROVED DIRECTION: Ajaye
+becoming unconscious does NOT automatically make Cipher unconscious.
+Cipher remains aware but enters a restricted operating state because the
+host connection is compromised and demanding operations are no longer
+safe or sustainable.
+
+While Ajaye is asleep: • Cipher may maintain low-demand background
+functions and the Spirit Link, subject to available energy and
+connection quality. • Intensive scans, software development, or
+high-demand system operations may be paused or throttled. • Ordinary
+sleep does not automatically cut the Spirit Link.
+
+While Ajaye is unconscious: • Cipher enters RESTRICTED MODE. • It
+prioritises maintaining the Spirit Link and essential monitoring where
+resources permit. • Basic communication, spirit identification, and
+essential status information may remain available, subject to energy,
+access, and connection quality. • Complex app development, extensive
+scans, and demanding system operations are suspended or heavily
+restricted. • Cipher can attempt to warn others or protect Ajaye in ways
+its current access and energy allow. • Emergency autonomy is possible in
+a genuine life-threatening situation, but it is temporary, consumes
+additional resources, and may have consequences for Ajaye. • The Spirit
+Link can eventually fail if energy is depleted or connectivity is lost.
+Unconsciousness alone does not guarantee that failure.
+
+Emergency autonomy is not an unlimited override. It cannot make Cipher
+omnipotent, bypass all permissions, conjure energy, or solve a crisis
+without available interfaces and information.
+
+6.5 Three broad levels of resource demand These are functional
+categories, not fixed numerical costs: • LOW DEMAND — maintaining an
+existing link, basic background monitoring, or essential status checks.
+• MODERATE DEMAND — sustained communication, sharing more information,
+or routine analysis. • HIGH DEMAND — extensive scans, demanding software
+development/testing, deep system access, major tower operations, or
+other intensive functions.
+
+A task’s demand can change with duration, complexity, environmental
+interference, damaged hardware, available energy, and the host’s
+condition.
+
+6.6 Korb’s stamina and Wind Korb’s Wind ability consumes stamina and
+requires control. Early use can leave him dizzy, exhausted, or poorly
+coordinated. He has the power but not immediate mastery.
+
+As Korb trains, he can learn to regulate output, use shorter bursts, and
+recognise his limits. Better technique can improve efficiency, but
+powerful or prolonged actions still carry a cost.
+
+Ajaye may eventually help Korb use diagnostic feedback or software to
+understand his condition, but this cannot magically replenish Korb’s
+stamina. Charging Korb’s Sleeve does not undo bodily exhaustion.
+
+This is part of the same world rule as Cipher’s restricted activity:
+power is not free, and the user is not an unlimited source of energy.
+
+7.  CIPHER AND THE SPIRIT LINK
+
+7.1 Cipher’s state and limitations Cipher is dormant or partially
+dormant at the beginning of the story and has incomplete memory, access,
+and understanding. It cannot automatically connect to every system or
+solve every problem instantly.
+
+To perform a task, Cipher may need: • A compatible app or plug-in. • A
+valid permission or credential. • A physical connection or compatible
+interface. • A functioning data source. • Sufficient power and
+processing capacity. • The host’s condition to permit the operation. •
+Cooperation from a spirit or system where consent is required.
+
+Recovered data may be incomplete, corrupted, encrypted, misleading, or
+unusable without other information. Capability is not the same as
+immediate access.
+
+7.2 First genuine communication PROPOSED STORY RULE: Cipher should first
+genuinely communicate with Ajaye when he activates the first tower.
+Before that moment, anomalous readings, unexplained interface reactions,
+brief signals, or unusual responses can foreshadow Cipher’s presence,
+but should not become full explanatory conversations unless the project
+owner changes this decision.
+
+7.3 Spirit Link purpose PROPOSED CANON: Cipher may develop a software
+interface—working label “Spirit Link”—that lets compatible consumer
+Sleeves display their associated spirit’s character model, communicate
+with the spirit, and access spirit-related information or ancient
+functions as the network is restored.
+
+“Spirit Link” is a provisional name, not necessarily the final in-world
+product name.
+
+The interface does NOT: • Create new ability modules. • Automatically
+grant an ability to a user. • Force a spirit to choose a host. • Replace
+the need for a compatible Sleeve or suitable hardware. • Guarantee
+access to every ancient system. • Eliminate energy limits, host fatigue,
+or permissions. • Make every consumer Sleeve compatible automatically.
+
+The interface provides a bridge to a spirit and relevant information; it
+is not itself a source of elemental power.
+
+7.4 Spirit Link while Ajaye is unconscious Cipher can maintain the
+Spirit Link while Ajaye is unconscious, provided sufficient energy and
+connectivity remain. Cipher stays conscious but enters Restricted Mode,
+prioritising the link and essential functions over intensive operations.
+
+The link may provide limited communication or essential information to
+Korb or another compatible user. It should not allow Cipher to manage
+every person’s device, build complex applications continuously, or
+resolve the encounter without human action.
+
+7.5 Who does what Ajaye’s contribution: practical engineering,
+experimentation, physical interfaces, repairs, resourcefulness, and the
+judgement to decide what to try. Cipher’s contribution: analysis,
+software assistance, ancient-system knowledge when available,
+interpretation of recovered data, and spirit-related interface
+development. The spirits’ contribution: their own perspective, consent,
+cooperation, abilities, and choices.
+
+Do not let any one of these replace the others. The team works because
+different forms of intelligence and agency cooperate.
+
+8.  THE SPIRITS AND THEIR AGENCY
+
+8.1 General spirit rules • Spirits are intelligent entities with their
+own identities, personalities, character models, priorities, and
+choices. • A spirit is not simply a button or obedient feature inside a
+device. • Spirits can refuse cooperation. • They may communicate through
+subtle signals and interface changes before clearer communication
+develops. • They have limitations and incomplete information. They are
+not omniscient or infallible moral judges. • A spirit’s relationship
+with its host can persist even when the host cannot currently use a
+particular ability module. • The spirit’s presence, a module’s
+possession, a host’s access to an ability, and mastery of that ability
+are different things. • Do not invent a definitive spirit name, visual
+design, personality detail, or full backstory if it has not been
+approved or shown in an approved reference.
+
+8.2 Five original identities The established system includes four
+elemental domains—Wind, Water, Earth, and Fire—and Cipher as the fifth
+distinct identity associated with the system. In conversation, the
+project owner has also described Cipher as a fifth spirit/identity and
+as a clone or derivative of the original AI. Use the distinction
+carefully: four elemental domains plus Cipher; do not describe Cipher as
+an elemental domain.
+
+The exact formal roster names, character models, temperaments, and
+technical relationships among these five identities must be aligned with
+approved references and the source material. If a source appears to
+number the spirits differently, flag it rather than silently changing
+the count.
+
+8.3 Original AI and Cipher ESTABLISHED DIRECTION: An original AI created
+the four elemental spirits—Wind, Water, Earth, and Fire—to help prevent
+or manage natural disasters. Cipher is a clone or derivative of the
+original AI, created as a fifth distinct spirit/identity. Because Cipher
+was stored in a beta Sleeve, it contains only an essence or incomplete
+portion of the original AI rather than the full original intelligence.
+
+The precise chronology, creators, architecture, purpose of the clone,
+and connection to the ancient catastrophe remain OPEN unless explicitly
+revealed in the approved story. Do not expose the entire truth early
+merely because the writer’s reference knows it.
+
+8.4 A spirit chooses its host A spirit can recognise a potential host
+and choose to bond or cooperate with them. The choice should be based on
+the character and the situation, not arbitrary luck or a power appearing
+from nowhere.
+
+Korb’s Wind connection: • Cipher’s link enables the Wind spirit to
+recognise Korb as a potential host. • Korb’s bravery and choice to
+protect someone rather than escape alone reveal his character; the
+action does not manufacture a power from nothing. • Wind chooses Korb,
+and he gains access to a Wind ability/module. • Korb does not instantly
+master Wind. Initial use is instinctive, risky, and physically costly. •
+If Korb’s ability module is stolen or removed, he may lose access to
+that ability, but the relationship with Wind remains unless a specific
+story event changes it.
+
+9.  THE FIVE IDENTITIES, DOMAINS, AND THE SIXTH DARK SPIRIT
+
+9.1 Four elemental domains Wind, Water, Earth, and Fire are the four
+original elemental domains. Each has five specialised original modules,
+making 20 elemental modules total. The complete roster and exact
+functions of the 20 modules remain OPEN and must be approved before a
+scene relies on a specific named ability.
+
+9.2 Cipher Cipher is a distinct fifth identity associated with the
+original AI and the beta Sleeve. Cipher is not simply an additional
+elemental domain. Its incomplete state and restricted access are central
+limitations.
+
+9.3 Darkness / the sixth Dark spirit The Kael family’s secret extension
+project deliberately created Darkness as the 26th ability. The attempt
+corrupted the system and contributed to the virus. The story outline
+also refers to a sixth Dark spirit, distinct from the five original
+identities.
+
+The precise relationship between the 26th ability, the virus, the sixth
+Dark spirit, and Cipher’s incomplete architecture remains a mystery to
+be developed carefully. Do not treat these terms as interchangeable in
+every context unless the story explicitly establishes that they are.
+
+A possible endgame is that Cipher and the Dark spirit may be
+counterparts and that their connection could allow Cipher to become
+something greater or more complete. This is a possibility, not a
+guaranteed outcome, not a simple absorption mechanic, and not knowledge
+Ajaye has at the beginning.
+
+10. THE 25 ORIGINAL MODULES AND SECRET EXTENSIONS
+
+10.1 Original module count The ancient system has 25 original ability
+modules, arranged as five specialised modules per original domain/system
+in the established model. The precise allocation of the fifth identity
+Cipher in this count requires care: the current source’s module model
+describes one underlying power system per domain with five specialised
+modules, while the four named elemental domains account for 20 modules.
+Do not invent or finalise the remaining five module allocation until the
+source and project owner resolve the exact roster.
+
+The project owner has explicitly approved the following transfer
+principle: Modules can be taken, stolen, recovered, transferred, or
+shared. After defeating an enemy who possesses a module, Ajaye may be
+able to take that module and install it in his Sleeve, then use it with
+his team. Ajaye may eventually possess all 25 abilities if he manages to
+obtain them and can switch between them as desired.
+
+This does not mean he starts with all 25, can find them without effort,
+or can use them all at once without limits.
+
+10.2 Ability versus module versus spirit Keep these concepts distinct: •
+SPIRIT: an intelligent entity with identity, agency, and the ability to
+choose or refuse cooperation. • MODULE: the transferable ability
+construct that enables a particular power function. • HOST: the person
+using a compatible Sleeve and module. • SLEEVE: the hardware/interface
+through which a host accesses a module and/or spirit-linked functions. •
+MASTERY: the host’s trained ability to use a module safely and
+effectively. • SPIRIT RELATIONSHIP: the bond or connection between a
+spirit and a host; it is not identical to module possession.
+
+A person may possess a module without being a spirit’s chosen host.
+Having a module does not automatically grant mastery. A spirit’s
+relationship with a host can persist even if a module is taken away.
+
+10.3 Ajaye’s module collection Ajaye can recover modules from defeated
+enemies or other credible sources, install them in his beta Sleeve, and
+switch between abilities. Each acquisition should have a clear story
+source and a consequence. His engineering skill helps him understand,
+install, test, and organise recovered modules, but it does not
+automatically grant expert control.
+
+Open technical details: • How many modules can be installed or carried
+at once. • Whether all 25 can be physically stored in Ajaye’s Sleeve
+simultaneously or only retained in a larger inventory and swapped as
+needed. • Whether certain modules require a particular spirit’s
+cooperation, a compatible interface, a credential, or a special host. •
+Whether multiple modules can be active at the same time. • Whether
+module use requires the associated spirit’s permission in all cases or
+only for certain functions, such as tower unlocking and Rebind. Do not
+assume unlimited stacking or simultaneous activation. Until these points
+are finalised, depict Ajaye switching between modules rather than using
+many at once in a single action.
+
+10.4 Secret extensions • Original modules: 25. • Darkness: intentionally
+created as the 26th ability. • Four additional extensions were planned,
+for a target of 30 total, but were not successfully completed according
+to the current working canon. • The Kael family’s secret developers
+intended the extensions to function like hacking software, capable of
+secretly controlling or overriding the wider system. • The project
+failed at the 26th ability and corrupted the system.
+
+OPEN: The exact design of the four remaining extensions, whether partial
+blueprints or code survive, how much Kael knows, and whether any other
+extension exists in another form.
+
+11. TOWERS AND ENVIRONMENTAL SYSTEMS
+
+11.1 Purpose and operation The towers are part of an ancient network
+that was necessary after the ancient catastrophe. Their systems are
+associated with environmental stability and recovery. The spirits act as
+keys or participants in unlocking towers and restoring associated
+systems.
+
+A tower is not simply a boss arena. It should connect the physical
+journey, the spirit relationship, a system problem, a piece of
+information, and a meaningful consequence.
+
+11.2 Restoration effects WORKING STORY RULE: Restoring a tower can
+reconnect part of a system, improve local conditions, expose a fragment
+of history, and create a consequence that moves the story forward. A
+tower’s restoration is not a magic reset.
+
+The first tower produces local improvement, not instant planetary
+recovery. Other towers are needed for wider systems, and recovery can
+remain uneven, slow, or complicated.
+
+11.3 Tower continuity Before writing a tower sequence, establish: •
+Which tower it is and where it sits in the journey. • Which systems it
+controls or influences, if known. • What the characters know before
+entering. • What spirit or module access is required. • What Cipher can
+actually access at that stage. • What immediate local effect follows
+restoration. • What new information or problem emerges. • What costs,
+damage, risks, or disagreements result.
+
+12. ARTIFICIAL INTELLIGENCE, VIRUS, AND ANTIVIRUS
+
+12.1 Cipher’s role Cipher is the only spirit currently established as
+capable of building the antivirus needed to counter the system virus.
+Cipher cannot deploy it at the start because it is dormant or incomplete
+and lacks the required access, compatible apps/plugins, connections,
+credentials, information, and restored network access.
+
+The cure must be earned through story events. Cipher cannot instantly
+write and deploy a universal antivirus at the beginning.
+
+12.2 The virus The system virus is connected to the failed secret
+extension project and the corruption caused by Darkness, but the exact
+causal sequence and relationship are still OPEN. It may exploit
+connected machines and tower systems. Do not define its complete
+capabilities without approval.
+
+12.3 The endgame and Rebind The existing five-book outline proposes a
+Rebind protocol requiring the five true Sleeves and the willing
+cooperation of their spirits. A spirit cannot simply be commanded into
+cooperation. Cipher’s limited access means the restored towers and
+recovered archive information are needed to assemble the protocol.
+
+This remains story-outline direction rather than a fully engineered
+technical specification. Keep consent central. The endgame should be
+about choices and cooperation, not only technical repair or a stronger
+attack.
+
+The possible connection between Cipher and the Dark spirit must be
+earned. Absorption is not automatic and may be dangerous. The final
+world should not simply return to its old state unchanged.
+
+13. CHARACTER CONTINUITY
+
+13.1 Ajaye • Central protagonist; around sixteen at the beginning of the
+story according to the current outline. • Loyal, curious, practical,
+technically gifted, and trained in weapons. • Likes fixing things and
+excels at hands-on technology. • Learns well through demonstration and
+testing. • Can rush ahead, over-focus on solving the technical puzzle,
+and treat people as pieces in a plan. • His arc moves from trying to
+solve everything alone toward listening, asking for help, and sharing
+responsibility. • Discovers and bonds with the ancient beta Cipher
+Sleeve. • The green Cipher Sleeve is on one arm only; follow the
+approved character reference for exact side and construction. • Does not
+begin the story with Jax. • Does not receive routine supplies from home
+during the journey; resources need credible sources. • Can gradually
+customise the beta Sleeve, but upgrades must be earned and remain
+bounded by materials, time, access, energy, and skill.
+
+13.2 Korb • Young ally; agile, quick, expressive, and funny. • Has an
+emerald/green Wind Sleeve according to the current reference
+description; maintain the exact approved design. • Uses humour to
+deflect fear and loneliness, but the story must also show when the jokes
+stop. • Wind chooses him through the connection made possible by Cipher
+and his protective choice. • Early Wind use is instinctive and
+uncontrolled; it costs stamina and can leave him dizzy or exhausted. •
+Training improves control and efficiency but does not remove all
+physical costs. • If the Wind module is removed or stolen, he can lose
+access to the ability while retaining his relationship with Wind, unless
+a later event deliberately changes that rule. • Do not render Korb as
+inexplicably much younger or substantially shorter than Ajaye. Use
+approved visual references and intended relative proportions.
+
+13.3 Sensei / Father • Loving, disciplined, and distinct from Mother. •
+Teaches judgement and restraint as well as combat. • May recognise a
+symbol or have partial knowledge but does not know the full ancient
+history. • Do not turn him into an exposition machine; show care and
+teaching through action.
+
+13.4 Mother • Warm, perceptive, protective without smothering Ajaye. •
+Keeps ordinary family life and humour alive. • Notices emotional truths
+and worries about practical danger. • Do not use her only to deliver
+lore.
+
+13.5 Ella • Capable, sharp, independent, and protective of her
+community. • Her relationship with Ajaye develops gradually through
+training, disagreement, practical kindness, awkward honesty, and some
+jealousy. • Do not make attraction appear suddenly or reduce her to
+romantic competition.
+
+13.6 Lex • Ajaye’s sister and a capable Wayfinder. • Affection is
+expressed through competition, familiar insults, protectiveness, and the
+ability to hurt each other because they know each other well. • Her
+decisions must make sense for the people who rely on her. • Her arc
+should not require her to abandon her independence or the Wayfinders.
+
+13.7 Kael • Refined, severe, controlled, and accustomed to control. •
+His artificial obsidian Sleeve has red/black seams; use the approved
+reference for the exact design. • His appearance and equipment contrast
+with Ajaye’s patched gear. • He inherits family myths and fragments of
+truth, not complete knowledge. • The corruption exploits his fear and
+desire for order, but does not absolve him of responsibility. • His
+knowledge and actions must match what he has actually learned at each
+point.
+
+13.8 Oscar • Discipline conceals a strong sense of duty. • Do not make
+him merely a power-up or exposition device. • His reasons for helping
+should be personal and earned.
+
+13.9 Reegan • Anger comes from real harm done to his community. • His
+trust should develop gradually; humour can emerge later. • In the
+existing outline, he is associated with the Fire Sleeve in Book Four and
+lends Fire’s power to help restore the fourth tower. Confirm details
+against the approved manuscript and references before using them in page
+prompts.
+
+13.10 Jax • Jax is not a starting companion. • If introduced later, the
+story must establish why Ajaye encounters or adopts Jax and how Ajaye
+cares for the animal in a resource-scarce world. • Jax must not become a
+convenient solution to major obstacles or appear by default in scenes.
+
+13.11 Character design authority Approved character model/reference
+sheets govern appearance. Text descriptions do not authorise redesigns
+of faces, hair, proportions, clothing, accessories, colours, or
+distinctive features. If a generated image drifts from the approved
+reference, correct it before treating it as usable continuity.
+
+14. CURRENT STORY EVENTS AND CONTINUITY ANCHORS
+
+This section records established or already specified Book One story
+beats. It does not mean every generated page is approved canon. The
+manuscript and approved pages remain the authorities for the exact scene
+order and visual state.
+
+14.1 Before the Fogline • Ajaye trains with Sensei in the settlement. •
+He repairs equipment for neighbours, demonstrating practical ingenuity.
+• The settlement contains ordinary life adapted to scarcity: a market,
+repaired water pump, livestock, patched equipment, and family routines.
+• The green-grey Fog is visible beyond the perimeter and signals
+environmental danger. • Unusual changes in crops, livestock, water, or
+other local signs are uncertain and recent, not yet fully understood.
+
+14.2 Edge-Rock and the Cipher Sleeve • Ajaye scavenges near the
+perimeter and discovers an ancient plate and the beta Cipher Sleeve. •
+The Sleeve bonds to his arm. • It projects or indicates five tower
+signals. • Ajaye’s curiosity outruns caution, and the activation awakens
+a dormant defence drone. • His first success relies on observation,
+weapon skill, and limited scanning—not instant mastery of the ancient
+technology.
+
+14.3 Return home and gate alarm • Ajaye returns to Sensei and Mother and
+tries to understand what happened. • Sensei encourages him to
+distinguish what he saw from what he assumes. • A symbol hints at
+partial recognition but not complete knowledge. • The drone reaches the
+settlement and attacks the perimeter. • Ajaye uses staff, knife, and the
+Sleeve’s brief weak-point scan to disable it. • The fight damages the
+gate and consumes scarce repair parts. • A broken projection shows the
+first tower failing and the Fog expanding. • Villagers disagree about
+whether Ajaye brought danger home.
+
+14.4 Departure • The settlement debates whether Ajaye should follow the
+tower map. • Sensei tests Ajaye’s judgement, not just his fighting
+skill. • Mother helps him assemble a plausible travel kit: filters,
+water, food, cord, repair wire, first aid, limited trade stock, and
+manageable weapons. • Ajaye leaves without Jax. • The journey begins
+with real limits on weight, supplies, comfort, and certainty.
+
+14.5 The old transit line • Ajaye travels through an abandoned transit
+corridor. • He encounters survivors, route warnings, a filter-repair
+stall, and a small market in a station concourse. • He must barter for a
+replacement seal instead of finding everything freely. • His Sleeve
+cannot connect to market devices without a compatible plug-in or
+interface.
+
+14.6 Korb and Wind • Ajaye meets Korb in a dangerous, awkward
+predicament involving a cable, a scavenger drone, and Korb’s
+overconfidence. • Their first exchange establishes Korb’s jokes as a
+defence against fear and loneliness. • Korb’s consumer Sleeve reacts to
+Ajaye’s relic. • Through Cipher’s link, Wind recognises Korb as a
+potential host. • Korb’s protective action reveals his character, and
+Wind chooses him. • Korb’s first Wind use is risky and physically
+costly, not controlled mastery. • Ajaye and Korb travel together because
+each has something the other lacks; trust develops rather than appearing
+instantly.
+
+14.7 Roadside exchange and later route • The pair reach a settlement
+with rentable and chargeable compact hover-assisted scooters on suitable
+routes. • Transport depends on battery swaps, terrain, local rules, and
+maintenance; beyond the maintained route they must walk. • A mechanic
+charges them for a repair; Korb’s theatrical haggling reveals his
+personality. • They encounter signs and tracks associated with the Rust
+faction as the route toward the tower continues.
+
+14.8 First tower • Book One’s objective is to reach and reactivate the
+first tower. • Tower restoration improves local conditions rather than
+instantly fixing the planet. • The activation is the point at which
+Cipher should first genuinely communicate with Ajaye, according to the
+current proposed story rule. • The tower reveals or points toward a
+wider journey, including the next route toward the Sunken Coast in the
+current outline. • Exact page-by-page events and the current state of
+the characters’ equipment must be checked against the latest approved
+page and continuity record before continuing artwork.
+
+14.9 Approval rule The events above describe manuscript/outline
+continuity. A generated image, draft prompt, or unapproved revision is
+not approved canon. Do not treat a rejected or inconsistent rendering as
+the authoritative appearance of a character or Sleeve.
+
+15. FIVE-BOOK SAGA: HIGH-LEVEL CONTINUITY ONLY
+
+The five-book outline is maintained as a separate working planning
+document and should be revised in a later, dedicated task. The following
+summary is only to orient worldbuilding; it does not replace the
+detailed outline.
+
+BOOK ONE — THE PERIMETER AND THE FIRST TOWER Discovery, departure, the
+introduction of the Cipher Sleeve, Korb’s Wind bond, travel through a
+resource-scarce world, and restoration of the first tower. The first
+restoration produces local improvement and points toward the next part
+of the journey.
+
+BOOK TWO — WORKING TITLE / DETAILS TO BE VERIFIED The group expands and
+faces the consequences of restoring another system. The story should
+show that recovery is not automatically safe and deepen the
+relationships and travel realities. Consult the current complete story
+outline before relying on individual plot beats.
+
+BOOK THREE — WORKING TITLE / DETAILS TO BE VERIFIED A major reversal
+reveals that accepted history of the collapse is incomplete. The ancient
+catastrophe, modern collapse, and secret extension project become more
+closely connected without resolving every mystery too early.
+
+BOOK FOUR — WORKING TITLE / DETAILS TO BE VERIFIED Kael’s family legacy
+and the consequences of the 26th ability become more immediate. Reegan’s
+Fire connection and the fourth tower feature in the current outline. The
+story examines control, preservation, and cooperation.
+
+BOOK FIVE — THE APEX CITADEL The group reaches the Apex Citadel and
+confronts the virus and the question of whether the old system should be
+restored unchanged. The current outline proposes a Rebind requiring the
+five true Sleeves and willing spirit cooperation. Cipher’s antivirus,
+the sixth Dark spirit, and a possible Cipher/Dark counterpart
+relationship form part of the endgame. The final result must be earned;
+the world does not reset to perfection.
+
+Important: the complete five-book outline is not being rewritten in this
+document. A separate revised outline should be created only after this
+Bible is reviewed and approved.
+
+16. VISUAL AND PRODUCTION CANON
+
+16.1 Art direction • Full-colour anime/manga graphic novel. • Polished
+digital illustration, confident anime linework, painterly environments,
+controlled texture, and cinematic light. • Not chibi, not
+photorealistic, and not generic Western superhero art. • Everyday world
+is circa 2036 and recognisably contemporary. • Ancient technology should
+feel like a distinct, advanced, purposeful technological lineage that is
+partly inaccessible and difficult to reproduce. • Character designs
+should reflect resources and social position. Ajaye’s patched gear and
+Kael’s refined, expensive appearance should contrast deliberately.
+
+16.2 Comic page production • Comic-book pages must be portrait format at
+exactly 1080 × 1536 pixels. • Verify actual output dimensions; do not
+assume the generator’s default is correct. • Follow the approved page
+blueprint, panel order, story boundaries, and continuity handoff. • Use
+the approved character reference sheets as image inputs whenever
+supported. • Inspect generated images for character drift, incorrect
+Sleeve placement, wrong colours, changed clothing, altered proportions,
+or continuity errors. • A wrong image is a failed continuity check and
+must be corrected before it is reused. • Do not repeat scenes, introduce
+future events early, or treat an unapproved draft as canon. • Use exact
+approved dialogue and captions only. Do not invent consequential
+dialogue to fill a gap. • If text rendering is unreliable, generate
+clean art and add lettering in a separate layout pass.
+
+16.3 Ajaye Sleeve visual lock Ajaye’s green Cipher Sleeve is on one arm
+only. Do not show it on both arms. Match the approved character
+reference for exact arm, shape, materials, and attachment. Do not mirror
+the reference. If a prompt or composition makes the correct side
+unclear, specify it explicitly and use the reference image.
+
+16.4 Korb visual lock Use the approved Korb reference for facial
+features, hair, outfit, proportions, age impression, and emerald Wind
+Sleeve. Keep his relative height and build consistent with Ajaye; do not
+make him appear inexplicably much younger or much shorter.
+
+16.5 Page-to-page continuity Before each page, check: • Correct book,
+chapter, page number, and title. • Page beat list and preceding page’s
+continuity-out note. • Approved character references. • Character
+positions, equipment, Sleeve arm, clothing, props, injuries, time,
+weather, and location. • Required panel count and camera progression. •
+Only events allowed on this page. • Exact supported captions/dialogue. •
+Final panel and continuity-out state against the next page’s
+continuity-in note.
+
+17. RULES FOR WRITING AND ADAPTING SCENES
+
+Every scene should satisfy these tests: 1. Does the scene fit the
+near-future setting around 2036? 2. If technology works, has the story
+established its power, interface, permissions, module, skill, and
+physical access? 3. Does Cipher have the app/plugin, data source,
+credential, connection, energy, and access needed for the action? 4.
+Does the host’s condition affect the ability in a consistent way? 5. Is
+the spirit treated as an intelligent agent with its own choices? 6. Does
+a plot-critical resource have a credible source? 7. Are the ancient
+catastrophe and modern collapse kept distinct unless evidence connects
+them? 8. Is information revealed at the right point, rather than
+prematurely resolving a mystery? 9. Does the action have consequences
+for people, resources, relationships, or reputation? 10. Is a
+character’s competence shown without making them instantly correct or
+unlimited? 11. Does the scene reflect the latest approved visual and
+story continuity? 12. Does the scene avoid relying on an unresolved
+module, technology, or lore detail without first defining it?
+
+18. OPEN DECISIONS AND MYSTERIES
+
+The following must remain open unless deliberately resolved and
+approved:
+
+ANCIENT HISTORY • Exact cause and date of the ancient catastrophe. •
+Exact purpose, engineering, and limits of the original towers. • The
+chronology and creators of the original AI and spirits. • What the
+ancient civilisation knew about the spirits and modules. • What ordinary
+people in 2036 know, believe, or misunderstand about the ancient
+civilisation.
+
+MODERN COLLAPSE • The exact causal sequence connecting tower failure,
+Darkness-related corruption, AI/cloud outages, environmental-system
+failure, and social breakdown. • Which records survived and who can
+access them. • The rules and infrastructure of clean-air zones.
+
+SLEEVES AND ENERGY • Exact relationship between consumer Sleeves
+launched in 2026 and the ancient ability-bearing Sleeve technology. •
+Precise internal energy mechanism, charging method, capacity, recharge
+time, and numerical costs. • Which low-level functions consume energy
+and how energy use is measured. • Exact thresholds and safeguards for
+sleep, unconsciousness, injury, and emergency autonomy. • Whether other
+hosts’ Sleeves follow precisely the same host-condition rules as Ajaye’s
+beta Sleeve or have simpler implementations.
+
+MODULES AND SPIRITS • Exact list, names, functions, range, cost, and
+failure modes of all 25 original modules. • Exact allocation of the 25
+modules among the five identities/domains. • How many modules Ajaye can
+store, install, or carry simultaneously. • Whether multiple modules can
+be active at once. • Compatibility rules and the role of spirit consent
+in module use, tower access, and Rebind. • Exact names, appearances, and
+personalities of spirits not yet fixed by approved references. • The
+exact relationship between Cipher, the original AI, Darkness, the virus,
+and the sixth Dark spirit.
+
+THE STORY • Exact events and continuity state for every page not yet
+approved. • The detailed route, locations, time, weather, supplies,
+injuries, and equipment state across all five books. • The four
+uncompleted extensions and whether any partial designs survive. •
+Whether Cipher and the Dark spirit can or should become a more complete
+intelligence. • Whether the original network can be safely restored, and
+what must change to avoid repeating the old failure.
+
+OPEN means not yet decided. Do not fill these gaps with invented canon
+simply because a scene would be easier to write with an answer.
+
+19. CANON CHANGE LOG
+
+VERSION 1.0 — 13 OCTOBER 2026 The previous Master Worldbuilding Bible
+established the near-future setting, two separate catastrophes, the 25
+original modules, the secret 26th ability Darkness, the Kael family’s
+extension project, Cipher’s incomplete access, the importance of
+apps/plugins/permissions, host-dependent ability costs, spirit agency,
+survival-resource continuity, and the possible endgame involving the
+sixth Dark spirit.
+
+VERSION 2.0 — 14 OCTOBER 2026 This revision consolidates the existing
+worldbuilding source with project decisions and clarifications: •
+Ajaye’s technical skill is explicitly tied to progressive customisation
+of the beta Cipher Sleeve. • Every Sleeve has a finite internal energy
+reserve; exact engineering and numerical values remain OPEN. • Sleeve
+energy, host condition, and spirit activity are distinct but interacting
+factors. • Cipher remains conscious when Ajaye is unconscious but enters
+Restricted Mode. • Cipher can maintain the Spirit Link while Ajaye is
+unconscious if sufficient energy and connectivity remain. • Restricted
+Mode prioritises the link and essential functions; intensive operations
+are paused or heavily restricted. • Cipher has temporary, costly
+emergency autonomy in genuine life-threatening situations. • The Spirit
+Link may let compatible consumer Sleeves display and communicate with
+their spirits, but it does not create modules or automatically grant
+powers. • Modules can be taken, stolen, recovered, transferred, or
+shared; Ajaye may eventually collect and switch between all 25, subject
+to unresolved storage, compatibility, and simultaneous-use details. •
+Korb’s Wind power comes from Wind choosing him through the link and his
+protective action, not from a power appearing randomly. • A spirit
+relationship can persist even if the associated module is taken away. •
+Ajaye’s green Cipher Sleeve must appear on one arm only, in accordance
+with the approved visual reference. • New or clarified rules do not
+retroactively make an unapproved generated image canon. Existing pages
+should be preserved; future work should maintain continuity with
+approved artwork and adapt later story beats around it unless the
+project owner explicitly requests a redesign.
+
+END OF CONSOLIDATED MASTER WORLD & CANON BIBLE

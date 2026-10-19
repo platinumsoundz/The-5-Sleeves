@@ -33,6 +33,8 @@ export function createInputManager({ onAction, onMenu, onMode, audio }) {
     if (event.code === 'Space') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('attack'); }
     if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('dash'); }
     if (event.code === 'KeyE') { setMode('keyboard'); if (!event.repeat) triggerAction('shield'); }
+    if (event.code === 'KeyQ') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('ability'); }
+    if (event.code === 'KeyF') { setMode('keyboard'); if (!event.repeat) triggerAction('interact'); }
     if (event.code === 'KeyC') { setMode('keyboard'); if (!event.repeat) onMenu(); }
     if (event.code === 'Escape') onMenu(false);
   });
@@ -60,7 +62,9 @@ export function createInputManager({ onAction, onMenu, onMode, audio }) {
     if (edge([0, 5])) triggerAction('attack');
     if (edge([2, 4])) triggerAction('dash');
     if (edge([1, 6])) triggerAction('shield');
-    if (edge([9, 8, 3])) onMenu();
+    if (edge([7, 10])) triggerAction('ability');
+    if (edge([3])) triggerAction('interact'); // Y / triangle: read terminals
+    if (edge([9, 8])) onMenu();
     previousButtons = pressed;
   }
   window.addEventListener('gamepadconnected', () => { previousButtons = []; setMode('controller'); });

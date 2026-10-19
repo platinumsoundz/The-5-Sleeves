@@ -1,3 +1,7 @@
+// The 5 Sleeves server — host only. Per-zone gameplay lives in server/sim/*
+// (one simulation per canon zone, see server/zones-catalog.js). This file
+// owns: express, sockets, the lobby, zone registry, squads, chat, profiles
+// and the plug-and-play module loader. See memory/03-module-architecture.md.
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
@@ -7,47 +11,33 @@ const app = express();
 const httpServer = require('http').createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
-const WORLD = { width: 1000, height: 700 };
-const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
-const PERIMETER_MARGIN = 40;
-const MAX_ARCHIVE_ECHOES = 5;
-const ARCHIVE_LOGS = [
-  'Archive Log #04: Tower 1 atmospheric filters operating at 42% capacity...',
-  'Archive Log #11: Ashley reports a repeating signal beneath the eastern transit line.',
-  'Archive Log #17: Perimeter fog readings exceed safe exposure limits.',
-  'Archive Log #23: The Cipher Conduit responds to Sleeve resonance.',
-  'Archive Log #31: Evacuation records end before the final Tower 1 lockdown.'
-];
-const SLEEVE_COLORS = {
-  cipher: '#00ffff',
-  wind: '#00ff88',
-  water: '#0088ff',
-  fire: '#ff4400',
-  earth: '#cc7722',
-  dark: '#9900ff',
-  azure: '#43b9ff',
-  emerald: '#45f29a',
-  crimson: '#ff536b',
-  violet: '#c875ff'
-};
-const SLEEVE_ACCENTS = { cipher: '#78ff5f', wind: '#a7ffd0', water: '#71d5ff', fire: '#ffb347', earth: '#f0b768', dark: '#ff29d6', azure: '#8ce0ff', emerald: '#a7ffd0', crimson: '#ffb347', violet: '#ff29d6' };
-const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
-const ACTIVE_DOMAINS = new Set(['cipher', 'wind', 'water', 'fire', 'earth', 'dark']);
-const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
-const players = {};
-const playerSockets = {};
-const projectiles = {};
-const archiveEchoes = {};
-const parties = {};
-const playerParties = {};
-const pendingPartyInvites = {};
-let nextEchoId = 1;
-let profiles = {};
-let nextProjectileId = 1;
-let lastTick = Date.now();
-let lastProfileSave = Date.now();
-let lastPartyBroadcast = 0;
 
+const { zoneCatalog, DEFAULT_ZONE_ID } = require('./server/zones-catalog.js');
+const { createSimulation } = require('./server/sim/state.js');
+const { stepZone, seedZone } = require('./server/sim/index.js');
+const { spawnWarden } = require('./server/sim/wardens.js');
+const { abilityFor, castAbility } = require('./server/sim/abilities.js');
+const { distance } = require('./server/sim/combat.js');
+const {
+  SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
+  MAX_WARDENS, LEVEL_HP_GAIN
+} = require('./server/sim/spec.js');
+const { levelFromXp } = require('./server/progression.js');
+
+const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
+// Tuning knob: scales every XP award (useful for fast progression on small servers).
+const XP_SCALE = Number.isFinite(Number(process.env.XP_SCALE)) ? Math.max(0, Number(process.env.XP_SCALE)) : 1;
+const SCORE_LIMIT = Number.isFinite(Number(process.env.SCORE_LIMIT)) ? Math.max(1, Number(process.env.SCORE_LIMIT)) : 400;
+
+function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+function validDirection(direction) {
+  if (!direction || !Number.isFinite(direction.x) || !Number.isFinite(direction.y)) return null;
+  const length = Math.hypot(direction.x, direction.y);
+  return length > 0.01 ? { x: direction.x / length, y: direction.y / length } : null;
+}
+
+// ---- Profiles (progression survives restarts) ------------------------------
+let profiles = {};
 try {
   profiles = JSON.parse(fs.readFileSync(PROFILE_FILE, 'utf8'));
   if (!profiles || typeof profiles !== 'object' || Array.isArray(profiles)) profiles = {};
@@ -55,7 +45,6 @@ try {
   if (error.code !== 'ENOENT') console.error('Could not load player profiles:', error.message);
   profiles = {};
 }
-
 function saveProfiles() {
   const tempFile = PROFILE_FILE + '.tmp';
   try {
@@ -68,22 +57,118 @@ function saveProfiles() {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/health', (_request, response) => response.json({ status: 'ok', players: Object.keys(players).length }));
-function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
-function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
-function broadcastState() {
-  io.emit('players', players);
-  io.emit('projectiles', projectiles);
+const playersById = {}; // every joined player across every zone
+app.get('/health', (_request, response) => response.json({ status: 'ok', players: Object.keys(playersById).length }));
+// Plug-and-play client modules: the server scans public/src/modules on each
+// request, so dropping a new module file in takes effect on a page refresh.
+const CLIENT_MODULES_DIR = path.join(__dirname, 'public', 'src', 'modules');
+app.get('/api/client-modules', (_request, response) => {
+  let names = [];
+  try {
+    names = fs.readdirSync(CLIENT_MODULES_DIR).filter((file) => file.endsWith('.js')).map((file) => file.replace(/\.js$/, '')).sort();
+  } catch (_) { /* no modules yet */ }
+  response.json({ modules: names });
+});
+
+// ---- Zone registry: one simulation per canon book --------------------------
+const playerSockets = {}; // socketId -> socket (zones only own the player object)
+const zones = {}; // zone id -> simulation
+const zoneOrder = []; // catalog order for the lobby list
+for (const catalogZone of zoneCatalog()) {
+  const sim = createSimulation(catalogZone, {
+    io,
+    playerSockets,
+    scoreLimit: SCORE_LIMIT,
+    refreshLevelFields,
+    applyXp,
+    awardNearbyParty,
+    persistPlayer
+  });
+  zones[sim.id] = sim;
+  zoneOrder.push(sim.id);
+  for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
+  seedZone(sim);
 }
-function broadcastEchoes() { io.emit('archive:echoes', archiveEchoes); }
+const DEFAULT_ZONE = zones[DEFAULT_ZONE_ID];
+function playerZone(player) { return player ? zones[player.zoneId] || null : null; }
+function lobbyPayload() {
+  return zoneOrder.map((id) => ({ id, name: zones[id].name, book: zones[id].book, spirit: zones[id].spirit, players: Object.keys(zones[id].players).length }));
+}
+
+// ---- Host services shared with every zone simulation -----------------------
+function refreshLevelFields(player) {
+  const progress = levelFromXp(player.xp);
+  player.level = progress.level;
+  player.xpIntoLevel = progress.into;
+  player.xpNeeded = progress.needed;
+}
+
+// Single funnel for every XP source so levels, rewards and broadcasts stay in
+// sync. Returns the number of levels gained.
+function applyXp(player, amount) {
+  if (!player || !Number.isFinite(amount) || amount <= 0) return 0;
+  const award = amount * XP_SCALE;
+  if (award <= 0) return 0;
+  const before = levelFromXp(player.xp).level;
+  player.xp = Math.round(player.xp + award);
+  refreshLevelFields(player);
+  const gained = player.level - before;
+  if (gained > 0) {
+    player.skillPoints += gained;
+    player.maxHp = Math.min(1585, player.maxHp + LEVEL_HP_GAIN * gained);
+    player.hp = Math.min(player.maxHp, player.hp + LEVEL_HP_GAIN * gained);
+    (playerZone(player)?.send ?? io.emit.bind(io))('level:up', {
+      playerId: player.id,
+      name: player.name,
+      level: player.level,
+      maxHp: player.maxHp,
+      skillPoints: player.skillPoints,
+      color: player.color
+    });
+    awardNearbyParty(player);
+  }
+  persistPlayer(player);
+  return gained;
+}
+
+// Writes a player's progress to the profile store. Modules extend the record
+// through the 'persist' hook instead of editing this whitelist.
+function persistPlayer(player, save = true) {
+  if (!player) return;
+  const record = {
+    name: player.name,
+    corePoints: player.corePoints,
+    coreCharge: player.coreCharge,
+    hp: player.hp,
+    maxHp: player.maxHp,
+    atk: player.atk,
+    plating: player.plating,
+    overclock: player.overclock,
+    skillPoints: player.skillPoints,
+    partyXp: player.partyXp,
+    xp: player.xp,
+    level: player.level,
+    energyColor: player.energyColor,
+    updatedAt: new Date().toISOString()
+  };
+  hooks.emit('persist', player, record);
+  profiles[player.name.toLowerCase()] = record;
+  if (save) saveProfiles();
+}
+
+// ---- Operative Squads (global; members may be in different zones) ----------
+const parties = {};
+const playerParties = {};
+const pendingPartyInvites = {};
 function partySnapshot(party) {
   if (!party) return null;
   return {
     id: party.id,
     leaderId: party.leaderId,
-    members: party.members.map((id) => players[id]).filter(Boolean).map((member) => ({
+    members: party.members.map((id) => playersById[id]).filter(Boolean).map((member) => ({
       id: member.id, name: member.name, hp: member.hp, maxHp: member.maxHp,
-      x: member.x, y: member.y, energyColor: member.energyColor, partyXp: member.partyXp
+      x: member.x, y: member.y, energyColor: member.energyColor, partyXp: member.partyXp,
+      zoneId: member.zoneId
     }))
   };
 }
@@ -114,14 +199,15 @@ function removePartyMember(playerId) {
   }
   playerSockets[playerId]?.emit('party:state', null);
 }
+// Squad assists only pay when both operatives share a zone AND stand close.
 function awardNearbyParty(player) {
   const party = parties[playerParties[player.id]];
   if (!party) return;
   let changed = false;
   for (const memberId of party.members) {
     if (memberId === player.id) continue;
-    const member = players[memberId];
-    if (!member || distance(player, member) > 260) continue;
+    const member = playersById[memberId];
+    if (!member || member.zoneId !== player.zoneId || distance(player, member) > 260) continue;
     member.partyXp = Math.round((member.partyXp + 0.25) * 100) / 100;
     member.coreCharge = Math.min(99.99, member.coreCharge + 5);
     playerSockets[memberId]?.emit('party:reward', { source: player.name, partyXp: member.partyXp, coreCharge: member.coreCharge });
@@ -130,75 +216,105 @@ function awardNearbyParty(player) {
   }
   if (changed) broadcastParty(party.id);
 }
-function spawnArchiveEcho() {
-  const columns = Math.floor(WORLD.width / 40);
-  const rows = Math.floor(WORLD.height / 40);
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    const x = (1 + Math.floor(Math.random() * (columns - 2))) * 40 + 20;
-    const y = (1 + Math.floor(Math.random() * (rows - 2))) * 40 + 20;
-    if (distance({ x, y }, CORE) < 150) continue;
-    if (Object.values(archiveEchoes).some((echo) => distance(echo, { x, y }) < 70)) continue;
-    const id = 'echo-' + nextEchoId++;
-    archiveEchoes[id] = { id, x, y, loreIndex: (nextEchoId - 2) % ARCHIVE_LOGS.length };
-    return true;
-  }
-  return false;
-}
-function collectArchiveEchoes(player) {
-  if (!player || player.hp <= 0) return false;
-  let collected = false;
-  for (const [id, echo] of Object.entries(archiveEchoes)) {
-    if (distance(player, echo) > 25) continue;
-    delete archiveEchoes[id];
-    player.skillPoints += 1;
-    player.coreCharge = Math.min(99.99, player.coreCharge + 15);
-    playerSockets[player.id]?.emit('archive:collected', {
-      echoId: id,
-      lore: ARCHIVE_LOGS[echo.loreIndex] || ARCHIVE_LOGS[0],
-      skillPoints: player.skillPoints,
-      coreCharge: player.coreCharge
-    });
-    awardNearbyParty(player);
-    collected = true;
-  }
-  if (collected) persistPlayer(player);
-  return collected;
-}
-function validDirection(direction) {
-  if (!direction || !Number.isFinite(direction.x) || !Number.isFinite(direction.y)) return null;
-  const length = Math.hypot(direction.x, direction.y);
-  return length > 0.01 ? { x: direction.x / length, y: direction.y / length } : null;
-}
-for (let i = 0; i < MAX_ARCHIVE_ECHOES; i += 1) spawnArchiveEcho();
 
-function persistPlayer(player) {
-  if (!player) return;
-  profiles[player.name.toLowerCase()] = {
-    name: player.name,
-    corePoints: player.corePoints,
-    coreCharge: player.coreCharge,
-    hp: player.hp,
-    maxHp: player.maxHp,
-    atk: player.atk,
-    plating: player.plating,
-    overclock: player.overclock,
-    skillPoints: player.skillPoints,
-    partyXp: player.partyXp,
-    energyColor: player.energyColor,
-    updatedAt: new Date().toISOString()
+// ---- Zone membership -------------------------------------------------------
+// Moving between zones: leave the old room, join the new one, respawn fresh.
+function movePlayerToZone(player, socket, nextZone) {
+  const previous = playerZone(player);
+  if (previous === nextZone) return;
+  if (previous) {
+    delete previous.players[player.id];
+    previous.memberCount = Math.max(0, previous.memberCount - 1);
+    socket.leave('zone:' + previous.id);
+    previous.broadcast();
+  }
+  player.zoneId = nextZone.id;
+  player.x = 100 + Math.random() * (nextZone.world.width - 200);
+  player.y = 100 + Math.random() * (nextZone.world.height - 200);
+  player.respawnAt = 0;
+  nextZone.players[player.id] = player;
+  nextZone.memberCount += 1;
+  socket.join('zone:' + nextZone.id);
+  socket.emit('player:position', { x: player.x, y: player.y });
+  socket.emit('archive:echoes', nextZone.echoes);
+  nextZone.broadcast();
+  hooks.emit('zoneChanged', player, socket);
+}
+
+function buildPlayer(socket, requestedName, profile, zone) {
+  const storedDomain = Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
+    ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
+    : 'cipher';
+  const player = {
+    id: socket.id,
+    name: requestedName,
+    zoneId: zone.id,
+    x: 100 + Math.random() * (zone.world.width - 200),
+    y: 100 + Math.random() * (zone.world.height - 200),
+    energyColor: storedDomain,
+    color: SLEEVE_COLORS[storedDomain],
+    accentColor: SLEEVE_ACCENTS[storedDomain],
+    atk: Number.isInteger(profile.atk) ? clamp(profile.atk, 0, 99) : 0,
+    plating: Number.isInteger(profile.plating) ? clamp(profile.plating, 0, 99) : 0,
+    overclock: Number.isInteger(profile.overclock) ? clamp(profile.overclock, 0, 99) : 0,
+    skillPoints: Number.isInteger(profile.skillPoints) ? Math.max(0, profile.skillPoints) : 0,
+    partyXp: Number.isFinite(profile.partyXp) ? Math.max(0, profile.partyXp) : 0,
+    hp: Number.isFinite(profile.hp) ? clamp(profile.hp, 1, Number.isFinite(profile.maxHp) ? profile.maxHp : 100) : 100,
+    maxHp: Number.isFinite(profile.maxHp) ? clamp(profile.maxHp, 100, 1585) : 100,
+    shieldUntil: 0,
+    coreCharge: Number.isFinite(profile.coreCharge) ? clamp(profile.coreCharge, 0, 99.99) : 0,
+    corePoints: Number.isFinite(profile.corePoints) ? Math.max(0, profile.corePoints) : 0,
+    inCore: false,
+    slowUntil: 0,
+    speedUntil: 0,
+    burnUntil: 0,
+    burnPower: 0,
+    burnSourceId: null,
+    slowRemaining: 0,
+    hasteRemaining: 0,
+    burnRemaining: 0,
+    abilityId: '',
+    abilityName: '',
+    abilityShort: '',
+    abilityCooldown: 0,
+    abilityCooldownMax: 1,
+    respawnAt: 0,
+    kills: 0,
+    deaths: 0,
+    xp: Number.isFinite(profile.xp) ? Math.max(0, profile.xp) : 0,
+    level: 1,
+    xpIntoLevel: 0,
+    xpNeeded: 120,
+    lastHitBy: null,
+    lastAttackAt: 0,
+    lastDashAt: 0,
+    lastShieldAt: 0,
+    lastAbilityAt: 0,
+    lastInteractAt: 0
   };
-  saveProfiles();
+  return player;
 }
 
 io.on('connection', (socket) => {
   let player = null;
   console.log('Client connected: ' + socket.id);
-  socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: WORLD, core: CORE });
-  socket.emit('archive:echoes', archiveEchoes);
+  // Plug-and-play modules can claim their own socket events; they receive
+  // (player, payload, socket) and player is null until the join completes.
+  for (const [eventName, handler] of Object.entries(moduleSocketHandlers)) {
+    socket.on(eventName, (payload) => {
+      try { handler(playersById[socket.id], payload, socket); }
+      catch (error) { console.error('[module socket ' + eventName + '] ' + error.message); }
+    });
+  }
+  socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: DEFAULT_ZONE.world, core: DEFAULT_ZONE.core });
+  socket.emit('zones:lobby', lobbyPayload());
   socket.emit('party:state', null);
 
-  socket.on('player:join', (requestedName) => {
+  socket.on('player:join', (payload) => {
     if (player) return;
+    // Accepts a bare name (legacy/tests) or { name, zone }.
+    const requestedName = typeof payload === 'string' ? payload : payload?.name;
+    const requestedZone = typeof payload === 'string' ? null : payload?.zone;
     if (typeof requestedName !== 'string') {
       socket.emit('name_error', { message: 'Enter a character name.' });
       return;
@@ -209,53 +325,46 @@ io.on('connection', (socket) => {
       return;
     }
     const nameKey = name.toLowerCase();
-    const isTaken = Object.values(players).some((activePlayer) => activePlayer.name.toLowerCase() === nameKey);
+    const isTaken = Object.values(playersById).some((activePlayer) => activePlayer.name.toLowerCase() === nameKey);
     if (isTaken) {
       socket.emit('name_taken', { message: 'Name already taken! Choose another name.' });
       return;
     }
-
+    const zone = zones[requestedZone] || DEFAULT_ZONE;
     const profile = profiles[nameKey] || {};
-    player = {
-      id: socket.id,
-      name,
-      x: 100 + Math.random() * (WORLD.width - 200),
-      y: 100 + Math.random() * (WORLD.height - 200),
-      energyColor: Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
-        ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
-        : 'cipher',
-      color: SLEEVE_COLORS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
-        ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
-        : 'cipher'],
-      accentColor: SLEEVE_ACCENTS[Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
-        ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
-        : 'cipher'],
-      atk: Number.isInteger(profile.atk) ? clamp(profile.atk, 0, 99) : 0,
-      plating: Number.isInteger(profile.plating) ? clamp(profile.plating, 0, 99) : 0,
-      overclock: Number.isInteger(profile.overclock) ? clamp(profile.overclock, 0, 99) : 0,
-      skillPoints: Number.isInteger(profile.skillPoints) ? Math.max(0, profile.skillPoints) : 0,
-      partyXp: Number.isFinite(profile.partyXp) ? Math.max(0, profile.partyXp) : 0,
-      hp: Number.isFinite(profile.hp) ? clamp(profile.hp, 1, Number.isFinite(profile.maxHp) ? profile.maxHp : 100) : 100,
-      maxHp: Number.isFinite(profile.maxHp) ? clamp(profile.maxHp, 100, 1585) : 100,
-      shieldUntil: 0,
-      coreCharge: Number.isFinite(profile.coreCharge) ? clamp(profile.coreCharge, 0, 99.99) : 0,
-      corePoints: Number.isFinite(profile.corePoints) ? Math.max(0, profile.corePoints) : 0,
-      inCore: false,
-      lastAttackAt: 0,
-      lastDashAt: 0,
-      lastShieldAt: 0
-    };
-    players[socket.id] = player;
+    player = buildPlayer(socket, name, profile, zone);
+    // Modules may add profile-backed fields before the player is registered.
+    hooks.emit('joining', player, profile);
+    playersById[socket.id] = player;
     playerSockets[player.id] = socket;
-    socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor } });
-    broadcastState();
-    console.log('Operative joined: ' + player.name + ' (' + socket.id + ')');
+    zone.players[socket.id] = player;
+    zone.memberCount += 1;
+    socket.join('zone:' + zone.id);
+    refreshLevelFields(player);
+    socket.emit('join:accepted', {
+      playerId: player.id, name: player.name,
+      zone: { id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint },
+      stats: { hp: player.hp, maxHp: player.maxHp, level: player.level, xp: player.xp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor }
+    });
+    socket.emit('archive:echoes', zone.echoes);
+    zone.broadcast();
+    socket.emit('zones:lobby', lobbyPayload());
+    hooks.emit('joined', player, socket);
+    console.log('Operative joined: ' + player.name + ' in ' + zone.id + ' (' + socket.id + ')');
+  });
+
+  // Post-join zone travel (used by the lobby UI and future fast-travel).
+  socket.on('zone:switch', (zoneId) => {
+    if (!player || typeof zoneId !== 'string' || !zones[zoneId]) return;
+    movePlayerToZone(player, socket, zones[zoneId]);
+    socket.emit('zones:lobby', lobbyPayload());
   });
 
   socket.on('player:move', (position) => {
     if (!player || !position || !Number.isFinite(position.x) || !Number.isFinite(position.y) || player.hp <= 0) return;
-    player.x = clamp(position.x, PERIMETER_MARGIN, WORLD.width - PERIMETER_MARGIN);
-    player.y = clamp(position.y, PERIMETER_MARGIN, WORLD.height - PERIMETER_MARGIN);
+    const zone = playerZone(player);
+    player.x = clamp(position.x, 40, zone.world.width - 40);
+    player.y = clamp(position.y, 40, zone.world.height - 40);
   });
   socket.on('player:upgrade', (stat) => {
     if (!player || player.skillPoints <= 0) return;
@@ -267,7 +376,7 @@ io.on('connection', (socket) => {
       player.hp = Math.min(player.maxHp, player.hp + 15);
     }
     persistPlayer(player);
-    broadcastState();
+    playerZone(player)?.broadcast();
   });
 
   socket.on('player:color', (colorKey) => {
@@ -275,14 +384,29 @@ io.on('connection', (socket) => {
     player.energyColor = colorKey;
     player.color = SLEEVE_COLORS[colorKey];
     player.accentColor = SLEEVE_ACCENTS[colorKey];
+    const ability = abilityFor(player);
+    player.lastAbilityAt = Math.min(player.lastAbilityAt, Date.now() - ability.cooldown);
     persistPlayer(player);
-    broadcastState();
+    playerZone(player)?.broadcast();
+  });
+
+  socket.on('player:ability', (direction) => {
+    if (!player) return;
+    const aim = validDirection(direction);
+    const now = Date.now();
+    if (!aim || player.hp <= 0 || player.respawnAt > now) return;
+    const ability = abilityFor(player);
+    if (now - player.lastAbilityAt < ability.cooldown) return;
+    player.lastAbilityAt = now;
+    const zone = playerZone(player);
+    if (zone) castAbility(zone, player, aim);
+    zone?.broadcast();
   });
 
   socket.on('party:invite:send', (targetId) => {
     if (!player || typeof targetId !== 'string' || targetId === player.id) return;
-    const target = players[targetId];
-    if (!target || distance(player, target) > 200) {
+    const target = playersById[targetId];
+    if (!target || target.zoneId !== player.zoneId || distance(player, target) > 200) {
       socket.emit('party:error', 'That operative is not nearby.');
       return;
     }
@@ -310,7 +434,7 @@ io.on('connection', (socket) => {
       return;
     }
     delete pendingPartyInvites[socket.id];
-    const inviter = players[invite.inviterId];
+    const inviter = playersById[invite.inviterId];
     if (!response.accept) {
       playerSockets[invite.inviterId]?.emit('party:notice', player.name + ' declined your squad invite.');
       return;
@@ -354,14 +478,16 @@ io.on('connection', (socket) => {
       socket.emit('chat:error', 'Choose Global, Squad, or Faction chat.');
       return;
     }
-    const message = { channel, playerId: player.id, name: player.name, faction: player.energyColor, text, time: Date.now() };
+    const message = { channel, playerId: player.id, name: player.name, faction: player.energyColor, text, time: Date.now(), zoneId: player.zoneId };
     if (channel === 'global') io.emit('chat:message', message);
     else if (channel === 'squad') {
       const party = parties[playerParties[player.id]];
       if (!party) { socket.emit('chat:error', 'Join a squad before using Squad chat.'); return; }
       for (const memberId of party.members) playerSockets[memberId]?.emit('chat:message', message);
     } else {
-      for (const factionPlayer of Object.values(players)) {
+      // Faction chat reaches your faction everywhere; the zone is tagged so
+      // clients can label distant messages.
+      for (const factionPlayer of Object.values(playersById)) {
         if (factionPlayer.energyColor === player.energyColor) playerSockets[factionPlayer.id]?.emit('chat:message', message);
       }
     }
@@ -373,8 +499,10 @@ io.on('connection', (socket) => {
     const now = Date.now();
     if (!aim || player.hp <= 0 || now - player.lastAttackAt < 450) return;
     player.lastAttackAt = now;
-    const id = String(nextProjectileId++);
-    projectiles[id] = { id, ownerId: player.id, x: player.x + aim.x * 22, y: player.y + aim.y * 22, vx: aim.x * 520, vy: aim.y * 520, radius: 9, expiresAt: now + 1100, color: player.color, accentColor: player.accentColor };
+    const zone = playerZone(player);
+    if (!zone) return;
+    const id = String(zone.next.projectile++);
+    zone.projectiles[id] = { id, ownerId: player.id, x: player.x + aim.x * 22, y: player.y + aim.y * 22, vx: aim.x * 520, vy: aim.y * 520, radius: 9, expiresAt: now + 1100, color: player.color, accentColor: player.accentColor };
   });
   socket.on('player:dash', (direction) => {
     if (!player) return;
@@ -382,8 +510,9 @@ io.on('connection', (socket) => {
     const now = Date.now();
     if (!aim || player.hp <= 0 || now - player.lastDashAt < Math.max(250, 1300 * Math.pow(0.9, player.overclock))) return;
     player.lastDashAt = now;
-    player.x = clamp(player.x + aim.x * 120, PERIMETER_MARGIN, WORLD.width - PERIMETER_MARGIN);
-    player.y = clamp(player.y + aim.y * 120, PERIMETER_MARGIN, WORLD.height - PERIMETER_MARGIN);
+    const zone = playerZone(player);
+    player.x = clamp(player.x + aim.x * 120, 40, zone.world.width - 40);
+    player.y = clamp(player.y + aim.y * 120, 40, zone.world.height - 40);
     socket.emit('player:position', { x: player.x, y: player.y });
   });
   socket.on('player:shield', () => {
@@ -396,6 +525,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', (reason) => {
     if (player) {
       persistPlayer(player);
+      hooks.emit('left', player);
       removePartyMember(socket.id);
       delete pendingPartyInvites[socket.id];
       for (const [targetId, invite] of Object.entries(pendingPartyInvites)) {
@@ -404,9 +534,14 @@ io.on('connection', (socket) => {
           playerSockets[targetId]?.emit('party:error', 'The inviter left the Conduit.');
         }
       }
-      delete players[socket.id];
+      const zone = playerZone(player);
+      if (zone) {
+        delete zone.players[socket.id];
+        zone.memberCount = Math.max(0, zone.memberCount - 1);
+        zone.broadcast();
+      }
+      delete playersById[socket.id];
       delete playerSockets[socket.id];
-      broadcastState();
       console.log('Operative disconnected: ' + player.name + ' (' + reason + ')');
     } else {
       console.log('Unjoined client disconnected: ' + socket.id + ' (' + reason + ')');
@@ -414,70 +549,95 @@ io.on('connection', (socket) => {
   });
 });
 
+// ---- Tick loop -------------------------------------------------------------
+// Fixed timestep (roadmap #13): the simulation always advances in whole
+// FIXED_DT_MS slices, so physics/combat behave identically regardless of
+// event-loop jitter. State snapshots go out on a separate BROADCAST_MS
+// cadence, so network load can be tuned without touching simulation speed.
+// Both are env knobs: FIXED_DT_MS (default 50) and BROADCAST_MS (default 50).
+const FIXED_DT_MS = Number.isFinite(Number(process.env.FIXED_DT_MS)) ? clamp(Number(process.env.FIXED_DT_MS), 10, 200) : 50;
+const BROADCAST_MS = Number.isFinite(Number(process.env.BROADCAST_MS)) ? Math.max(10, Number(process.env.BROADCAST_MS)) : 50;
+const MAX_CATCHUP_STEPS = 5; // drop a backlog instead of spiralling
+
+let lastTick = Date.now();
+let accMs = 0;
+let lastSnapshotAt = 0;
+let lastProfileSave = Date.now();
+let lastPartyBroadcast = 0;
+let lastLobbyBroadcast = 0;
 setInterval(() => {
   const now = Date.now();
-  const deltaSeconds = Math.min((now - lastTick) / 1000, 0.1);
+  accMs += now - lastTick;
   lastTick = now;
 
-  let echoesChanged = false;
-  for (const player of Object.values(players)) {
-    player.inCore = player.hp > 0 && distance(player, CORE) <= CORE.radius;
-    if (collectArchiveEchoes(player)) echoesChanged = true;
-    if (player.inCore) {
-      player.coreCharge += deltaSeconds * 25;
-      if (player.coreCharge >= 100) {
-        player.coreCharge -= 100;
-        player.corePoints += 1;
-        player.skillPoints += 1;
-        awardNearbyParty(player);
-      }
-    } else {
-      player.coreCharge = Math.max(0, player.coreCharge - deltaSeconds * 10);
+  let steps = 0;
+  while (accMs >= FIXED_DT_MS && steps < MAX_CATCHUP_STEPS) {
+    const deltaSeconds = FIXED_DT_MS / 1000;
+    for (const zone of Object.values(zones)) {
+      stepZone(zone, now, deltaSeconds);
+      hooks.emit('tick', zone, now, deltaSeconds);
     }
+    accMs -= FIXED_DT_MS;
+    steps += 1;
   }
-  for (const [id, projectile] of Object.entries(projectiles)) {
-    projectile.x += projectile.vx * deltaSeconds;
-    projectile.y += projectile.vy * deltaSeconds;
-    let hit = false;
-    for (const target of Object.values(players)) {
-      if (target.id === projectile.ownerId || target.hp <= 0 || distance(target, projectile) > 21) continue;
-      target.hp = Math.max(0, target.hp - (now < target.shieldUntil ? 8 : 20 + 3 * (players[projectile.ownerId]?.atk || 0)));
-      delete projectiles[id];
-      hit = true;
-      break;
-    }
-    if (!hit && (now > projectile.expiresAt || projectile.x < 0 || projectile.x > WORLD.width || projectile.y < 0 || projectile.y > WORLD.height)) delete projectiles[id];
+  // If we fell far behind (e.g. the process was suspended), resync rather
+  // than running a burst of catch-up steps that could starve the event loop.
+  if (steps === MAX_CATCHUP_STEPS) accMs = 0;
+
+  if (now - lastSnapshotAt >= BROADCAST_MS) {
+    for (const zone of Object.values(zones)) if (zone.memberCount) zone.broadcast();
+    lastSnapshotAt = now;
   }
-  if (echoesChanged) broadcastEchoes();
+
   if (now - lastPartyBroadcast >= 250) {
     for (const partyId of Object.keys(parties)) broadcastParty(partyId);
     lastPartyBroadcast = now;
   }
-  if (now - lastProfileSave >= 10000 && Object.keys(players).length > 0) {
-    for (const player of Object.values(players)) {
-      profiles[player.name.toLowerCase()] = {
-        name: player.name,
-        corePoints: player.corePoints,
-        coreCharge: player.coreCharge,
-        hp: player.hp,
-        maxHp: player.maxHp,
-        atk: player.atk,
-        plating: player.plating,
-        overclock: player.overclock,
-        skillPoints: player.skillPoints,
-        partyXp: player.partyXp,
-        energyColor: player.energyColor,
-        updatedAt: new Date().toISOString()
-      };
-    }
+  // Keep the title-screen lobby counts fresh for connected clients.
+  if (now - lastLobbyBroadcast >= 5000) {
+    io.emit('zones:lobby', lobbyPayload());
+    lastLobbyBroadcast = now;
+  }
+  if (now - lastProfileSave >= 10000 && Object.keys(playersById).length > 0) {
+    for (const player of Object.values(playersById)) persistPlayer(player, false);
     saveProfiles();
     lastProfileSave = now;
   }
-  broadcastState();
-}, 50);
+}, FIXED_DT_MS);
 
+// Archive Echoes respawn per zone.
+const { spawnArchiveEcho, MAX_ARCHIVE_ECHOES } = require('./server/sim/echoes.js');
 setInterval(() => {
-  if (Object.keys(archiveEchoes).length < MAX_ARCHIVE_ECHOES && spawnArchiveEcho()) broadcastEchoes();
+  for (const zone of Object.values(zones)) {
+    if (Object.keys(zone.echoes).length < MAX_ARCHIVE_ECHOES && spawnArchiveEcho(zone)) zone.send('archive:echoes', zone.echoes);
+  }
 }, 7000);
+
+// ---- Plug-and-play module system (master) ---------------------------------
+// Modules live in server/modules/*.js and are booted here. See
+// memory/03-module-architecture.md for the contract.
+const { createHookBus } = require('./server/hook-bus.js');
+const { loadModules } = require('./server/module-loader.js');
+const hooks = createHookBus();
+const moduleSocketHandlers = {};
+const moduleContext = {
+  io,
+  app,
+  players: () => playersById,
+  playerSockets: () => playerSockets,
+  zones: () => zones,
+  playerZone: (playerId) => playerZone(playersById[playerId]),
+  on: (event, handler) => hooks.on(event, handler),
+  registerSocket: (name, handler) => { moduleSocketHandlers[name] = handler; },
+  route: (method, routePath, handler) => {
+    const register = typeof app[method] === 'function' ? app[method].bind(app) : app.get.bind(app);
+    register(routePath, handler);
+  },
+  distance,
+  applyXp,
+  persistPlayer: (target) => persistPlayer(target),
+  xpScale: () => XP_SCALE
+};
+loadModules(path.join(__dirname, 'server', 'modules'), moduleContext);
 
 httpServer.listen(PORT, '0.0.0.0', () => console.log('The 5 Sleeves server is running at http://localhost:' + PORT));

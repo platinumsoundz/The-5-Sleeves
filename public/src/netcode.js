@@ -1,8 +1,13 @@
+import { createTrackStore, pruneStore, recordSample } from './interpolation.js';
+
 export function createNetcode(state, callbacks = {}, audio = null) {
   const socketFactory = window.io;
   if (typeof socketFactory !== 'function') throw new Error('Socket.io client did not load.');
   const socket = socketFactory();
   state.socket = socket;
+  const playerTracks = createTrackStore();
+  const projectileTracks = createTrackStore();
+  state.tracks = { players: playerTracks, projectiles: projectileTracks };
 
   socket.on('connect', () => callbacks.status?.('Connected to the Conduit', true));
   socket.on('server:welcome', (data) => {
@@ -11,17 +16,32 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     state.core = data.core || state.core;
     callbacks.welcome?.(data);
   });
-  socket.on('join:accepted', (data) => callbacks.joinAccepted?.(data));
+  socket.on('join:accepted', (data) => {
+    state.zone = data.zone || state.zone;
+    callbacks.joinAccepted?.(data);
+  });
+  socket.on('zones:lobby', (zones) => {
+    state.zones = zones || [];
+    callbacks.zonesLobby?.(state.zones);
+  });
+  socket.on('spectate:accepted', (payload) => {
+    state.zone = payload?.zone || state.zone;
+    callbacks.spectate?.(payload);
+  });
   socket.on('name_taken', (data) => callbacks.joinError?.(data?.message || 'Name already taken! Choose another name.'));
   socket.on('name_error', (data) => callbacks.joinError?.(data?.message || 'Enter a valid character name.'));
   socket.on('players', (nextPlayers) => {
     const previous = state.players || {};
+    const now = performance.now();
     for (const [id, player] of Object.entries(nextPlayers || {})) {
+      if (id === state.playerId) continue;
+      recordSample(playerTracks, id, now, player.x, player.y);
       const before = previous[id];
-      if (!before || id === state.playerId) continue;
+      if (!before) continue;
       if (Math.hypot(player.x - before.x, player.y - before.y) > 90) audio?.play('dash');
       if (player.shieldUntil > before.shieldUntil && player.shieldUntil > Date.now()) audio?.play('shield');
     }
+    pruneStore(playerTracks, new Set(Object.keys(nextPlayers || {})), 3000, now);
     state.players = nextPlayers || {};
     const serverPlayer = state.players[state.playerId];
     if (serverPlayer) {
@@ -32,12 +52,36 @@ export function createNetcode(state, callbacks = {}, audio = null) {
   });
   socket.on('projectiles', (nextProjectiles) => {
     const previous = state.projectiles || {};
+    const now = performance.now();
     for (const [id, projectile] of Object.entries(nextProjectiles || {})) {
       if (!previous[id] && projectile.ownerId !== state.playerId) audio?.play('attack');
+      recordSample(projectileTracks, id, now, projectile.x, projectile.y);
     }
+    pruneStore(projectileTracks, new Set(Object.keys(nextProjectiles || {})), 1500, now);
     state.projectiles = nextProjectiles || {};
   });
   socket.on('archive:echoes', (echoes) => { state.archiveEchoes = echoes || {}; });
+  socket.on('archive:terminals', (payload) => {
+    state.terminals = payload?.terminals || [];
+    state.terminalsRead = payload?.read || [];
+  });
+  socket.on('archive:terminal', (payload) => callbacks.terminal?.(payload));
+  socket.on('ai', (nextAi) => { state.ai = nextAi || {}; });
+  socket.on('objectives', (payload) => { state.objectives = payload || { nodes: {}, scores: {}, match: {} }; });
+  socket.on('objectives:captured', (capture) => callbacks.captured?.(capture));
+  socket.on('match:end', (result) => callbacks.matchEnd?.(result));
+  socket.on('match:reset', (result) => callbacks.matchReset?.(result));
+  socket.on('effects', (nextEffects) => { state.effects = nextEffects || {}; });
+  socket.on('bursts', (nextBursts) => {
+    const previous = state.bursts || {};
+    for (const [id, burst] of Object.entries(nextBursts || {})) if (!previous[id]) callbacks.burst?.(burst);
+    state.bursts = nextBursts || {};
+  });
+  socket.on('combat:hit', (hit) => callbacks.hit?.(hit));
+  socket.on('combat:down', (down) => callbacks.down?.(down));
+  socket.on('combat:respawn', (respawn) => callbacks.respawn?.(respawn));
+  socket.on('combat:kill', (kill) => callbacks.kill?.(kill));
+  socket.on('level:up', (level) => callbacks.levelUp?.(level));
   socket.on('archive:collected', (data) => {
     audio?.play('pickup');
     callbacks.archiveCollected?.(data);
@@ -59,12 +103,16 @@ export function createNetcode(state, callbacks = {}, audio = null) {
   socket.on('disconnect', () => callbacks.status?.('Connection lost', false));
 
   return {
-    join: (name) => socket.emit('player:join', name),
+    join: (name, zoneId) => socket.emit('player:join', zoneId ? { name, zone: zoneId } : name),
+    switchZone: (zoneId) => socket.emit('zone:switch', zoneId),
+    spectate: (zoneId) => socket.emit('spectate:join', { zone: zoneId }),
     move: (x, y) => socket.emit('player:move', { x, y }),
     action: (name, direction) => {
       if (name === 'attack') socket.emit('player:attack', direction);
       if (name === 'dash') socket.emit('player:dash', direction);
       if (name === 'shield') socket.emit('player:shield');
+      if (name === 'ability') socket.emit('player:ability', direction);
+      if (name === 'interact') socket.emit('player:interact');
     },
     upgrade: (stat) => socket.emit('player:upgrade', stat),
     selectDomain: (domain) => socket.emit('player:color', domain),

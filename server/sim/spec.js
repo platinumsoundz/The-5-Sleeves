@@ -1,0 +1,65 @@
+// Shared combat/progression tuning for every zone simulation. One file so
+// a novice can rebalance the whole game without reading the sim code.
+// Env knobs keep their historical names (MAX_WARDENS, SCORE_LIMIT, XP_SCALE).
+
+const SLEEVE_COLORS = {
+  cipher: '#00ffff',
+  wind: '#00ff88',
+  water: '#0088ff',
+  fire: '#ff4400',
+  earth: '#cc7722',
+  dark: '#9900ff',
+  azure: '#43b9ff',
+  emerald: '#45f29a',
+  crimson: '#ff536b',
+  violet: '#c875ff'
+};
+const SLEEVE_ACCENTS = { cipher: '#78ff5f', wind: '#a7ffd0', water: '#71d5ff', fire: '#ffb347', earth: '#f0b768', dark: '#ff29d6', azure: '#8ce0ff', emerald: '#a7ffd0', crimson: '#ffb347', violet: '#ff29d6' };
+const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
+const ACTIVE_DOMAINS = new Set(['cipher', 'wind', 'water', 'fire', 'earth', 'dark']);
+
+const RESPAWN_DELAY = 5000;
+const AI_RESPAWN_DELAY = 9000;
+const ABILITY_BURST_LIFETIME = 380;
+const BURN_TICK_CAP = 60;
+
+// Hostile PvE drones that patrol the ruins and shoot at operatives.
+const MAX_WARDENS = Number.isFinite(Number(process.env.MAX_WARDENS)) ? Math.max(0, Number(process.env.MAX_WARDENS)) : 4;
+const WARDEN = {
+  name: 'Rust Warden',
+  hp: 90,
+  speed: 74,
+  aggro: 330,
+  attackRange: 240,
+  shotCooldown: 1500,
+  damage: 12,
+  projectileSpeed: 300,
+  radius: 15,
+  xp: 12,
+  skillPoints: 1,
+  coreCharge: 10
+};
+
+// XP bounties (scaled by XP_SCALE inside applyXp).
+const XP_ECHO = 15;
+const XP_CORE_POINT = 25;
+const XP_PLAYER_KILL = 30;
+const XP_CAPTURE = 20;
+const LEVEL_HP_GAIN = 10;
+
+// Archive Echo lore lines (Tower log fragments).
+const ARCHIVE_LOGS = [
+  'Archive Log #04: Tower 1 atmospheric filters operating at 42% capacity...',
+  'Archive Log #11: Ashley reports a repeating signal beneath the eastern transit line.',
+  'Archive Log #17: Perimeter fog readings exceed safe exposure limits.',
+  'Archive Log #23: The Cipher Conduit responds to Sleeve resonance.',
+  'Archive Log #31: Evacuation records end before the final Tower 1 lockdown.'
+];
+
+module.exports = {
+  SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
+  RESPAWN_DELAY, AI_RESPAWN_DELAY, ABILITY_BURST_LIFETIME, BURN_TICK_CAP,
+  MAX_WARDENS, WARDEN,
+  XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, LEVEL_HP_GAIN,
+  ARCHIVE_LOGS
+};

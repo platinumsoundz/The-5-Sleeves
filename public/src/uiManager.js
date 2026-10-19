@@ -8,6 +8,7 @@ export function createUIManager(actions) {
   const partyWidget = $('#party-widget'), partyMap = $('#party-minimap'), partyMembers = $('#party-members');
   const inviteToast = $('#party-invite-toast'), inviteMessage = $('#party-invite-message');
   const chatList = $('#chat-messages'), chatForm = $('#chat-form'), chatInput = $('#chat-input');
+  const abilityButton = $('#ability-button');
   let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, inviteTimer = null;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
@@ -21,7 +22,7 @@ export function createUIManager(actions) {
   }
   function updateMenu(player) {
     if (!player) return;
-    $('#skill-points').textContent = 'Skill Points: ' + (player.skillPoints || 0);
+    $('#skill-points').textContent = 'Level ' + (player.level || 1) + ' · Skill Points: ' + (player.skillPoints || 0);
     $('#atk-level').textContent = 'Lv ' + (player.atk || 0);
     $('#plating-level').textContent = 'Lv ' + (player.plating || 0);
     $('#overclock-level').textContent = 'Lv ' + (player.overclock || 0);
@@ -133,11 +134,16 @@ export function createUIManager(actions) {
     updatePlayer(player) {
       profile = { name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor };
       saveProfile(); updateMenu(player);
+      if (player.abilityShort) {
+        abilityButton.textContent = player.abilityShort;
+        abilityButton.setAttribute('aria-label', 'Cast ' + (player.abilityName || 'sleeve ability'));
+      }
+      abilityButton.dataset.ready = player.abilityCooldown > 0 ? 'false' : 'true';
     },
     setInputMode(mode) {
       document.body.dataset.inputMode = mode;
-      if (mode === 'keyboard') hints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">C</span> Specs';
-      else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">A / R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">START / SELECT / Y</span> Specs';
+      if (mode === 'keyboard') hints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">Q</span> Sleeve<br /><span class="control-badge">F</span> Read &nbsp; <span class="control-badge">C</span> Specs &nbsp; <span class="control-badge">+ / −</span> Zoom';
+      else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">A / R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">RT</span> Sleeve<br /><span class="control-badge">Y</span> Read &nbsp; <span class="control-badge">START / SELECT</span> Specs';
       else hints.textContent = '';
     },
     toggleMenu(forceOpen) {
@@ -158,6 +164,29 @@ export function createUIManager(actions) {
     partyReward(reward) { appendChat('Squad assist: +' + reward.partyXp + ' shared XP from ' + reward.source + '.', true); },
     chatMessage: (message) => appendChat(message),
     chatError: (message) => appendChat(message, true),
+    setBootStatus(text) { $('#boot-status').textContent = text; },
+    // Zone picker on the title screen. `selectedZone` lives in the caller and
+    // is read again on submit, so remembering the choice is the caller's job.
+    renderZones(zones, selectedId) {
+      const options = $('#zone-options');
+      if (!options) return;
+      options.innerHTML = '';
+      for (const zone of zones) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'zone-option' + (zone.id === selectedId ? ' selected' : '');
+        button.dataset.zone = zone.id;
+        button.setAttribute('role', 'radio');
+        button.setAttribute('aria-checked', String(zone.id === selectedId));
+        button.innerHTML = '';
+        button.append(zone.name);
+        const meta = document.createElement('small');
+        meta.textContent = zone.spirit + ' · ' + zone.players + ' online';
+        button.append(meta);
+        button.addEventListener('click', () => actions.selectZone(zone.id));
+        options.append(button);
+      }
+    },
     toggleMenuFromInput(forceOpen) { this.toggleMenu(forceOpen); }
   };
 }
