@@ -10,6 +10,8 @@ export function createUIManager(actions) {
   const menu = $('#character-menu');
   const hints = $('#control-hints');
   const status = $('#status');
+  const archiveToast = $('#archive-toast');
+  let toastTimer = null;
   let joined = false;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
@@ -70,6 +72,12 @@ export function createUIManager(actions) {
       updateMenu(profile);
     },
     joinError(message) { nameError.textContent = message; enterButton.disabled = false; },
+    showArchiveToast(message) {
+      archiveToast.textContent = message;
+      archiveToast.classList.add('visible');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => archiveToast.classList.remove('visible'), 5200);
+    },
     updatePlayer(player) {
       profile = { name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor };
       saveProfile();
