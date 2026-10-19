@@ -157,6 +157,7 @@ function collectArchiveEchoes(player) {
       skillPoints: player.skillPoints,
       coreCharge: player.coreCharge
     });
+    awardNearbyParty(player);
     collected = true;
   }
   if (collected) persistPlayer(player);
@@ -193,6 +194,7 @@ io.on('connection', (socket) => {
   console.log('Client connected: ' + socket.id);
   socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: WORLD, core: CORE });
   socket.emit('archive:echoes', archiveEchoes);
+  socket.emit('party:state', null);
 
   socket.on('player:join', (requestedName) => {
     if (player) return;
@@ -276,6 +278,94 @@ io.on('connection', (socket) => {
     broadcastState();
   });
 
+  socket.on('party:invite:send', (targetId) => {
+    if (!player || typeof targetId !== 'string' || targetId === player.id) return;
+    const target = players[targetId];
+    if (!target || distance(player, target) > 200) {
+      socket.emit('party:error', 'That operative is not nearby.');
+      return;
+    }
+    if (playerParties[targetId]) {
+      socket.emit('party:error', 'That operative is already in a squad.');
+      return;
+    }
+    const partyId = playerParties[player.id] || 'squad-' + player.id;
+    const party = parties[partyId];
+    if (party && party.members.length >= 4) {
+      socket.emit('party:error', 'Your squad is full (4 operatives maximum).');
+      return;
+    }
+    const inviteId = partyId + ':' + targetId + ':' + Date.now();
+    pendingPartyInvites[targetId] = { inviteId, partyId, inviterId: player.id, expiresAt: Date.now() + 30000 };
+    playerSockets[targetId]?.emit('party:invite', { inviteId, inviterId: player.id, inviterName: player.name, expiresIn: 30 });
+    socket.emit('party:invite:sent', { targetName: target.name });
+  });
+
+  socket.on('party:respond', (response) => {
+    const invite = pendingPartyInvites[socket.id];
+    if (!player || !invite || !response || response.inviteId !== invite.inviteId || Date.now() > invite.expiresAt) {
+      delete pendingPartyInvites[socket.id];
+      socket.emit('party:error', 'That squad invite expired.');
+      return;
+    }
+    delete pendingPartyInvites[socket.id];
+    const inviter = players[invite.inviterId];
+    if (!response.accept) {
+      playerSockets[invite.inviterId]?.emit('party:notice', player.name + ' declined your squad invite.');
+      return;
+    }
+    if (!inviter || playerParties[player.id]) {
+      socket.emit('party:error', 'You or the inviter can no longer join this squad.');
+      return;
+    }
+    let party = parties[invite.partyId];
+    if (!party) {
+      if (playerParties[inviter.id]) {
+        socket.emit('party:error', 'That squad invite is no longer valid.');
+        return;
+      }
+      party = { id: invite.partyId, leaderId: inviter.id, members: [inviter.id] };
+      parties[party.id] = party;
+      playerParties[inviter.id] = party.id;
+      playerSockets[inviter.id]?.join('party:' + party.id);
+    }
+    if (!party.members.includes(inviter.id) || party.members.length >= 4) {
+      socket.emit('party:error', 'That squad is full or no longer available.');
+      return;
+    }
+    party.members.push(player.id);
+    playerParties[player.id] = party.id;
+    socket.join('party:' + party.id);
+    broadcastParty(party.id);
+    playerSockets[inviter.id]?.emit('party:notice', player.name + ' joined your squad.');
+  });
+
+  socket.on('party:leave', () => {
+    if (player) removePartyMember(player.id);
+  });
+
+  socket.on('chat:send', (payload) => {
+    if (!player || !payload || typeof payload.text !== 'string') return;
+    const text = payload.text.replace(/[\\u0000-\\u001f\\u007f]/g, ' ').trim().slice(0, 240);
+    const channel = payload.channel;
+    if (!text) return;
+    if (!['global', 'squad', 'faction'].includes(channel)) {
+      socket.emit('chat:error', 'Choose Global, Squad, or Faction chat.');
+      return;
+    }
+    const message = { channel, playerId: player.id, name: player.name, faction: player.energyColor, text, time: Date.now() };
+    if (channel === 'global') io.emit('chat:message', message);
+    else if (channel === 'squad') {
+      const party = parties[playerParties[player.id]];
+      if (!party) { socket.emit('chat:error', 'Join a squad before using Squad chat.'); return; }
+      for (const memberId of party.members) playerSockets[memberId]?.emit('chat:message', message);
+    } else {
+      for (const factionPlayer of Object.values(players)) {
+        if (factionPlayer.energyColor === player.energyColor) playerSockets[factionPlayer.id]?.emit('chat:message', message);
+      }
+    }
+  });
+
   socket.on('player:attack', (direction) => {
     if (!player) return;
     const aim = validDirection(direction);
@@ -305,6 +395,14 @@ io.on('connection', (socket) => {
   socket.on('disconnect', (reason) => {
     if (player) {
       persistPlayer(player);
+      removePartyMember(socket.id);
+      delete pendingPartyInvites[socket.id];
+      for (const [targetId, invite] of Object.entries(pendingPartyInvites)) {
+        if (invite.inviterId === socket.id) {
+          delete pendingPartyInvites[targetId];
+          playerSockets[targetId]?.emit('party:error', 'The inviter left the Conduit.');
+        }
+      }
       delete players[socket.id];
       delete playerSockets[socket.id];
       broadcastState();
@@ -330,6 +428,7 @@ setInterval(() => {
         player.coreCharge -= 100;
         player.corePoints += 1;
         player.skillPoints += 1;
+        awardNearbyParty(player);
       }
     } else {
       player.coreCharge = Math.max(0, player.coreCharge - deltaSeconds * 10);
