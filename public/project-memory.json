@@ -1,0 +1,23 @@
+{
+  "project_name": "The 5 Sleeves Online",
+  "version": "2.0.0-MVP",
+  "architecture": "Master-Slave / Modular ES6 Modules",
+  "world_canon_version": "1.0",
+  "active_features": [
+    "Title Overlay & Onboarding",
+    "JSON Persistence (player-profiles.json)",
+    "Realtime Movement & Touch D-Pad",
+    "6 Faction Sleeves & Skill Upgrades",
+    "Gamepad / Keyboard Dynamic HUD Hints",
+    "Modular Client Architecture & Memory Ledger",
+    "Server-authoritative multiplayer combat and Cipher Core scoring",
+    "Canon-driven procedural sprites, ruined tiles, and ambient fog",
+    "Optional image assets with procedural rendering fallback"
+  ],
+  "upcoming_features": [
+    "Archive Fragment Lore Pickups",
+    "Faction-specific character animation and combat effects",
+    "Progression balancing and additional levels"
+  ],
+  "dev_notes": "Client is split into small browser ES modules under public/src/. public/client.js is the master orchestrator. Procedural rendering remains active when optional files under public/assets/ are absent. Ajaye's segmented Cipher Sleeve is rendered on his anatomical left arm only; his right arm remains ordinary clothing and skin."
+}
