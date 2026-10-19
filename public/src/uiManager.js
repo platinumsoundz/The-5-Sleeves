@@ -13,10 +13,13 @@ export function createUIManager(actions) {
   let joined = false;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
+  let profileSnapshot = JSON.stringify(profile);
   if (typeof profile.name === 'string') nameInput.value = profile.name;
 
   function saveProfile() {
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (_) {}
+    const serialized = JSON.stringify(profile);
+    if (serialized === profileSnapshot) return;
+    try { localStorage.setItem(PROFILE_KEY, serialized); profileSnapshot = serialized; } catch (_) {}
   }
   function updateMenu(player) {
     if (!player) return;
