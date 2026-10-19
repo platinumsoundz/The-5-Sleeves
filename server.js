@@ -9,6 +9,15 @@ const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
 const WORLD = { width: 1000, height: 700 };
 const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
+const PERIMETER_MARGIN = 40;
+const MAX_ARCHIVE_ECHOES = 5;
+const ARCHIVE_LOGS = [
+  'Archive Log #04: Tower 1 atmospheric filters operating at 42% capacity...',
+  'Archive Log #11: Ashley reports a repeating signal beneath the eastern transit line.',
+  'Archive Log #17: Perimeter fog readings exceed safe exposure limits.',
+  'Archive Log #23: The Cipher Conduit responds to Sleeve resonance.',
+  'Archive Log #31: Evacuation records end before the final Tower 1 lockdown.'
+];
 const SLEEVE_COLORS = {
   cipher: '#00ffff',
   wind: '#00ff88',
@@ -26,7 +35,10 @@ const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', viole
 const ACTIVE_DOMAINS = new Set(['cipher', 'wind', 'water', 'fire', 'earth', 'dark']);
 const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
 const players = {};
+const playerSockets = {};
 const projectiles = {};
+const archiveEchoes = {};
+let nextEchoId = 1;
 let profiles = {};
 let nextProjectileId = 1;
 let lastTick = Date.now();
@@ -58,6 +70,40 @@ function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 function broadcastState() {
   io.emit('players', players);
   io.emit('projectiles', projectiles);
+}
+function broadcastEchoes() { io.emit('archive:echoes', archiveEchoes); }
+function spawnArchiveEcho() {
+  const columns = Math.floor(WORLD.width / 40);
+  const rows = Math.floor(WORLD.height / 40);
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const x = (1 + Math.floor(Math.random() * (columns - 2))) * 40 + 20;
+    const y = (1 + Math.floor(Math.random() * (rows - 2))) * 40 + 20;
+    if (distance({ x, y }, CORE) < 150) continue;
+    if (Object.values(archiveEchoes).some((echo) => distance(echo, { x, y }) < 70)) continue;
+    const id = 'echo-' + nextEchoId++;
+    archiveEchoes[id] = { id, x, y, loreIndex: (nextEchoId - 2) % ARCHIVE_LOGS.length };
+    return true;
+  }
+  return false;
+}
+function collectArchiveEchoes(player) {
+  if (!player || player.hp <= 0) return false;
+  let collected = false;
+  for (const [id, echo] of Object.entries(archiveEchoes)) {
+    if (distance(player, echo) > 25) continue;
+    delete archiveEchoes[id];
+    player.skillPoints += 1;
+    player.coreCharge = Math.min(99.99, player.coreCharge + 15);
+    playerSockets[player.id]?.emit('archive:collected', {
+      echoId: id,
+      lore: ARCHIVE_LOGS[echo.loreIndex] || ARCHIVE_LOGS[0],
+      skillPoints: player.skillPoints,
+      coreCharge: player.coreCharge
+    });
+    collected = true;
+  }
+  if (collected) persistPlayer(player);
+  return collected;
 }
 function validDirection(direction) {
   if (!direction || !Number.isFinite(direction.x) || !Number.isFinite(direction.y)) return null;
