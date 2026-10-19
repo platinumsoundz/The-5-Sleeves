@@ -96,6 +96,37 @@ joinForm.addEventListener('submit', (event) => {
   socket.emit('player:join', name);
 });
 
+function updateCharacterMenu(player) {
+  if (!player) return;
+  const points = Number(player.skillPoints) || 0;
+  skillPointsLabel.textContent = 'Skill Points: ' + points;
+  document.getElementById('atk-level').textContent = 'Lv ' + (player.atk || 0);
+  document.getElementById('plating-level').textContent = 'Lv ' + (player.plating || 0);
+  document.getElementById('overclock-level').textContent = 'Lv ' + (player.overclock || 0);
+  document.querySelectorAll('.upgrade-button').forEach((button) => {
+    button.disabled = points <= 0 || (Number(player[button.dataset.upgrade]) || 0) >= 99;
+  });
+  document.querySelectorAll('.color-option').forEach((button) => {
+    button.classList.toggle('selected', button.dataset.color === player.energyColor);
+  });
+}
+
+specsButton.addEventListener('click', () => {
+  if (!players[playerId]) return;
+  updateCharacterMenu(players[playerId]);
+  characterMenu.classList.remove('hidden');
+});
+menuClose.addEventListener('click', () => characterMenu.classList.add('hidden'));
+characterMenu.addEventListener('click', (event) => {
+  if (event.target === characterMenu) characterMenu.classList.add('hidden');
+});
+document.querySelectorAll('.upgrade-button').forEach((button) => {
+  button.addEventListener('click', () => socket.emit('player:upgrade', button.dataset.upgrade));
+});
+document.querySelectorAll('.color-option').forEach((button) => {
+  button.addEventListener('click', () => socket.emit('player:color', button.dataset.color));
+});
+
 function resizeCanvas() {
   const scale = window.devicePixelRatio || 1;
   canvas.width = Math.floor(window.innerWidth * scale);
