@@ -234,6 +234,6 @@ setInterval(() => {
     lastProfileSave = now;
   }
   broadcastState();
-}, 1000);
+}, 50);
 
 httpServer.listen(PORT, '0.0.0.0', () => console.log('The 5 Sleeves server is running at http://localhost:' + PORT));
