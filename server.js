@@ -38,6 +38,9 @@ const players = {};
 const playerSockets = {};
 const projectiles = {};
 const archiveEchoes = {};
+const parties = {};
+const playerParties = {};
+const pendingPartyInvites = {};
 let nextEchoId = 1;
 let profiles = {};
 let nextProjectileId = 1;
@@ -72,6 +75,60 @@ function broadcastState() {
   io.emit('projectiles', projectiles);
 }
 function broadcastEchoes() { io.emit('archive:echoes', archiveEchoes); }
+function partySnapshot(party) {
+  if (!party) return null;
+  return {
+    id: party.id,
+    leaderId: party.leaderId,
+    members: party.members.map((id) => players[id]).filter(Boolean).map((member) => ({
+      id: member.id, name: member.name, hp: member.hp, maxHp: member.maxHp,
+      x: member.x, y: member.y, energyColor: member.energyColor, partyXp: member.partyXp
+    }))
+  };
+}
+function broadcastParty(partyId) {
+  const party = parties[partyId];
+  if (!party) return;
+  const snapshot = partySnapshot(party);
+  for (const memberId of party.members) playerSockets[memberId]?.emit('party:state', snapshot);
+}
+function removePartyMember(playerId) {
+  const partyId = playerParties[playerId];
+  if (!partyId) return;
+  const party = parties[partyId];
+  delete playerParties[playerId];
+  playerSockets[playerId]?.leave('party:' + partyId);
+  if (!party) return;
+  party.members = party.members.filter((id) => id !== playerId);
+  if (party.members.length <= 1) {
+    for (const remainingId of party.members) {
+      delete playerParties[remainingId];
+      playerSockets[remainingId]?.leave('party:' + partyId);
+      playerSockets[remainingId]?.emit('party:state', null);
+    }
+    delete parties[partyId];
+  } else {
+    if (party.leaderId === playerId) party.leaderId = party.members[0];
+    broadcastParty(partyId);
+  }
+  playerSockets[playerId]?.emit('party:state', null);
+}
+function awardNearbyParty(player) {
+  const party = parties[playerParties[player.id]];
+  if (!party) return;
+  let changed = false;
+  for (const memberId of party.members) {
+    if (memberId === player.id) continue;
+    const member = players[memberId];
+    if (!member || distance(player, member) > 260) continue;
+    member.partyXp = Math.round((member.partyXp + 0.25) * 100) / 100;
+    member.coreCharge = Math.min(99.99, member.coreCharge + 5);
+    playerSockets[memberId]?.emit('party:reward', { source: player.name, partyXp: member.partyXp, coreCharge: member.coreCharge });
+    persistPlayer(member);
+    changed = true;
+  }
+  if (changed) broadcastParty(party.id);
+}
 function spawnArchiveEcho() {
   const columns = Math.floor(WORLD.width / 40);
   const rows = Math.floor(WORLD.height / 40);
@@ -124,6 +181,7 @@ function persistPlayer(player) {
     plating: player.plating,
     overclock: player.overclock,
     skillPoints: player.skillPoints,
+    partyXp: player.partyXp,
     energyColor: player.energyColor,
     updatedAt: new Date().toISOString()
   };
@@ -173,6 +231,7 @@ io.on('connection', (socket) => {
       plating: Number.isInteger(profile.plating) ? clamp(profile.plating, 0, 99) : 0,
       overclock: Number.isInteger(profile.overclock) ? clamp(profile.overclock, 0, 99) : 0,
       skillPoints: Number.isInteger(profile.skillPoints) ? Math.max(0, profile.skillPoints) : 0,
+      partyXp: Number.isFinite(profile.partyXp) ? Math.max(0, profile.partyXp) : 0,
       hp: Number.isFinite(profile.hp) ? clamp(profile.hp, 1, Number.isFinite(profile.maxHp) ? profile.maxHp : 100) : 100,
       maxHp: Number.isFinite(profile.maxHp) ? clamp(profile.maxHp, 100, 1585) : 100,
       shieldUntil: 0,
@@ -185,7 +244,7 @@ io.on('connection', (socket) => {
     };
     players[socket.id] = player;
     playerSockets[player.id] = socket;
-    socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor } });
+    socket.emit('join:accepted', { playerId: player.id, name: player.name, stats: { hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor } });
     broadcastState();
     console.log('Operative joined: ' + player.name + ' (' + socket.id + ')');
   });
@@ -302,6 +361,7 @@ setInterval(() => {
         plating: player.plating,
         overclock: player.overclock,
         skillPoints: player.skillPoints,
+        partyXp: player.partyXp,
         energyColor: player.energyColor,
         updatedAt: new Date().toISOString()
       };
