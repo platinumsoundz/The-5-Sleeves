@@ -33,6 +33,25 @@
       #enter-button { width: 100%; margin-top: 14px; padding: 14px; border: 1px solid #adfff0; border-radius: 9px; background: linear-gradient(110deg,#087a79,#23bda0); color: #f1fffb; font: 800 15px system-ui,sans-serif; letter-spacing: .12em; }
       #enter-button:disabled { opacity: .55; }
       #name-error { min-height: 20px; margin-top: 10px; color: #ff8b9b; font-size: 13px; }
+      #specs-button { position: fixed; z-index: 3; top: max(12px,env(safe-area-inset-top)); right: max(12px,env(safe-area-inset-right)); padding: 9px 12px; border: 1px solid #59dcca; border-radius: 9px; background: rgba(8,25,38,.9); color: #cffff5; font: 700 11px system-ui,sans-serif; letter-spacing: .08em; }
+      #character-menu { position: fixed; z-index: 8; inset: 0; overflow-y: auto; display: flex; justify-content: center; align-items: center; padding: 20px; background: rgba(2,8,17,.88); }
+      #character-menu.hidden { display: none; }
+      .menu-panel { width: min(520px,100%); max-height: 92vh; overflow-y: auto; padding: 24px; border: 1px solid rgba(105,255,222,.6); border-radius: 16px; background: linear-gradient(145deg,#102534,#07111d); box-shadow: 0 0 42px rgba(51,232,202,.15); }
+      .menu-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; }
+      .menu-heading h2 { margin:0; color:#e2fff9; letter-spacing:.08em; font-size:22px; }
+      #menu-close { border:1px solid #4a7679; border-radius:8px; background:#142b37; color:#d6fff6; padding:8px 12px; }
+      #skill-points { padding:12px; margin-bottom:12px; border-radius:9px; background:rgba(48,193,170,.12); color:#83ffe3; font-weight:700; text-align:center; }
+      .skill-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:12px 6px; border-bottom:1px solid rgba(117,177,186,.18); }
+      .skill-row strong { color:#e6f7f5; } .skill-row small { display:block; color:#92aeb8; margin-top:3px; }
+      .skill-level { min-width:50px; text-align:center; color:#8effe6; font-weight:700; }
+      .upgrade-button { width:42px; height:42px; border:1px solid #61e8d1; border-radius:10px; background:#124d50; color:white; font-size:24px; }
+      .upgrade-button:disabled { opacity:.35; }
+      .menu-section-title { color:#72ffe0; margin:22px 0 10px; letter-spacing:.08em; font-size:13px; }
+      #color-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+      .color-option { padding:11px 8px; border:1px solid #375462; border-radius:9px; background:#102331; color:#eafffb; }
+      .color-option::before { content:''; display:inline-block; width:12px; height:12px; margin-right:8px; border-radius:50%; background:var(--swatch); vertical-align:-1px; }
+      .color-option.selected { border-color:#8ffff0; box-shadow:0 0 12px rgba(90,255,221,.25); }
+      #menu-hint { margin-top:15px; color:#86a4ae; font-size:12px; }
     </style>
   </head>
   <body>
@@ -48,6 +67,24 @@
       </form>
     </div>
     <div id="status" class="offline">Connecting…</div>
+    <button id="specs-button" type="button">SPECS / SKILLS</button>
+    <section id="character-menu" class="hidden" aria-modal="true" role="dialog" aria-labelledby="menu-title">
+      <div class="menu-panel">
+        <div class="menu-heading"><h2 id="menu-title">OPERATIVE SPECS</h2><button id="menu-close" type="button">CLOSE</button></div>
+        <div id="skill-points">Skill Points: 0</div>
+        <div class="skill-row"><div><strong>Sleeve Power (ATK)</strong><small>+3 Energy Blast damage per level</small></div><span class="skill-level" id="atk-level">Lv 0</span><button class="upgrade-button" data-upgrade="atk" type="button" aria-label="Upgrade Sleeve Power">+</button></div>
+        <div class="skill-row"><div><strong>Conduit Plating (HP)</strong><small>+15 maximum health per level</small></div><span class="skill-level" id="plating-level">Lv 0</span><button class="upgrade-button" data-upgrade="plating" type="button" aria-label="Upgrade Conduit Plating">+</button></div>
+        <div class="skill-row"><div><strong>Overclock (SPD)</strong><small>Dash and Shield cooldowns −10% per level</small></div><span class="skill-level" id="overclock-level">Lv 0</span><button class="upgrade-button" data-upgrade="overclock" type="button" aria-label="Upgrade Overclock">+</button></div>
+        <h3 class="menu-section-title">SLEEVE ENERGY COLOR</h3>
+        <div id="color-options">
+          <button class="color-option" data-color="azure" style="--swatch:#43b9ff" type="button">Azure Blue</button>
+          <button class="color-option" data-color="emerald" style="--swatch:#45f29a" type="button">Emerald Green</button>
+          <button class="color-option" data-color="crimson" style="--swatch:#ff536b" type="button">Crimson Red</button>
+          <button class="color-option" data-color="violet" style="--swatch:#c875ff" type="button">Violet Void</button>
+        </div>
+        <div id="menu-hint">Earn a Skill Point each time you score at the Cipher Core.</div>
+      </div>
+    </section>
     <div id="dpad" aria-label="Movement controls">
       <button class="dpad-button" data-direction="up" aria-label="Move up">▲</button>
       <button class="dpad-button" data-direction="left" aria-label="Move left">◀</button>
