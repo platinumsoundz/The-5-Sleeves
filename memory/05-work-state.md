@@ -8,8 +8,17 @@ Last updated: 2026-10-19 (foundation chapter split).
 ## Git state
 
 - Branch `main`, tracking `origin/main` (github.com/platinumsoundz/The-5-Sleeves).
-- Was 14 commits ahead of origin at the time of writing; **push regularly**.
+- **2026-10-20 incident:** a cleanup of `.l2s.tmp_obj_*` files (PRoot
+  hardlink backing data) destroyed every loose git object. The working tree
+  survived; the repo was rebuilt from `origin/main` (2886785) plus the
+  intact worktree as commit `2d976f5` ("Restore full game after local git
+  object-store loss"). **All content is present, but the granular history of
+  roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
+- 2 commits ahead of origin after the rebuild; **push regularly** and push
+  soon so a local loss cannot repeat this.
 - Commit style: imperative summary line + bullet body explaining the system.
+- `npm test` now runs with `--test-concurrency=4`; uncapped parallel test
+  files oversubscribe the device and flake the respawn test.
 
 ## Done (committed)
 
@@ -55,7 +64,11 @@ Last updated: 2026-10-19 (foundation chapter split).
 ## What is left / next session
 
 - Roadmap items 1–14 are COMPLETE. No build is in flight.
-- **Push to origin** is still pending owner confirmation.
+- **Recovery note:** the commit history for those builds was reconstructed
+  as one commit (`2d976f5`) after the object-store incident. Future builds
+  start clean from there.
+- **Push to origin** is still pending owner confirmation — do this first
+  next session; the local repo has now lost history once.
 - Next work is owner-directed: brainstorm `ROADMAP-FUTURE.md`, approve or
   rewrite the proposed terminal lore, then pick the next system (suggested
   order: in-game zone switcher → private rooms → auth → PWA → store).

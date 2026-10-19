@@ -38,9 +38,17 @@ optional reading.
   seed `0x5leeves` (not valid hex) from an interrupted edit; it broke the
   renderer import chain and 3 test suites. Always run `npm test` after ANY
   edit, even "tiny" ones.
+- **NEVER delete `.git/objects/**/.l2s.tmp_obj_*` files.** In this
+  environment (Android + PRoot) git's hardlink emulation stores loose
+  object data in those dot-files. Deleting them destroys every loose
+  commit/tree/blob and leaves the repo with `bad object HEAD`. `git fsck`
+  reports them as "garbage", but they are load-bearing. Leave them alone;
+  if fsck noise matters, ignore it rather than cleaning. (This happened on
+  2026-10-20 and cost the local commit history; see chapter 05.)
 - **Interrupted git writes leave junk.** After an interruption run
-  `git fsck`; stray `.git/objects/**/*.tmp_obj_*` files are safe to delete
-  if `git rev-list --objects --all` does not reference them.
+  `git fsck`. Garbage warnings about `.l2s.tmp_*` are normal here; only act
+  on real corruption (`missing`, `corrupt`) and never mass-delete inside
+  `.git/objects`.
 - **Never trust "the tests passed earlier".** Re-run them.
 - **Commit after each system**, not in batches. A lost session loses at most
   one build.

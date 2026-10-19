@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.11.0",
+  "version": "2.12.0",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -69,6 +69,7 @@
   ],
   "in_progress_features": [],
   "upcoming_features": [
+    "URGENT: push to origin — local git history was lost once (2026-10-20 object-store incident); never delete .git/objects/**/.l2s.tmp_obj_* files (PRoot hardlink backing data)",
     "Owner brainstorm: ROADMAP-FUTURE.md covers monetization (cosmetics only), optional email accounts as an auth module, PWA/Android then iOS/console, private rooms, zone hazards, persistence/observability, and open questions",
     "Owner review of PROPOSED terminal lore for sunken-coast, scorched-wastes, frozen-wastes, apex-citadel (server/zones-catalog.js)",
     "In-game zone switcher UI (server zone:switch + zoneChanged hook already exist; only the title-screen picker has UI)",
