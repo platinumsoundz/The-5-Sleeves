@@ -46,6 +46,7 @@ let profiles = {};
 let nextProjectileId = 1;
 let lastTick = Date.now();
 let lastProfileSave = Date.now();
+let lastPartyBroadcast = 0;
 
 try {
   profiles = JSON.parse(fs.readFileSync(PROFILE_FILE, 'utf8'));
@@ -448,6 +449,10 @@ setInterval(() => {
     if (!hit && (now > projectile.expiresAt || projectile.x < 0 || projectile.x > WORLD.width || projectile.y < 0 || projectile.y > WORLD.height)) delete projectiles[id];
   }
   if (echoesChanged) broadcastEchoes();
+  if (now - lastPartyBroadcast >= 250) {
+    for (const partyId of Object.keys(parties)) broadcastParty(partyId);
+    lastPartyBroadcast = now;
+  }
   if (now - lastProfileSave >= 10000 && Object.keys(players).length > 0) {
     for (const player of Object.values(players)) {
       profiles[player.name.toLowerCase()] = {
