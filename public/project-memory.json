@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.0.0-MVP",
+  "version": "2.1.0",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "1.0",
   "active_features": [
@@ -12,7 +12,10 @@
     "Modular Client Architecture & Memory Ledger",
     "Server-authoritative multiplayer combat and Cipher Core scoring",
     "Canon-driven procedural sprites, ruined tiles, and ambient fog",
-    "Optional image assets with procedural rendering fallback"
+    "Optional image assets with procedural rendering fallback",
+    "Archive Echoes",
+    "Web Audio SFX Engine",
+    "Perimeter Fog Boundaries"
   ],
   "upcoming_features": [
     "Archive Fragment Lore Pickups",
