@@ -1,18 +1,14 @@
-import { PROFILE_KEY } from './config.js';
+import { PROFILE_KEY, WORLD_DEFAULT } from './config.js';
 
 export function createUIManager(actions) {
   const $ = (selector) => document.querySelector(selector);
-  const title = $('#title-screen');
-  const form = $('#join-form');
-  const nameInput = $('#username-input');
-  const enterButton = $('#enter-button');
-  const nameError = $('#name-error');
-  const menu = $('#character-menu');
-  const hints = $('#control-hints');
-  const status = $('#status');
-  const archiveToast = $('#archive-toast');
-  let toastTimer = null;
-  let joined = false;
+  const title = $('#title-screen'), form = $('#join-form'), nameInput = $('#username-input');
+  const enterButton = $('#enter-button'), nameError = $('#name-error'), menu = $('#character-menu');
+  const hints = $('#control-hints'), status = $('#status'), archiveToast = $('#archive-toast');
+  const partyWidget = $('#party-widget'), partyMap = $('#party-minimap'), partyMembers = $('#party-members');
+  const inviteToast = $('#party-invite-toast'), inviteMessage = $('#party-invite-message');
+  const chatList = $('#chat-messages'), chatForm = $('#chat-form'), chatInput = $('#chat-input');
+  let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, inviteTimer = null;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
   let profileSnapshot = JSON.stringify(profile);
@@ -32,8 +28,65 @@ export function createUIManager(actions) {
     document.querySelectorAll('.upgrade-button').forEach((button) => {
       button.disabled = !joined || (player.skillPoints || 0) <= 0 || (player[button.dataset.upgrade] || 0) >= 99;
     });
-    document.querySelectorAll('.color-option').forEach((button) => {
-      button.classList.toggle('selected', button.dataset.color === player.energyColor);
+    document.querySelectorAll('.color-option').forEach((button) => button.classList.toggle('selected', button.dataset.color === player.energyColor));
+  }
+  function showToast(message, duration = 4500) {
+    archiveToast.textContent = message;
+    archiveToast.classList.add('visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => archiveToast.classList.remove('visible'), duration);
+  }
+  function appendChat(message, system = false) {
+    const item = document.createElement('li');
+    if (system) { item.className = 'chat-system'; item.textContent = message; }
+    else {
+      const channel = document.createElement('span'); channel.className = 'chat-channel';
+      channel.textContent = '[' + String(message.channel || 'global').toUpperCase() + '] ';
+      const name = document.createElement('strong'); name.textContent = String(message.name || 'Operative') + ': ';
+      const text = document.createElement('span'); text.textContent = String(message.text || '');
+      item.append(channel, name, text);
+    }
+    chatList.appendChild(item);
+    while (chatList.children.length > 60) chatList.firstElementChild.remove();
+    chatList.scrollTop = chatList.scrollHeight;
+  }
+  function selectChatChannel(channel) {
+    if (!['global', 'squad', 'faction'].includes(channel)) return;
+    activeChannel = channel;
+    document.querySelectorAll('.chat-tab').forEach((button) => button.classList.toggle('selected', button.dataset.chatChannel === channel));
+    chatInput.placeholder = channel === 'squad' ? 'Squad message… (/s)' : channel === 'faction' ? 'Faction message… (/f)' : 'Global message… (/g, !)';
+  }
+  function renderParty(party) {
+    if (!party || !Array.isArray(party.members) || party.members.length < 2) {
+      partyWidget.classList.add('hidden');
+      partyMembers.replaceChildren();
+      return;
+    }
+    partyWidget.classList.remove('hidden');
+    const ctx = partyMap.getContext('2d'), world = actions.getWorld?.() || WORLD_DEFAULT;
+    ctx.clearRect(0, 0, partyMap.width, partyMap.height);
+    ctx.fillStyle = '#111b1b'; ctx.fillRect(0, 0, partyMap.width, partyMap.height);
+    ctx.strokeStyle = 'rgba(133,176,155,.18)'; ctx.lineWidth = 1;
+    for (let x = 0; x <= partyMap.width; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, partyMap.height); ctx.stroke(); }
+    for (let y = 0; y <= partyMap.height; y += 21) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(partyMap.width, y); ctx.stroke(); }
+    const colors = { cipher: '#00ffff', wind: '#00ff88', water: '#0088ff', fire: '#ff4400', earth: '#cc7722', dark: '#bd38f5' };
+    party.members.forEach((member) => {
+      const x = Math.max(4, Math.min(partyMap.width - 4, member.x / world.width * partyMap.width));
+      const y = Math.max(4, Math.min(partyMap.height - 4, member.y / world.height * partyMap.height));
+      ctx.fillStyle = colors[member.energyColor] || '#d9fff5'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      if (member.id === actions.getPlayer?.()?.id) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); }
+    });
+    partyMembers.replaceChildren();
+    party.members.forEach((member) => {
+      const row = document.createElement('div'); row.className = 'party-member';
+      const label = document.createElement('span'); label.className = 'party-member-name' + (member.id === party.leaderId ? ' leader' : '');
+      label.textContent = member.name + (member.id === actions.getPlayer?.()?.id ? ' (You)' : '');
+      const bar = document.createElement('div'); bar.className = 'party-health';
+      const fill = document.createElement('div'); fill.className = 'party-health-fill';
+      fill.style.width = Math.max(0, Math.min(100, member.hp / Math.max(1, member.maxHp) * 100)) + '%';
+      bar.appendChild(fill);
+      const xp = document.createElement('small'); xp.className = 'party-xp'; xp.textContent = 'HP ' + Math.ceil(member.hp) + '/' + member.maxHp + ' · Shared XP ' + (member.partyXp || 0).toFixed(2);
+      row.append(label, bar, xp); partyMembers.appendChild(row);
     });
   }
 
@@ -41,47 +94,45 @@ export function createUIManager(actions) {
     event.preventDefault();
     const name = nameInput.value.trim();
     if (!name) { nameError.textContent = 'Enter a character name.'; return; }
-    nameError.textContent = '';
-    enterButton.disabled = true;
-    actions.join(name);
+    nameError.textContent = ''; enterButton.disabled = true; actions.join(name);
   });
   $('#specs-button').addEventListener('click', () => actions.toggleMenu());
   $('#menu-close').addEventListener('click', () => menu.classList.add('hidden'));
   menu.addEventListener('click', (event) => { if (event.target === menu) menu.classList.add('hidden'); });
-  document.querySelectorAll('.upgrade-button').forEach((button) => {
-    button.addEventListener('click', () => actions.upgrade(button.dataset.upgrade));
+  document.querySelectorAll('.upgrade-button').forEach((button) => button.addEventListener('click', () => actions.upgrade(button.dataset.upgrade)));
+  document.querySelectorAll('.color-option').forEach((button) => button.addEventListener('click', () => actions.selectDomain(button.dataset.color)));
+  $('#party-leave').addEventListener('click', () => actions.leaveParty());
+  document.querySelectorAll('.chat-tab').forEach((button) => button.addEventListener('click', () => selectChatChannel(button.dataset.chatChannel)));
+  chatForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    let text = chatInput.value.trim(), channel = activeChannel;
+    const command = text.match(/^\/(s|g|f)(?:\s+|$)(.*)$/i);
+    if (command) { channel = ({ s: 'squad', g: 'global', f: 'faction' })[command[1].toLowerCase()]; text = command[2].trim(); }
+    else if (text.startsWith('!')) { channel = 'global'; text = text.slice(1).trim(); }
+    if (!text) return;
+    actions.sendChat(channel, text); chatInput.value = '';
   });
-  document.querySelectorAll('.color-option').forEach((button) => {
-    button.addEventListener('click', () => actions.selectDomain(button.dataset.color));
+  $('#party-accept').addEventListener('click', () => {
+    if (currentInvite) actions.respondParty(currentInvite.inviteId, true);
+    currentInvite = null; inviteToast.classList.add('hidden');
+  });
+  $('#party-decline').addEventListener('click', () => {
+    if (currentInvite) actions.respondParty(currentInvite.inviteId, false);
+    currentInvite = null; inviteToast.classList.add('hidden');
   });
 
   return {
-    getSavedName: () => profile.name || '',
-    setStatus(message, connected) {
-      status.textContent = message;
-      status.classList.toggle('offline', !connected);
-    },
+    setStatus(message, connected) { status.textContent = message; status.classList.toggle('offline', !connected); },
     joinAccepted({ name, stats }) {
-      joined = true;
-      profile = { ...profile, name, ...stats };
-      saveProfile();
-      title.classList.add('hidden');
-      enterButton.disabled = false;
-      nameError.textContent = '';
-      status.textContent = 'Welcome, ' + name;
-      updateMenu(profile);
+      joined = true; profile = { ...profile, name, ...stats }; saveProfile();
+      title.classList.add('hidden'); enterButton.disabled = false; nameError.textContent = '';
+      status.textContent = 'Welcome, ' + name; updateMenu(profile);
     },
     joinError(message) { nameError.textContent = message; enterButton.disabled = false; },
-    showArchiveToast(message) {
-      archiveToast.textContent = message;
-      archiveToast.classList.add('visible');
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => archiveToast.classList.remove('visible'), 5200);
-    },
+    showArchiveToast: showToast,
     updatePlayer(player) {
-      profile = { name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor };
-      saveProfile();
-      updateMenu(player);
+      profile = { name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor };
+      saveProfile(); updateMenu(player);
     },
     setInputMode(mode) {
       document.body.dataset.inputMode = mode;
@@ -92,8 +143,21 @@ export function createUIManager(actions) {
     toggleMenu(forceOpen) {
       if (!joined) return;
       const open = typeof forceOpen === 'boolean' ? forceOpen : menu.classList.contains('hidden');
-      if (open) updateMenu(actions.getPlayer?.());
-      menu.classList.toggle('hidden', !open);
-    }
+      if (open) updateMenu(actions.getPlayer?.()); menu.classList.toggle('hidden', !open);
+    },
+    updateParty: renderParty,
+    showPartyInvite(invite) {
+      currentInvite = invite;
+      inviteMessage.textContent = invite.inviterName + ' invites you to join their Operative Squad.';
+      inviteToast.classList.remove('hidden');
+      if (inviteTimer) clearTimeout(inviteTimer);
+      inviteTimer = setTimeout(() => { currentInvite = null; inviteToast.classList.add('hidden'); }, (invite.expiresIn || 30) * 1000);
+    },
+    partyNotice(message) { appendChat(message, true); showToast(message, 3200); },
+    partyError(message) { appendChat(message, true); showToast(message, 3800); },
+    partyReward(reward) { appendChat('Squad assist: +' + reward.partyXp + ' shared XP from ' + reward.source + '.', true); },
+    chatMessage: (message) => appendChat(message),
+    chatError: (message) => appendChat(message, true),
+    toggleMenuFromInput(forceOpen) { this.toggleMenu(forceOpen); }
   };
 }
