@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const path = require('path');
 const { loadAccounts, saveAccounts, hashPassword, verifyPassword } = require('../account-store.js');
+const secureTransport = require('../secure-transport.js');
 
 const USERNAME_RE = /^[\p{L}\p{N}_-]{2,18}$/u;
 const PASSWORD_MIN = 12;
@@ -21,12 +22,6 @@ module.exports = {
     const rate = new Map();
     const dummyHash = hashPassword('not-a-real-account-password');
 
-    function secureTransport(socket) {
-      if (process.env.NODE_ENV === 'development') return true;
-      if (socket.request?.connection?.encrypted) return true;
-      return process.env.TRUSTED_PROXY_TLS === 'true'
-        && socket.handshake?.headers?.['x-forwarded-proto']?.split(',')[0].trim() === 'https';
-    }
     function allowAttempt(socket) {
       const key = socket.handshake?.address || socket.id;
       const now = Date.now();
