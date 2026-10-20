@@ -5,6 +5,13 @@ Update it after every build (protocol rule 9).
 
 Last updated: 2026-10-20 (visual wiring audit found and fixed biome propagation and tower labels; visual regression tests added but not run).
 
+## Current session — README game overview (DONE)
+
+- Replaced the one-line README with a project introduction covering the
+  game's premise and aim, playable systems, technical architecture, local
+  setup commands, and links to roadmap/canon guidance. Documentation-only;
+  no game behavior changed.
+
 ## Current session — Visual asset/render wiring audit (IMPLEMENTED, UNVERIFIED)
 
 - Confirmed baked sprites exist for all six sleeve domains (idle + walk),
