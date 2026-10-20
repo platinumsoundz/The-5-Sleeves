@@ -81,7 +81,7 @@ function paperdollSlot(slot, label, player, refresh) {
 export function renderCharacterPage(root, { player, actions }) {
   root.replaceChildren();
   if (!player) { empty(root, 'Join the Conduit to inspect your operative.'); return; }
-  const domain = DOMAINS[player.energyColor] || DOMAINS.cipher;
+  const domain = DOMAINS[player.energyColor] || DOMAINS.wind;
   const power = (player.atk || 0) + (player.gearAtk || 0);
   const overclock = player.overclock || 0;
 
@@ -94,7 +94,7 @@ export function renderCharacterPage(root, { player, actions }) {
   const copy = make('div', 'operative-identity');
   copy.append(make('strong', '', player.name || 'Operative'));
   copy.append(make('span', 'operative-faction', domain.label.toUpperCase()));
-  copy.append(make('small', '', 'LEVEL ' + (player.level || 1) + ' · ' + power + ' POWER · ' + (player.energyColor || 'cipher').toUpperCase() + ' CHANNEL'));
+  copy.append(make('small', '', 'LEVEL ' + (player.level || 1) + ' · ' + power + ' POWER · ' + (player.energyColor || 'wind').toUpperCase() + ' CHANNEL')); 
   identity.append(monogram, copy);
   root.append(identity);
 
@@ -127,15 +127,15 @@ export function renderCharacterPage(root, { player, actions }) {
   section(root, 'ACTIVE SLEEVE SPECS');
   const specs = make('div', 'spec-strip');
   specs.append(
-    statChip('DOMAIN', domain.label, player.energyColor || 'cipher', domain.primary),
-    statChip('SIGNATURE ABILITY', player.abilityName || 'Conduit Pulse', 'press Q / RT to cast', domain.accent),
+    statChip('DOMAIN', domain.label, player.energyColor || 'wind', domain.primary),
+    statChip('SIGNATURE ABILITY', player.abilityName || 'Gale Push', 'press Q / RT to cast', domain.accent),
     statChip('RECHARGE', (player.abilityCooldownMax ? (player.abilityCooldownMax / 1000).toFixed(1) : '—') + 's', 'affected by Conduit Attunement', '#8effe6'),
-    statChip('FACTION CHANNEL', (player.energyColor || 'cipher').toUpperCase(), 'chat with /f', '#ffd479')
+    statChip('FACTION CHANNEL', (player.energyColor || 'wind').toUpperCase(), 'chat with /f', '#ffd479')
   );
   root.append(specs);
 
-  section(root, 'SLEEVE DOMAIN · FACTION');
-  root.append(make('p', 'menu-empty', 'Every domain is a sleeve faction. Your choice sets the signature ability, aura and faction chat channel. Switching is free and takes effect immediately.'));
+  section(root, 'SLEEVE FACTION');
+  root.append(make('p', 'menu-empty', 'Choose one of five playable Sleeve factions. Your choice sets the signature ability, aura and faction chat channel. Switching is free and takes effect immediately.')); 
   const colors = make('div', 'color-options');
   for (const [key, info] of Object.entries(DOMAINS)) {
     const button = make('button', 'color-option domain-option' + (player.energyColor === key ? ' selected' : ''), info.label);
@@ -259,7 +259,7 @@ export function renderSkillsPage(root, { player, actions }) {
 export function renderInventoryPage(root, { player, actions, refresh }) {
   root.replaceChildren();
   if (!player) { empty(root, 'Join the Conduit to open your inventory.'); return; }
-  const domain = DOMAINS[player.energyColor] || DOMAINS.cipher;
+  const domain = DOMAINS[player.energyColor] || DOMAINS.wind;
   const equippedCount = SLOTS.filter(([slot]) => ITEM_CATALOG[player.equipped?.[slot]]).length;
 
   section(root, 'EQUIPPED LOADOUT');
@@ -387,7 +387,7 @@ export function renderPartyPage(root, { player, state, actions }) {
   for (const other of others.slice(0, 8)) {
     const row = make('div', 'friend-row');
     row.append(make('strong', '', other.name));
-    row.append(make('small', '', 'LV ' + (other.level || 1) + ' · ' + (other.energyColor || 'cipher')));
+    row.append(make('small', '', 'LV ' + (other.level || 1) + ' · ' + (other.energyColor || 'wind')));
     const invite = make('button', 'menu-action', 'PARTY');
     invite.type = 'button';
     invite.addEventListener('click', () => actions.invitePlayer(other.id));
