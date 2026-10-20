@@ -3,7 +3,23 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (zone hazards implemented with regression tests, but tests not run; all recent builds remain unverified).
+Last updated: 2026-10-20 (visual wiring audit found and fixed biome propagation and tower labels; visual regression tests added but not run).
+
+## Current session — Visual asset/render wiring audit (IMPLEMENTED, UNVERIFIED)
+
+- Confirmed baked sprites exist for all six sleeve domains (idle + walk),
+  Rust Warden, and ruin tiles; character and Warden renderers have procedural
+  fallbacks. All eight biome painters exist, and all catalog zones have biome
+  assignments; most regional backgrounds are procedural, cached canvases.
+- Fixed the missing runtime biome copy in `server/sim/state.js`; the server's
+  `zoneMeta` now receives each catalog biome so the renderer and atmosphere
+  use the intended regional background. Fixed tower-room landmarks displaying
+  generic `TOWER` by copying each tower's configured name, and tinted tower
+  structures by their regional biome.
+- Added `test/visuals.test.js` for biome propagation, tower landmark names,
+  and required baked sprite files. **Tests and live browser checks were not
+  run** because this session has no shell/browser runner. No new PNG was
+  generated: existing sprites are present and missing asset fallbacks exist.
 
 ## Current session — Wilderness zone hazards (IMPLEMENTED, UNVERIFIED)
 
