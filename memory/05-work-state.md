@@ -101,13 +101,13 @@ Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
   intact worktree as commit `2d976f5` ("Restore full game after local git
   object-store loss"). **All content is present, but the granular history of
   roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
-- Local history has the restored baseline plus Steps 12–13; **push is still
-  pending**. `git push origin main` fails in this environment with
-  "could not read Username for 'https://github.com'" — no credential helper
-  data, no `gh`, no token in the env. The owner must supply a PAT (or run the
-  push from a machine with credentials). Check `git status` /
-  `git log origin/main..HEAD` rather than trusting an old ahead-count; local
-  `main` is 4 commits ahead of `origin/main`.
+- Local history has the restored baseline plus Steps 12–13 and they are
+  **pushed**: `origin/main` = `578c529` ("Build the village-scale world…"),
+  verified with `git ls-remote`. (The earlier attempt from this environment
+  failed with "could not read Username for 'https://github.com'" — the owner
+  pushed from their side. If a push is ever needed from here again, a PAT or
+  `gh auth login` must exist first.) `git status` should show `## main...origin/main`
+  with no divergence.
 - Commit style: imperative summary line + bullet body explaining the system.
 - `npm test` runs test files serially (`--test-concurrency=1`). Parallel
   servers oversubscribe this device and make warden/respawn tests flake;
@@ -133,9 +133,9 @@ Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
 
 ## What is left / next session
 
-- **Push to origin** is blocked on credentials (no PAT/gh in this
-  environment). Ask the owner for a token or push from their machine; 4 local
-  commits are waiting (`Building the village-scale world…` is the newest).
+- **Push to origin** is DONE — `origin/main` matches the local village-scale
+  world commit (`578c529`). Keep committing after each build so a lost session
+  loses at most one build.
 - Next work is owner-directed: playtest the new city → tower → road loop,
   tune enemy scaling/credit prices, approve or rewrite proposed terminal lore,
   then pick the next system (suggested: private rooms → auth → PWA → store).
