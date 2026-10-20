@@ -3,6 +3,10 @@
 import { loadKeybinds } from './keybinds.js';
 import { createShootingControls } from './shootingControls.js';
 import { getShootingMode, SHOOTING_MODE } from './shooting.js';
+import {
+  GAMEPAD_BUTTONS, gamepadMenuDirection, focusMenuItem, activateFocusedMenuItem,
+  dispatchUiBack, uiBlocksGameplay
+} from './controllerNavigation.js';
 
 export function stickVector(dx, dy, max = 52, deadZone = 5) {
   const length = Math.hypot(dx, dy);
@@ -22,7 +26,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
   const triggerAction = (name) => { audio?.unlock(); audio?.play(name); onAction(name); };
   const shooting = createShootingControls({
-    onFire: () => triggerAction('attack'), getMouseAim, setMode
+    onFire: () => triggerAction('attack'), getMouseAim, setMode, isUiBlocked: uiBlocksGameplay
   });
   document.body?.classList.toggle('twin-stick', getShootingMode() === SHOOTING_MODE.TWIN);
   const directionButtons = {
@@ -66,7 +70,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
       setMode('keyboard'); shooting.clearFire(); event.preventDefault();
       if (!event.repeat) onMenu(); return;
     }
-    if (document.body?.dataset?.menuOpen === 'true') return;
+    if (uiBlocksGameplay()) return;
     const direction = directionButtons[event.key];
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, true); }
     if (code === binds.dash || (binds.dash === 'ShiftLeft' && code === 'ShiftRight')) {
@@ -82,29 +86,48 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, false); }
   });
 
-  const isPressed = (pad, index) => !!pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5);
+  let lastMenuDirection = null, menuDirectionStartedAt = 0, lastMenuMoveAt = 0;
   function updateGamepad() {
     const pad = navigator.getGamepads && Array.from(navigator.getGamepads()).find((item) => item?.connected);
     if (!pad) {
-      padVector = { x: 0, y: 0 }; shooting.updateGamepad(null); return;
+      padVector = { x: 0, y: 0 }; previousButtons = []; shooting.updateGamepad(null); return;
     }
+    const pressed = Array.from({ length: pad.buttons.length }, (_, index) => !!pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5));
+    const edge = (buttons) => buttons.some((index) => pressed[index] && !previousButtons[index]);
+    const menuOpen = uiBlocksGameplay();
+    if (Math.hypot(pad.axes[0] || 0, pad.axes[1] || 0) > 0.18 || pressed.some(Boolean)) setMode('controller');
+    if (menuOpen) {
+      padVector = { x: 0, y: 0 };
+      shooting.updateGamepad(null);
+      const direction = gamepadMenuDirection(pad), now = performance.now();
+      if (direction && (direction !== lastMenuDirection || (now - menuDirectionStartedAt >= 320 && now - lastMenuMoveAt >= 170))) {
+        focusMenuItem(direction);
+        if (direction !== lastMenuDirection) menuDirectionStartedAt = now;
+        lastMenuMoveAt = now;
+      }
+      lastMenuDirection = direction;
+      if (edge([GAMEPAD_BUTTONS.a])) activateFocusedMenuItem();
+      if (edge([GAMEPAD_BUTTONS.b])) dispatchUiBack();
+      if (edge([GAMEPAD_BUTTONS.start, GAMEPAD_BUTTONS.select]) && document.activeElement !== document.querySelector('#title-screen')) dispatchUiBack();
+      previousButtons = pressed;
+      return;
+    }
+    lastMenuDirection = null;
     let x = Math.abs(pad.axes[0] || 0) < 0.18 ? 0 : pad.axes[0];
     let y = Math.abs(pad.axes[1] || 0) < 0.18 ? 0 : pad.axes[1];
-    const left = isPressed(pad, 14), right = isPressed(pad, 15), up = isPressed(pad, 12), down = isPressed(pad, 13);
+    const left = pressed[GAMEPAD_BUTTONS.left], right = pressed[GAMEPAD_BUTTONS.right];
+    const up = pressed[GAMEPAD_BUTTONS.up], down = pressed[GAMEPAD_BUTTONS.down];
     if (left || right) x = Number(right) - Number(left);
     if (up || down) y = Number(down) - Number(up);
     const magnitude = Math.hypot(x, y);
     if (magnitude > 1) { x /= magnitude; y /= magnitude; }
     padVector = { x, y };
-    const pressed = Array.from({ length: pad.buttons.length }, (_, index) => isPressed(pad, index));
-    const edge = (buttons) => buttons.some((index) => pressed[index] && !previousButtons[index]);
-    if (magnitude || pressed.some(Boolean)) setMode('controller');
     shooting.updateGamepad(pad, pressed);
-    if (edge([2, 4])) triggerAction('dash');
-    if (edge([1, 6])) triggerAction('shield');
-    if (edge([7, 10])) triggerAction('ability');
-    if (edge([3])) triggerAction('interact');
-    if (edge([9, 8])) { shooting.clearFire(); onMenu(); }
+    if (edge([GAMEPAD_BUTTONS.b])) triggerAction('dash');
+    if (edge([GAMEPAD_BUTTONS.y])) triggerAction('shield');
+    if (edge([GAMEPAD_BUTTONS.x, GAMEPAD_BUTTONS.rightBumper])) triggerAction('ability');
+    if (edge([GAMEPAD_BUTTONS.a])) triggerAction('interact');
+    if (edge([GAMEPAD_BUTTONS.start, GAMEPAD_BUTTONS.select])) { shooting.clearFire(); onMenu(); }
     previousButtons = pressed;
   }
   function update() { updateGamepad(); shooting.update(); }
