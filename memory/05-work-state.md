@@ -3,7 +3,26 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (selectable firing styles implemented; regression tests added but not run).
+Last updated: 2026-10-20 (post-comic five-faction story and Cipher AI introduction implemented; tests not run).
+
+## Current session — Post-comic story, five factions, Cipher AI (IMPLEMENTED, UNVERIFIED)
+
+- Set the game continuity after the comic, with a new operative's story in
+  the aftermath. Cipher remains a character but is now a non-playable allied
+  AI; the five selectable factions are Wind, Water, Earth, Fire and Dark.
+  Legacy Cipher-domain profiles map to Wind.
+- On each operative's first cleared tower (any tower), the server persists
+  `cipherIntroSeen` and sends `cipherIntro: true`; the client companion
+  module shows Cipher's thank-you/help offer with a custom hologram portrait.
+- Added `server/modules/cipher-companion-memory.js`,
+  `public/src/modules/cipher-companion.js`, `public/assets/cipher-companion.svg`,
+  and regression coverage in `test/cipher-companion.test.js`, `test/world.test.js`,
+  `test/skill-tree.test.js`, `test/customisation.test.js`, and
+  `test/server-modules.test.js`.
+- Updated README, game-continuity guidance and project memory. Comic source
+  documents remain unchanged. **Tests and browser playtesting were not run**;
+  this workspace has no shell/browser runner. No commit was made. Keep this
+  build unverified until `npm test` and browser checks pass.
 
 ## Current session — Selectable firing styles (IMPLEMENTED, UNVERIFIED)
 
