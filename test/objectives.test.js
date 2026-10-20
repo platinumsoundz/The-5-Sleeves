@@ -93,7 +93,7 @@ test('relays are captured by presence and fought over by rival factions', async 
   const later = await once(one.socket, 'objectives', () => true, 3000, 'later snapshot');
   assert.equal(later.nodes['relay-south'].progress, frozen, 'contested relays do not progress');
 
-  // The rival leaving hands the relay to Cipher; ownership outlasts the occupant.
+  // The rival leaving hands the relay to Wind; ownership outlasts the occupant.
   rival.socket.emit('player:move', { x: 900, y: 640 });
   const captured = await waitFor(one.socket, (payload) => payload.nodes['relay-south'].ownerId === 'wind', 15000, 'second capture');
   assert.equal(captured.nodes['relay-south'].ownerId, 'wind');
