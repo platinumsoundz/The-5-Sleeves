@@ -48,7 +48,7 @@ test('findPalette accepts ids and hex values, rejects junk', () => {
 
 test('joining applies the chosen faction and restores the saved palette', () => {
   const { hooks } = harness();
-  const player = { id: 'p1', energyColor: 'cipher', color: '#00ffff', accentColor: '#78ff5f', requestedFaction: 'water' };
+  const player = { id: 'p1', energyColor: 'wind', color: '#00ff88', accentColor: '#a7ffd0', requestedFaction: 'water' };
   hooks.emit('joining', player, { palette: 'gold' });
   assert.equal(player.energyColor, 'water');
   assert.equal(player.color, '#0088ff');
