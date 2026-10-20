@@ -5,6 +5,7 @@ export function createUIManager(actions) {
   const $ = (selector) => document.querySelector(selector);
   const title = $('#title-screen'), form = $('#join-form'), nameInput = $('#username-input');
   const enterButton = $('#enter-button'), nameError = $('#name-error');
+  const accountMode = $('#account-mode'), passwordInput = $('#password-input');
   const hints = $('#control-hints'), status = $('#status'), archiveToast = $('#archive-toast');
   const partyWidget = $('#party-widget'), partyMap = $('#party-minimap'), partyMembers = $('#party-members');
   const inviteToast = $('#party-invite-toast'), inviteMessage = $('#party-invite-message');
@@ -273,11 +274,20 @@ export function createUIManager(actions) {
   }
   function hideArena() { arenaPanel?.classList.add('hidden'); }
 
+  accountMode?.addEventListener('change', () => {
+    const needsPassword = accountMode.value !== 'guest';
+    passwordInput?.classList.toggle('hidden', !needsPassword);
+    if (passwordInput) passwordInput.autocomplete = accountMode.value === 'register' ? 'new-password' : 'current-password';
+  });
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const name = nameInput.value.trim();
-    if (!name) { nameError.textContent = 'Enter a character name.'; return; }
-    nameError.textContent = ''; enterButton.disabled = true; actions.join(name, selectedFaction);
+    if (!name) { nameError.textContent = 'Enter a character name or account username.'; return; }
+    const mode = accountMode?.value || 'guest';
+    if (mode !== 'guest' && !passwordInput?.value) { nameError.textContent = 'Enter your account password.'; return; }
+    nameError.textContent = ''; enterButton.disabled = true;
+    if (mode === 'guest') actions.join(name, selectedFaction, 'guest');
+    else actions.authenticate(mode, name, passwordInput.value);
   });
   $('#menu-button')?.addEventListener('click', () => actions.toggleMenu());
   if (chatToggle) chatToggle.addEventListener('click', () => toggleChat());
@@ -331,6 +341,10 @@ export function createUIManager(actions) {
       unreadChat = 0; setChatOpen(false); renderBadge();
     },
     joinError(message) { nameError.textContent = message; enterButton.disabled = false; },
+    authenticated({ username }) {
+      if (passwordInput) passwordInput.value = '';
+      actions.join(username, selectedFaction, 'account');
+    },
     showArchiveToast: showToast,
     updatePlayer(player) {
       profile = {
