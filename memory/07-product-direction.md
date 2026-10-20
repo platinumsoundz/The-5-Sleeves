@@ -25,11 +25,13 @@ builds — each becomes a roadmap item in the future-roadmap brainstorm
   seasons/books, name changes, server region picks. HARD RULE from canon:
   no pay-to-win — power has a cost in-universe, and selling power would
   break both game balance and the story's themes.
-- **Email logins** — accounts replace the current name-only
-  `player-profiles.json`. Must be a PLUG-AND-PLAY SERVER MODULE
-  (`auth` module) wrapping the existing profile store, never core edits.
-  Needs: email + password (hashed, e.g. argon2/scrypt), verification
-  email, reset flow, rate limiting. Keep guest play as fallback.
+- **Optional accounts — first slice implemented, unverified.** The
+  plug-and-play `auth` module currently supports username + password with
+  salted scrypt hashes, rate limits, HTTPS enforcement outside development,
+  separate account profiles and guest fallback. Still needed before calling
+  accounts production-ready: email verification, password reset, recovery,
+  and a deliberate legacy-profile migration/claim flow. Do not silently
+  attach existing guest profiles to new accounts.
 - **Platforms** — PC + Android now (the game is already browser-based and
   touch-capable; add PWA manifest + service worker for installability),
   then iOS (PWA works; App Store build would need a wrapper like
