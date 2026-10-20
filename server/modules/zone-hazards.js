@@ -28,6 +28,14 @@ module.exports = {
   setup(ctx) {
     const lastPhase = new Map();
     const lastHitCycle = new Map();
+    function sendCurrent(socket, zone) {
+      const hazard = HAZARDS[zone?.id];
+      const hazards = hazard && zone.kind === 'wild'
+        ? [{ ...hazard, ...phaseAt(Date.now()), damage: DAMAGE }] : [];
+      socket?.emit('environment:hazards', hazards);
+    }
+    ctx.on('joined', (player, socket) => sendCurrent(socket, ctx.playerZone(player.id)));
+    ctx.on('zoneChanged', (player, socket) => sendCurrent(socket, ctx.playerZone(player.id)));
     ctx.on('left', (player) => lastHitCycle.delete(player.id));
     ctx.on('tick', (zone, now) => {
       const hazard = HAZARDS[zone.id];
