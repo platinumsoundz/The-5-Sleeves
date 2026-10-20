@@ -3,11 +3,14 @@
 // Pure progression maths, kept separate from the server so it can be tested
 // without booting a socket server.
 const MAX_LEVEL = 40;
+// Transparent linear curve: level 1 starts at 120 XP; each tier adds 60.
+const XP_LEVEL_BASE = 120;
+const XP_LEVEL_INCREMENT = 60;
 
-// XP needed to advance out of `level` (level 1 -> 2 costs 120, then +60 each).
+// XP needed to advance out of `level`.
 function xpForLevel(level) {
   const safe = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level) || 1));
-  return 120 + (safe - 1) * 60;
+  return XP_LEVEL_BASE + (safe - 1) * XP_LEVEL_INCREMENT;
 }
 
 // Splits a cumulative XP total into a level plus progress inside that level.
@@ -28,4 +31,4 @@ function totalXpForLevel(level) {
   return total;
 }
 
-module.exports = { MAX_LEVEL, xpForLevel, levelFromXp, totalXpForLevel };
+module.exports = { MAX_LEVEL, XP_LEVEL_BASE, XP_LEVEL_INCREMENT, xpForLevel, levelFromXp, totalXpForLevel };
