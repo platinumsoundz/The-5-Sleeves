@@ -28,6 +28,11 @@ const BURN_TICK_CAP = 60;
 
 // Hostile PvE drones that patrol the ruins and shoot at operatives.
 const MAX_WARDENS = Number.isFinite(Number(process.env.MAX_WARDENS)) ? Math.max(0, Number(process.env.MAX_WARDENS)) : 4;
+// Per-danger-tier growth keeps deeper roads harder without changing tier one.
+const WARDEN_SCALING = Object.freeze({
+  hpPerTier: 0.28, damagePerTier: 0.2, speedPerTier: 0.035,
+  aggroPerTier: 18, rangePerTier: 10, xpPerTier: 0.45, creditsPerTier: 0.55
+});
 const WARDEN = {
   name: 'Rust Warden',
   hp: 90,
@@ -88,7 +93,7 @@ const ARCHIVE_LOGS = [
 module.exports = {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
   RESPAWN_DELAY, AI_RESPAWN_DELAY, ABILITY_BURST_LIFETIME, BURN_TICK_CAP,
-  MAX_WARDENS, WARDEN,
+  MAX_WARDENS, WARDEN, WARDEN_SCALING,
   XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, XP_TOWER, XP_TOWER_CLEAR,
   CREDITS_PLAYER_KILL, CREDITS_TOWER_CLEAR, LEVEL_HP_GAIN, TOWER_WAVES, TOWER_WAVE_SIZE,
   HUB, HUB_NPCS, TOWERS,
