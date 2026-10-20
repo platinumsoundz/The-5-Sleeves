@@ -11,14 +11,22 @@
       html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #09111f; }
       body { font-family: system-ui, sans-serif; touch-action: none; }
       canvas { display: block; width: 100%; height: 100%; }
-      #status { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px; padding: 6px 10px; border: 1px solid #42f5c5; border-radius: 999px; background: rgba(9,17,31,.82); color: #bfffee; font-size: 12px; pointer-events: none; }
+      #top-left { position: fixed; z-index: 3; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); display: grid; gap: 6px; width: max-content; pointer-events: none; }
+      #top-left #status { position: static; }
+      #status { padding: 6px 10px; border: 1px solid #42f5c5; border-radius: 999px; background: rgba(9,17,31,.82); color: #bfffee; font-size: 12px; pointer-events: none; }
       #status.offline { border-color: #ff6b7a; color: #ffc1c8; }
-      #dpad { position: fixed; left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); display: grid; grid-template: repeat(3, 58px) / repeat(3, 58px); gap: 4px; }
-      .dpad-button, .action-button { border: 1px solid rgba(151,255,230,.6); color: #dffff6; font-weight: bold; touch-action: none; user-select: none; }
-      .dpad-button { border-radius: 14px; background: rgba(11,47,61,.82); font-size: 23px; }
-      .dpad-button:active, .dpad-button.active { background: #168e86; transform: scale(.94); }
-      [data-direction="up"] { grid-column: 2; grid-row: 1; } [data-direction="left"] { grid-column: 1; grid-row: 2; } [data-direction="right"] { grid-column: 3; grid-row: 2; } [data-direction="down"] { grid-column: 2; grid-row: 3; }
-      #actions { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(22px, env(safe-area-inset-bottom)); display: flex; align-items: end; gap: 10px; }
+      #radar-slot { position: relative; width: 164px; height: 115px; pointer-events: none; }
+      #top-right { position: fixed; z-index: 3; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); display: grid; gap: 6px; justify-items: end; pointer-events: none; }
+      #hud-slot { position: relative; width: max-content; min-width: 210px; min-height: 115px; pointer-events: none; }
+      #hud-slot .hud-box { position: static; }
+      #hud-controls { display: flex; gap: 6px; pointer-events: auto; }
+      /* On-screen analog joystick: the player drags anywhere inside (or from
+         outside) the ring; inputManager converts the offset into a vector. */
+      #joystick { position: fixed; z-index: 3; left: max(22px, env(safe-area-inset-left)); bottom: max(22px, env(safe-area-inset-bottom)); width: 132px; height: 132px; border: 1px solid rgba(151,255,230,.45); border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(20,79,92,.55), rgba(6,20,30,.62)); touch-action: none; user-select: none; }
+      #joystick.active { border-color: #7dffe4; box-shadow: 0 0 18px rgba(83,255,224,.35); }
+      #joystick-nub { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #9dfff0, #168e86); box-shadow: 0 0 14px rgba(83,255,224,.45); }
+      .action-button { border: 1px solid rgba(151,255,230,.6); color: #dffff6; font-weight: bold; touch-action: none; user-select: none; }
+      #actions { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; align-items: end; gap: 10px; width: min(196px, 48vw); }
       .action-button { width: 66px; height: 66px; border-radius: 50%; background: rgba(28,38,91,.88); font-size: 11px; line-height: 1.1; box-shadow: 0 0 16px rgba(88,106,255,.25); }
       .action-button.primary { width: 82px; height: 82px; background: rgba(140,42,160,.9); border-color: #fb9aff; font-size: 13px; }
       #ability-button { background: rgba(18,86,79,.9); border-color: #7dffe4; font-size: 10px; letter-spacing: .04em; }
@@ -42,7 +50,7 @@
       .zone-option { padding: 5px 9px; border: 1px solid #2c5a55; border-radius: 7px; background: rgba(10,26,30,.85); color: #8fc7bd; font: 700 10px system-ui,sans-serif; cursor: pointer; letter-spacing: .05em; }
       .zone-option small { display: block; font-weight: 400; font-size: 8px; color: #5b8a83; margin-top: 1px; }
       .zone-option.selected { border-color: #43f5c5; color: #d9fff5; box-shadow: 0 0 10px rgba(67,245,197,.25); }
-      #specs-button { position: fixed; z-index: 3; top: max(12px,env(safe-area-inset-top)); right: max(12px,env(safe-area-inset-right)); padding: 9px 12px; border: 1px solid #59dcca; border-radius: 9px; background: rgba(8,25,38,.9); color: #cffff5; font: 700 11px system-ui,sans-serif; letter-spacing: .08em; }
+      #specs-button { padding: 9px 12px; border: 1px solid #59dcca; border-radius: 9px; background: rgba(8,25,38,.9); color: #cffff5; font: 700 11px system-ui,sans-serif; letter-spacing: .08em; }
       #character-menu { position: fixed; z-index: 8; inset: 0; overflow-y: auto; display: flex; justify-content: center; align-items: center; padding: 20px; background: rgba(2,8,17,.88); }
       #character-menu.hidden { display: none; }
       .menu-panel { width: min(520px,100%); max-height: 92vh; overflow-y: auto; padding: 24px; border: 1px solid rgba(105,255,222,.6); border-radius: 16px; background: linear-gradient(145deg,#102534,#07111d); box-shadow: 0 0 42px rgba(51,232,202,.15); }
@@ -63,13 +71,13 @@
       #menu-hint { margin-top:15px; color:#86a4ae; font-size:12px; }
       #control-hints { display:none; position:fixed; z-index:2; right:12px; bottom:max(18px,env(safe-area-inset-bottom)); padding:10px 13px; max-width:calc(100vw - 24px); border:1px solid rgba(104,237,215,.45); border-radius:10px; background:rgba(5,18,29,.88); color:#d9fff7; font-size:12px; line-height:1.8; text-align:right; pointer-events:none; }
       body[data-input-mode="keyboard"] #control-hints, body[data-input-mode="controller"] #control-hints { display:block; }
-      body[data-input-mode="keyboard"] #dpad, body[data-input-mode="keyboard"] #actions, body[data-input-mode="controller"] #dpad, body[data-input-mode="controller"] #actions { display:none; }
+      body[data-input-mode="keyboard"] #joystick, body[data-input-mode="keyboard"] #actions, body[data-input-mode="controller"] #joystick, body[data-input-mode="controller"] #actions { display:none; }
       .control-badge { display:inline-block; padding:1px 5px; border:1px solid #54aeaa; border-radius:5px; color:#8dffe7; font-weight:800; }
       .domain-option { text-align:left; font-size:12px; line-height:1.4; }
-      #mute-button { position:fixed; z-index:3; top:max(12px,env(safe-area-inset-top)); right:max(150px,calc(env(safe-area-inset-right) + 150px)); padding:9px 11px; border:1px solid #527f83; border-radius:9px; background:rgba(8,25,38,.9); color:#cffff5; font:700 11px system-ui,sans-serif; }
+      #mute-button { padding:9px 11px; border:1px solid #527f83; border-radius:9px; background:rgba(8,25,38,.9); color:#cffff5; font:700 11px system-ui,sans-serif; }
       #archive-toast { position:fixed; z-index:4; top:max(54px,calc(env(safe-area-inset-top) + 48px)); left:50%; transform:translate(-50%,-12px); width:min(560px,calc(100vw - 30px)); padding:12px 16px; border:1px solid rgba(116,255,224,.7); border-radius:10px; background:rgba(5,19,29,.95); color:#dffff8; text-align:center; font-size:13px; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 0 26px rgba(49,232,197,.2); }
       #archive-toast.visible { opacity:1; transform:translate(-50%,0); }
-      #party-widget { position:fixed; z-index:3; top:110px; left:12px; width:min(230px,calc(100vw - 24px)); padding:10px; border:1px solid rgba(100,242,212,.55); border-radius:10px; background:rgba(6,18,28,.9); color:#dcfff6; }
+      #party-widget { position:fixed; z-index:3; top:auto; bottom:calc(172px + env(safe-area-inset-bottom)); left:12px; width:min(230px,calc(100vw - 24px)); padding:10px; border:1px solid rgba(100,242,212,.55); border-radius:10px; background:rgba(6,18,28,.9); color:#dcfff6; }
       #party-widget.hidden { display:none; }
       .party-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:12px; font-weight:800; letter-spacing:.08em; color:#76ffe0; }
       #party-leave { border:1px solid #506c72; border-radius:6px; padding:4px 7px; background:#142630; color:#d9eeed; font-size:10px; }
@@ -81,8 +89,14 @@
       .party-health { height:5px; border-radius:5px; background:#40242c; overflow:hidden; }
       .party-health-fill { height:100%; background:#55e89e; }
       .party-xp { grid-column:1 / -1; color:#92b1af; font-size:9px; }
-      #chat-panel { position:fixed; z-index:5; left:12px; bottom:calc(210px + env(safe-area-inset-bottom)); width:min(310px,calc(100vw - 24px)); height:176px; display:flex; flex-direction:column; border:1px solid rgba(92,174,169,.55); border-radius:10px; background:rgba(5,14,23,.91); color:#e3f7f1; overflow:hidden; }
-      body[data-input-mode="keyboard"] #chat-panel, body[data-input-mode="controller"] #chat-panel { bottom:max(12px,env(safe-area-inset-bottom)); }
+      /* Collapsible chat: collapsed to a CHAT button in the top-right block;
+         expanding drops the full panel above the joystick, clear of combat. */
+      #chat-toggle { padding:9px 12px; border:1px solid #4ba9a0; border-radius:9px; background:rgba(8,25,38,.92); color:#cffff5; font:700 11px system-ui,sans-serif; letter-spacing:.06em; }
+      #chat-toggle.open { border-color:#8ffff0; background:#124b49; }
+      #chat-badge { display:inline-block; min-width:16px; margin-left:6px; padding:0 4px; border-radius:9px; background:#ff5f7a; color:#1a0208; font:800 10px/16px system-ui,sans-serif; text-align:center; }
+      #chat-badge.hidden { display:none; }
+      #chat-panel { position:fixed; z-index:5; top:auto; right:auto; bottom:calc(172px + env(safe-area-inset-bottom)); left:max(10px,env(safe-area-inset-left)); width:min(310px,calc(100vw - 24px)); height:min(220px,38vh); display:flex; flex-direction:column; border:1px solid rgba(92,174,169,.55); border-radius:10px; background:rgba(5,14,23,.95); color:#e3f7f1; overflow:hidden; box-shadow:0 0 22px rgba(30,120,140,.25); }
+      #chat-panel.hidden { display:none; }
       #chat-tabs { display:flex; gap:4px; padding:6px; border-bottom:1px solid rgba(105,157,163,.2); }
       .chat-tab { flex:1; padding:5px 3px; border:1px solid transparent; border-radius:5px; background:transparent; color:#9ab5b6; font-size:10px; }
       .chat-tab.selected { border-color:#4baba2; background:#12333a; color:#a5ffeb; }
@@ -98,6 +112,15 @@
       #party-invite-actions { display:flex; gap:8px; margin-top:9px; }
       #party-invite-actions button { flex:1; padding:7px; border:1px solid #4ba99b; border-radius:6px; background:#123c3c; color:#eafffa; }
       #party-invite-actions #party-decline { border-color:#754c58; background:#34202a; }
+      /* Narrow phones: shrink the radar and stats so the two corners never
+         overlap, and keep the joystick clear of the squad widget. */
+      @media (max-width: 430px) {
+        #radar-slot { width: 128px; height: 90px; }
+        #hud-slot { min-width: 172px; }
+        #top-right #hud-controls button { padding: 7px 7px; font-size: 10px; }
+        #party-widget { bottom: calc(168px + env(safe-area-inset-bottom)); }
+        #chat-panel { bottom: calc(168px + env(safe-area-inset-bottom)); }
+      }
     </style>
   </head>
   <body>
@@ -117,7 +140,10 @@
         <div id="boot-status" aria-live="polite">BOOTING SYSTEMS…</div>
       </form>
     </div>
-    <div id="status" class="offline">Connecting…</div>
+    <div id="top-left" aria-label="Zone status and radar">
+      <div id="status" class="offline">Connecting…</div>
+      <div id="radar-slot" aria-label="Tower radar" role="img"></div>
+    </div>
     <div id="archive-toast" role="status" aria-live="polite"></div>
     <aside id="party-widget" class="hidden" aria-label="Operative squad">
       <div class="party-header"><span>OPERATIVE SQUAD</span><button id="party-leave" type="button">LEAVE</button></div>
@@ -128,7 +154,15 @@
       <div id="party-invite-message"></div>
       <div id="party-invite-actions"><button id="party-accept" type="button">ACCEPT</button><button id="party-decline" type="button">DECLINE</button></div>
     </section>
-    <section id="chat-panel" aria-label="Real-time chat">
+    <div id="top-right" aria-label="Operative stats and menus">
+      <div id="hud-controls">
+        <button id="mute-button" type="button">SFX: ON</button>
+        <button id="chat-toggle" type="button" aria-expanded="false" aria-controls="chat-panel">CHAT<span id="chat-badge" class="hidden">0</span></button>
+        <button id="specs-button" type="button">SPECS / SKILLS</button>
+      </div>
+      <div id="hud-slot" aria-label="Operative readouts" role="img"></div>
+    </div>
+    <section id="chat-panel" class="hidden" aria-label="Real-time chat">
       <div id="chat-tabs" role="tablist" aria-label="Chat channel">
         <button class="chat-tab selected" data-chat-channel="global" type="button">GLOBAL</button>
         <button class="chat-tab" data-chat-channel="squad" type="button">SQUAD</button>
@@ -137,9 +171,7 @@
       <ol id="chat-messages" aria-live="polite"></ol>
       <form id="chat-form"><input id="chat-input" type="text" maxlength="240" placeholder="Message… (/s, /g, /f, !)" aria-label="Chat message" /><button id="chat-send" type="submit">SEND</button></form>
     </section>
-    <button id="mute-button" type="button">SFX: ON</button>
     <div id="control-hints" aria-live="polite"></div>
-    <button id="specs-button" type="button">SPECS / SKILLS</button>
     <section id="character-menu" class="hidden" aria-modal="true" role="dialog" aria-labelledby="menu-title">
       <div class="menu-panel">
         <div class="menu-heading"><h2 id="menu-title">OPERATIVE SPECS</h2><button id="menu-close" type="button">CLOSE</button></div>
@@ -159,11 +191,8 @@
         <div id="menu-hint">Hold the three relays to score for your sleeve, and earn a Skill Point each time you score at the Cipher Core.</div>
       </div>
     </section>
-    <div id="dpad" aria-label="Movement controls">
-      <button class="dpad-button" data-direction="up" aria-label="Move up">▲</button>
-      <button class="dpad-button" data-direction="left" aria-label="Move left">◀</button>
-      <button class="dpad-button" data-direction="right" aria-label="Move right">▶</button>
-      <button class="dpad-button" data-direction="down" aria-label="Move down">▼</button>
+    <div id="joystick" aria-label="Movement joystick">
+      <div id="joystick-nub"></div>
     </div>
     <div id="actions" aria-label="Sleeve abilities">
       <button class="action-button" data-action="shield" aria-label="Activate shield">SHIELD</button>

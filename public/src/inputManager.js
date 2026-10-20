@@ -1,25 +1,62 @@
+// Pure analog-stick maths: turn a drag offset into a unit-scaled vector in any
+// direction. Exported so Node tests can prove 360-degree movement without a DOM.
+export function stickVector(dx, dy, max = 52, deadZone = 5) {
+  const length = Math.hypot(dx, dy);
+  if (!Number.isFinite(length) || length < deadZone || max <= 0) return { x: 0, y: 0 };
+  const magnitude = Math.min(1, length / max);
+  return { x: (dx / length) * magnitude, y: (dy / length) * magnitude };
+}
+
 export function createInputManager({ onAction, onMenu, onMode, audio }) {
   const held = new Set();
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let mode = hasTouch ? 'touch' : 'keyboard';
   let padVector = { x: 0, y: 0 };
   let previousButtons = [];
+  // Analog stick state. The vector is recomputed from the drag angle on every
+  // pointer move, so movement is smooth in all 360 degrees.
+  const stick = { vector: { x: 0, y: 0 } };
   const setMode = (next) => { mode = next; onMode(next); };
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
   const triggerAction = (name) => { audio?.unlock(); audio?.play(name); onAction(name); };
   const directionButtons = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
 
-  document.querySelectorAll('.dpad-button').forEach((button) => {
-    const direction = button.dataset.direction;
-    button.addEventListener('pointerdown', (event) => {
-      event.preventDefault(); audio?.unlock(); setMode('touch'); button.setPointerCapture(event.pointerId);
-      button.classList.add('active'); setDirection(direction, true);
+  // On-screen analog joystick: any drag direction becomes a vector, so the
+  // player moves diagonally and in every angle (not four fixed directions).
+  function setupJoystick() {
+    const base = document.getElementById('joystick');
+    const nub = document.getElementById('joystick-nub');
+    if (!base || !nub) return;
+    const moveNub = (x, y) => { nub.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)'; };
+    const apply = (clientX, clientY) => {
+      const rect = base.getBoundingClientRect();
+      const centreX = rect.left + rect.width / 2, centreY = rect.top + rect.height / 2;
+      const max = Math.max(24, rect.width * 0.34);
+      let dx = clientX - centreX, dy = clientY - centreY;
+      stick.vector = stickVector(dx, dy, max);
+      const length = Math.hypot(dx, dy);
+      if (length > max) { dx = dx / length * max; dy = dy / length * max; }
+      moveNub(dx, dy);
+    };
+    const reset = () => {
+      stick.vector = { x: 0, y: 0 };
+      base.classList.remove('active');
+      moveNub(0, 0);
+    };
+    base.addEventListener('pointerdown', (event) => {
+      event.preventDefault(); audio?.unlock(); setMode('touch');
+      base.setPointerCapture(event.pointerId); base.classList.add('active');
+      apply(event.clientX, event.clientY);
     });
-    const release = () => { button.classList.remove('active'); setDirection(direction, false); };
-    button.addEventListener('pointerup', release);
-    button.addEventListener('pointercancel', release);
-    button.addEventListener('lostpointercapture', release);
-  });
+    base.addEventListener('pointermove', (event) => {
+      if (!base.classList.contains('active')) return;
+      event.preventDefault();
+      apply(event.clientX, event.clientY);
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => base.addEventListener(type, reset));
+  }
+  setupJoystick();
+
   document.querySelectorAll('.action-button').forEach((button) => {
     button.addEventListener('pointerdown', (event) => {
       event.preventDefault(); setMode('touch'); triggerAction(button.dataset.action);
@@ -79,6 +116,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio }) {
     update: updateGamepad,
     vector() {
       if (mode === 'controller') return { ...padVector };
+      if (mode === 'touch' && (stick.vector.x || stick.vector.y)) return { ...stick.vector };
       let x = Number(held.has('right')) - Number(held.has('left'));
       let y = Number(held.has('down')) - Number(held.has('up'));
       const length = Math.hypot(x, y);

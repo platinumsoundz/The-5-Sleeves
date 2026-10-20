@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.12.0",
+  "version": "2.3.0",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -65,7 +65,10 @@
     "Boot priority ordering: server and client modules may declare priority (lower boots first, default 50) so boot order is deterministic and optimisable",
     "Loading screen boot status: title screen shows real module boot progress via #boot-status, fed by the module runner",
     "World decoration module (world-decor.js): deterministic ruin props and named landmark labels drawn under moving entities",
-    "Combat juice module (roadmap #11, COMPLETE): combat-juice.js draws hit sparks, floating damage numbers, afterimages and proximity screenshake from server combat events"
+    "Combat juice module (roadmap #11, COMPLETE): combat-juice.js draws hit sparks, floating damage numbers, afterimages and proximity screenshake from server combat events",
+    "Collapsible Chat Box",
+    "Top-Right HUD & Top-Left Radar Realignment",
+    "360-Degree On-Screen Analog Joystick"
   ],
   "in_progress_features": [],
   "upcoming_features": [

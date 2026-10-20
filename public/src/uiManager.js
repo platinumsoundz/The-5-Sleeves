@@ -8,8 +8,12 @@ export function createUIManager(actions) {
   const partyWidget = $('#party-widget'), partyMap = $('#party-minimap'), partyMembers = $('#party-members');
   const inviteToast = $('#party-invite-toast'), inviteMessage = $('#party-invite-message');
   const chatList = $('#chat-messages'), chatForm = $('#chat-form'), chatInput = $('#chat-input');
+  const chatPanel = $('#chat-panel'), chatToggle = $('#chat-toggle'), chatBadge = $('#chat-badge');
   const abilityButton = $('#ability-button');
   let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, inviteTimer = null;
+  // Chat starts collapsed so it never covers the play area; messages that
+  // arrive while it is closed raise the unread badge instead.
+  let chatOpen = false, unreadChat = 0;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
   let profileSnapshot = JSON.stringify(profile);
@@ -37,6 +41,27 @@ export function createUIManager(actions) {
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => archiveToast.classList.remove('visible'), duration);
   }
+  function renderBadge() {
+    if (!chatBadge) return;
+    chatBadge.textContent = unreadChat > 99 ? '99+' : String(unreadChat);
+    chatBadge.classList.toggle('hidden', unreadChat <= 0 || chatOpen);
+  }
+  function setChatOpen(open) {
+    chatOpen = !!open;
+    if (chatPanel) chatPanel.classList.toggle('hidden', !chatOpen);
+    if (chatToggle) {
+      chatToggle.classList.toggle('open', chatOpen);
+      chatToggle.setAttribute('aria-expanded', String(chatOpen));
+    }
+    if (chatOpen) {
+      unreadChat = 0; renderBadge();
+      if (chatList) chatList.scrollTop = chatList.scrollHeight;
+    } else if (document.activeElement === chatInput) chatInput.blur();
+  }
+  function toggleChat(forceOpen) {
+    if (!joined) return;
+    setChatOpen(typeof forceOpen === 'boolean' ? forceOpen : !chatOpen);
+  }
   function appendChat(message, system = false) {
     const item = document.createElement('li');
     if (system) { item.className = 'chat-system'; item.textContent = message; }
@@ -50,6 +75,7 @@ export function createUIManager(actions) {
     chatList.appendChild(item);
     while (chatList.children.length > 60) chatList.firstElementChild.remove();
     chatList.scrollTop = chatList.scrollHeight;
+    if (!chatOpen && !system) { unreadChat += 1; renderBadge(); }
   }
   function selectChatChannel(channel) {
     if (!['global', 'squad', 'faction'].includes(channel)) return;
@@ -98,6 +124,14 @@ export function createUIManager(actions) {
     nameError.textContent = ''; enterButton.disabled = true; actions.join(name);
   });
   $('#specs-button').addEventListener('click', () => actions.toggleMenu());
+  if (chatToggle) chatToggle.addEventListener('click', () => toggleChat());
+  // Enter opens the collapsed chat and focuses the input; Escape closes it
+  // before the character menu takes over.
+  window.addEventListener('keydown', (event) => {
+    if (event.target && event.target.closest && event.target.closest('input, textarea')) return;
+    if (event.key === 'Enter' && joined && !chatOpen) { event.preventDefault(); toggleChat(true); chatInput.focus(); }
+    if (event.key === 'Escape' && chatOpen) { event.preventDefault(); toggleChat(false); }
+  });
   $('#menu-close').addEventListener('click', () => menu.classList.add('hidden'));
   menu.addEventListener('click', (event) => { if (event.target === menu) menu.classList.add('hidden'); });
   document.querySelectorAll('.upgrade-button').forEach((button) => button.addEventListener('click', () => actions.upgrade(button.dataset.upgrade)));
@@ -128,6 +162,7 @@ export function createUIManager(actions) {
       joined = true; profile = { ...profile, name, ...stats }; saveProfile();
       title.classList.add('hidden'); enterButton.disabled = false; nameError.textContent = '';
       status.textContent = 'Welcome, ' + name; updateMenu(profile);
+      unreadChat = 0; setChatOpen(false); renderBadge();
     },
     joinError(message) { nameError.textContent = message; enterButton.disabled = false; },
     showArchiveToast: showToast,

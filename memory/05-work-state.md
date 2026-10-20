@@ -3,7 +3,22 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-19 (foundation chapter split).
+Last updated: 2026-10-20 (step 11 mobile HUD redesign).
+
+## Step 11 — mobile HUD redesign (DONE)
+
+- **Collapsible chat** — chat starts collapsed as a CHAT button in the
+  top-right block; unread badge counts messages while closed; Enter opens,
+  Escape closes. Tabs/input unchanged.
+- **HUD realignment** — radar/minimap moved to the top-left slot (below
+  status); HP, core %, points, ability cooldown, level/XP moved to the
+  top-right `#hud-slot` beneath SPECS / CHAT / SFX. Kill feed sits under
+  that block; domination standings under the radar.
+- **360° analog joystick** — the 4-way D-pad is gone; a touch-drag stick
+  (bottom-left) returns a full-angle vector with a dead zone. Keyboard,
+  gamepad, action buttons and networking untouched.
+- Ledger bumped to `2.3.0`; suite green (54/54, incl. new analog-stick
+  maths tests in `test/input.test.js`).
 
 ## Git state
 

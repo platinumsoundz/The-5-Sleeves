@@ -251,11 +251,25 @@ function drawBursts(ctx, bursts, time) {
   }
 }
 
+// The HUD is anchored to DOM slots inside the top-left / top-right blocks so
+// the canvas readouts never sit underneath the SPECS button or the chat again.
+// Falls back to fixed coordinates when the DOM is unavailable (tests/SSR).
+function slotRect(id, fallback) {
+  const element = typeof document !== 'undefined' ? document.getElementById(id) : null;
+  if (!element || typeof element.getBoundingClientRect !== 'function') return fallback;
+  const rect = element.getBoundingClientRect();
+  if (!rect || rect.width <= 0 || rect.height <= 0) return fallback;
+  return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+}
+
 function drawHud(ctx, state, width) {
   const player = state.players[state.playerId] || state.localPlayer;
   if (!player) return;
   ctx.save(); ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  const w = Math.min(210, width - 24), x = 12, y = 56;
+  // Top-right block: stats, core, points, ability cooldown and progression all
+  // live in one column beneath the SPECS / CHAT / SFX buttons.
+  const slot = slotRect('hud-slot', { x: width - 222, y: 56, width: 210, height: 115 });
+  const w = Math.max(150, Math.min(240, slot.width || 210)), x = slot.x, y = slot.y;
   ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y, w, 45);
   ctx.fillStyle = '#421e2a'; ctx.fillRect(x + 8, y + 8, w - 16, 10);
   ctx.fillStyle = '#f25d75'; ctx.fillRect(x + 8, y + 8, (w - 16) * Math.max(0, player.hp / player.maxHp), 10);
@@ -282,21 +296,30 @@ function drawHud(ctx, state, width) {
   const level = player.level || 1;
   const into = player.xpIntoLevel || 0;
   const needed = player.xpNeeded || 1;
-  ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y + 85, w, 30);
+  ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y + 82, w, 30);
   ctx.fillStyle = '#ffe9a0'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'left';
-  ctx.fillText('LEVEL ' + level, x + 8, y + 99);
-  ctx.fillStyle = 'rgba(64,52,24,.9)'; ctx.fillRect(x + 8, y + 103, w - 16, 5);
-  ctx.fillStyle = '#ffc857'; ctx.fillRect(x + 8, y + 103, (w - 16) * Math.min(1, into / needed), 5);
+  ctx.fillText('LEVEL ' + level, x + 8, y + 96);
+  ctx.fillStyle = 'rgba(64,52,24,.9)'; ctx.fillRect(x + 8, y + 100, w - 16, 5);
+  ctx.fillStyle = '#ffc857'; ctx.fillRect(x + 8, y + 100, (w - 16) * Math.min(1, into / needed), 5);
   ctx.fillStyle = '#ffe9c0'; ctx.font = '9px system-ui'; ctx.textAlign = 'right';
-  ctx.fillText(into + '/' + needed + ' XP', x + w - 8, y + 99);
+  ctx.fillText(into + '/' + needed + ' XP', x + w - 8, y + 96);
   ctx.restore();
+}
+
+// Radar lives in the top-left block, directly beneath the connection status.
+function minimapRect(width) {
+  const slot = slotRect('radar-slot', { x: 12, y: 52, width: 164, height: 115 });
+  const world = WORLD_DEFAULT;
+  const mapWidth = Math.min(164, slot.width || 164);
+  return { x: slot.x, y: slot.y, width: mapWidth, height: Math.max(48, Math.min(slot.height || 115, Math.round(mapWidth * world.height / world.width))) };
 }
 
 // The world is no longer fully visible, so the minimap doubles as orientation.
 function drawMinimap(ctx, state, width) {
   const world = state.world || WORLD_DEFAULT;
-  const mapWidth = 164, mapHeight = Math.round(mapWidth * world.height / world.width);
-  const x = width - mapWidth - 12, y = 52;
+  const rect = minimapRect(width);
+  const mapWidth = rect.width, mapHeight = Math.round(mapWidth * world.height / world.width);
+  const x = rect.x, y = rect.y;
   ctx.save();
   ctx.fillStyle = 'rgba(6,17,26,.82)'; ctx.fillRect(x, y, mapWidth, mapHeight);
   ctx.strokeStyle = 'rgba(118,255,224,.4)'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, mapWidth - 1, mapHeight - 1);
@@ -337,13 +360,14 @@ function drawKillFeed(ctx, state, width, time) {
   if (!feed.length) return;
   ctx.save();
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui';
+  const slot = slotRect('hud-slot', { x: width - 222, y: 56, width: 210, height: 115 });
+  ctx.textAlign = 'right'; ctx.font = 'bold 11px system-ui';
   feed.forEach((entry, index) => {
     const fade = Math.min(1, Math.max(0, (6000 - (time - entry.at)) / 900));
-    const y = 152 + index * 16;
+    const y = slot.y + (slot.height || 115) + 14 + index * 16;
     ctx.globalAlpha = fade;
     ctx.fillStyle = entry.color || '#ffd9a0';
-    ctx.fillText(entry.text + (entry.xp ? '  +' + entry.xp + ' XP' : ''), 12, y);
+    ctx.fillText(entry.text + (entry.xp ? '  +' + entry.xp + ' XP' : ''), width - 12, y);
   });
   ctx.globalAlpha = 1;
   ctx.restore();
@@ -405,13 +429,15 @@ function drawBanner(ctx, state, width, height, time) {
   ctx.restore();
 }
 
-// Faction standings for the domination match, under the minimap.
+// Faction standings for the domination match, under the top-left radar.
 function drawScoreboard(ctx, state, width) {
   const payload = state.objectives || {};
   const scores = Object.entries(payload.scores || {}).filter(([, score]) => score > 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const world = state.world || WORLD_DEFAULT;
-  const mapWidth = 164, mapHeight = Math.round(mapWidth * world.height / world.width);
-  const x = width - mapWidth - 12, y = 52 + mapHeight + 8;
+  const radar = minimapRect(width);
+  const mapWidth = radar.width;
+  const mapHeight = Math.round(mapWidth * world.height / world.width);
+  const x = radar.x, y = radar.y + mapHeight + 8;
   const limit = (payload.match && payload.match.scoreLimit) || 0;
   const rows = Math.max(1, scores.length);
   const panelHeight = 22 + rows * 15;

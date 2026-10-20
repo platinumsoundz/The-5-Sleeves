@@ -63,9 +63,11 @@ and tested.)
   priority-ordered setup with loading-screen progress callbacks.
 - **uiManager.js** — title/join + boot-status line, character menu
   (upgrades + domain select), HUD hints per input mode, party widget +
-  minimap, chat, toasts.
+  minimap, collapsible chat (default-closed CHAT toggle with unread badge;
+  Enter opens it, Escape closes it), toasts.
 - **inputManager.js** — keyboard (WASD/arrows, Space attack, Shift dash,
-  E shield, Q ability, **F interact**, C specs, +/- zoom), touch d-pad +
+  E shield, Q ability, **F interact**, C specs, +/- zoom), touch 360-degree
+  analog joystick (bottom-left, dead zone, clamped drag vector) +
   action buttons (incl. READ), gamepad (Y/triangle = interact) with
   dynamic HUD hints.
 - **world.js** — deterministic ruin props, named landmarks, terminal
@@ -129,10 +131,10 @@ and tested.)
 - `npm start` / `npm run dev` (watch) / `npm test` (node --test) /
   `npm run sprites` (bake art via `tools/generate-sprites.js`).
 - `tools/png.js` — dependency-free PNG writer + supersampled rasteriser.
-- 18 suites: server boot/health, server modules, zones, fixed timestep,
+- 19 suites: server boot/health, server modules, zones, fixed timestep,
   spectate/replay, abilities, wardens, objectives, progression, camera,
   interpolation, renderer, sprites, module import resolution, client
-  module contract. 50 tests, all green.
+  module contract, analog-stick maths. 54 tests, all green.
 
 ## Planned this session (ROADMAP items, not built yet)
 
