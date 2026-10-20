@@ -29,6 +29,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   }
   document.body?.classList.toggle('twin-stick', getShootingMode() === SHOOTING_MODE.TWIN);
   window.addEventListener('pointermove', (event) => { if (event.pointerType === 'mouse' && getMouseAim?.()) setMode('keyboard'); });
+  window.addEventListener('blur', () => fireSources.clear());
   const directionButtons = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
 
   // On-screen analog joystick: any drag direction becomes a vector, so the
