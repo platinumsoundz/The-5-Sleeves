@@ -87,6 +87,8 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     state.zone = payload?.zone || state.zone;
     callbacks.spectate?.(payload);
   });
+  socket.on('auth:accepted', (payload) => callbacks.authenticated?.(payload));
+  socket.on('auth:error', (message) => callbacks.joinError?.(message));
   socket.on('name_taken', (data) => callbacks.joinError?.(data?.message || 'Name already taken! Choose another name.'));
   socket.on('name_error', (data) => callbacks.joinError?.(data?.message || 'Enter a valid character name.'));
   socket.on('players', (nextPlayers) => {
@@ -162,7 +164,8 @@ export function createNetcode(state, callbacks = {}, audio = null) {
   socket.on('disconnect', () => callbacks.status?.('Connection lost', false));
 
   return {
-    join: (name, zoneId, faction) => socket.emit('player:join', zoneId || faction ? { name, zone: zoneId || undefined, faction: faction || undefined } : name),
+    join: (name, zoneId, faction, mode = 'guest') => socket.emit('player:join', { name, zone: zoneId || undefined, faction: faction || undefined, mode }),
+    authenticate: (mode, username, password) => socket.emit(mode === 'register' ? 'auth:register' : 'auth:login', { username, password }),
     switchZone: (zoneId) => socket.emit('zone:switch', zoneId),
     spectate: (zoneId) => socket.emit('spectate:join', { zone: zoneId }),
     move: (x, y) => socket.emit('player:move', { x, y }),
