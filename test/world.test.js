@@ -131,5 +131,6 @@ test('a tower clears after three waves, pays credits and opens the east road', (
   const clearedEvent = socketEvents.find((entry) => entry.event === 'tower:cleared' && entry.payload.index === 1);
   assert.ok(clearedEvent, 'the player receives the tower completion event');
   assert.equal(clearedEvent.payload.cipherIntro, true, 'a first tower clear triggers Cipher’s introduction');
+  assert.equal(clearedEvent.payload.cipherTowerClear, true, 'every tower clear is marked for Cipher dialogue');
   assert.ok(events.some((entry) => entry.event === 'tower:state' && entry.payload.state === 'cleared'));
 });
