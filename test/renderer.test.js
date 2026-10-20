@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tileVariantFrame, sourceRectForView, buildBackground } from '../public/src/renderer.js';
+import { tileVariantFrame, sourceRectForView, buildBackground, notificationLayout } from '../public/src/renderer.js';
 
 const WORLD = { width: 1000, height: 700 };
 
@@ -28,6 +28,19 @@ test('an off-world view copies nothing', () => {
   const rect = sourceRectForView({ left: 1200, top: 800, right: 1400, bottom: 900 }, WORLD);
   assert.equal(rect.width, 0);
   assert.equal(rect.height, 0);
+});
+
+test('notifications stack on the left below the minimap and mode strip', () => {
+  const quiet = notificationLayout({ world: WORLD }, 900, 10000);
+  const busy = notificationLayout({
+    world: WORLD,
+    objectives: { scores: { wind: 1, water: 2, earth: 3, fire: 4, dark: 5 } },
+    killFeed: [{ at: 9500 }, { at: 9800 }]
+  }, 900, 10000);
+  assert.equal(quiet.x, 10, 'the anchor is the left radar edge, not screen center');
+  assert.ok(quiet.y > 10 + 156 * WORLD.height / WORLD.width, 'the anchor follows the minimap');
+  assert.ok(busy.y > quiet.y, 'score rows and kill notices are accounted for before new banners');
+  assert.ok(busy.width <= 300, 'the notification column stays compact');
 });
 
 test('the background is baked once and every tile is drawn exactly once', () => {
