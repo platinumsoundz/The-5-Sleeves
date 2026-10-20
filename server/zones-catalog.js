@@ -86,7 +86,7 @@ function tower(config) {
     friendlyFire: false,
     npcs: [],
     exits: { south: config.havenId },
-    tower: { x: 500, y: 260, name: config.towerName },
+    tower: { x: 500, y: 260, name: config.towerName || config.name },
     ...config
   };
 }
