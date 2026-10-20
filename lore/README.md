@@ -47,7 +47,8 @@ approved) · `REJECTED` (never reuse).
 
 ## In-game continuity anchors
 
-The game is an online arena side-story set inside this canon. Current
+The game is a post-comic continuation set in this canon, following a new
+operative as they explore the aftermath and restore towers. Current
 canon-aligned content:
 
 - **Archive terminals** (`server.js`, `public/src/world.js`): three readable
