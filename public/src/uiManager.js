@@ -43,7 +43,11 @@ export function createUIManager(actions) {
       const meta = document.createElement('small');
       meta.textContent = info.short + ' · ' + key.toUpperCase();
       button.append(meta);
-      button.addEventListener('click', () => { selectedFaction = key; renderFactions(); });
+      button.addEventListener('click', () => {
+        selectedFaction = key;
+        renderFactions();
+        options.querySelector('[data-faction="' + key + '"]')?.focus();
+      });
       options.append(button);
     }
   }
@@ -90,6 +94,18 @@ export function createUIManager(actions) {
   function closeChatActions() {
     chatTarget = null;
     chatActions?.classList.add('hidden');
+  }
+  function handleBack() {
+    if (chatActions && !chatActions.classList.contains('hidden')) { closeChatActions(); return; }
+    if (title && !title.classList.contains('hidden')) return;
+    if (arenaPanel && !arenaPanel.classList.contains('hidden')) { hideArena(); return; }
+    if (shopPanel && !shopPanel.classList.contains('hidden')) { hideShop(); return; }
+    if (menuController.isOpen()) { menuController.close(); return; }
+    if (currentInvite) {
+      actions.respondParty(currentInvite.inviteId, false);
+      currentInvite = null; inviteToast?.classList.add('hidden'); return;
+    }
+    if (chatOpen) toggleChat(false);
   }
   function renderGiftChoices() {
     if (!chatTarget || !chatActionsList) return;
@@ -291,10 +307,9 @@ export function createUIManager(actions) {
   $('#menu-button')?.addEventListener('click', () => actions.toggleMenu());
   if (chatToggle) chatToggle.addEventListener('click', () => toggleChat());
   window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') { event.preventDefault(); handleBack(); return; }
     if (event.target && event.target.closest && event.target.closest('input, textarea')) return;
     if (event.key === 'Enter' && joined && !chatOpen && !menuController.isOpen()) { event.preventDefault(); toggleChat(true); chatInput.focus(); }
-    if (event.key === 'Escape' && chatOpen) { event.preventDefault(); toggleChat(false); }
-    if (event.key === 'Escape' && menuController.isOpen()) menuController.close();
   });
   document.addEventListener('click', (event) => {
     if (!chatActions || chatActions.classList.contains('hidden')) return;
@@ -378,7 +393,7 @@ export function createUIManager(actions) {
     setInputMode(mode) {
       document.body.dataset.inputMode = mode;
       if (mode === 'keyboard') hints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">Q</span> Sleeve<br /><span class="control-badge">F</span> Interact &nbsp; <span class="control-badge">C</span> Menu &nbsp; <span class="control-badge">+ / −</span> Zoom';
-      else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">A / R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">RT</span> Sleeve<br /><span class="control-badge">Y</span> Interact &nbsp; <span class="control-badge">START / SELECT</span> Menu';
+      else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move / Navigate &nbsp; <span class="control-badge">A</span> Select / Interact<br /><span class="control-badge">RT</span> Blast &nbsp; <span class="control-badge">B</span> Dash / Back &nbsp; <span class="control-badge">Y</span> Shield<br /><span class="control-badge">X / RB</span> Sleeve Ability &nbsp; <span class="control-badge">START / SELECT</span> Menu';
       else hints.textContent = '';
     },
     toggleMenu(forceOpen) { menuController.toggle(forceOpen); },
@@ -424,6 +439,7 @@ export function createUIManager(actions) {
     renderZones(zones, selectedId) {
       const options = $('#zone-options');
       if (!options) return;
+      const focusedZone = options.contains(document.activeElement) ? document.activeElement.dataset.zone : null;
       options.innerHTML = '';
       for (const zone of zones) {
         const button = document.createElement('button');
@@ -440,6 +456,7 @@ export function createUIManager(actions) {
         button.addEventListener('click', () => actions.selectZone(zone.id));
         options.append(button);
       }
+      if (focusedZone) options.querySelector('[data-zone="' + focusedZone + '"]')?.focus();
     }
   };
 }
