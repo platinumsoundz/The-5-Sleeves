@@ -1,16 +1,16 @@
 # The 5 Sleeves Online
 
-**A browser-based multiplayer action RPG set in the world of *The 5 Sleeves*.** Choose a Sleeve domain, explore a chain of settlements and dangerous roads, fight hostile Rust Warden drones, develop your operative, and clear regional towers to open the way east.
+**A browser-based multiplayer action RPG set after the *The 5 Sleeves* comic.** Play a new operative in the comic’s aftermath, explore a chain of settlements and dangerous roads, fight hostile Rust Warden drones, develop your operative, and clear regional towers to open the way east.
 
 ## The aim
 
 The immediate game goal is to travel from the First Village through the five regional roads, cities, and towers. Survive each region, gather XP and credits, improve your skills and gear, and restore the tower network one tower at a time. Reaching new cities unlocks safer respawn points and the next part of the route.
 
-The wider story takes place in the aftermath of a connected-world collapse. Towers once regulated environmental systems; restoring them can improve local conditions, but does not magically repair the whole planet. The larger canon's endgame is the **Rebind**: five true Sleeves, willing spirits, and Cipher's antivirus working together. The current game focuses on exploration, combat, progression, and tower runs within that setting.
+This game is a post-comic continuation, not a retelling of the comic. The comic’s events are history; a new operative explores the connected-world ruins and restores the tower network. The allied Cipher AI first appears after the operative clears a tower, then offers help with the journey ahead. Restoring towers improves local conditions without magically repairing the whole planet.
 
 ## What you can do
 
-- **Choose an identity:** play as one of six Sleeve domains—Cipher, Wind, Water, Earth, Fire, or Dark—with domain-specific aura and signature ability. Customize your suit palette.
+- **Choose a faction:** play as one of five Sleeves—Wind, Water, Earth, Fire, or Dark—with a faction-specific aura and signature ability. Cipher is an allied AI, not a playable faction. Customize your suit palette.
 - **Fight and grow:** use server-resolved combat, dash and shield actions, and a unique ability for your domain. Earn XP, level up, unlock skill-tree nodes, and equip gear.
 - **Explore the world:** travel between six safe cities, five wilderness roads, five tower rooms, and private arena modes. City roads open as their regional tower is cleared; fast-travel is available to unlocked cities.
 - **Take on PvE and PvP:** battle patrolling Rust Wardens, clear tower waves, collect Archive Echoes, or enter cooperative and competitive arenas with domination, team deathmatch, and tower-capture modes.
@@ -23,7 +23,7 @@ The game is built around a **server-authoritative multiplayer simulation**: the 
 
 - **Server:** Node.js, Express, and Socket.IO; per-zone simulations; fixed-timestep combat and AI; profile persistence; progression, economy, parties, chat, arenas, and tower services.
 - **Client:** HTML, CSS, JavaScript modules, Canvas rendering, keyboard/touch/gamepad input, interpolation, audio, HUD, and menus.
-- **World and combat:** six Sleeve abilities, Rust Warden AI, projectiles and status effects, relay objectives, environmental hazards, safe havens, and tower wave encounters.
+- **World and combat:** five playable Sleeve abilities, Rust Warden AI, projectiles and status effects, relay objectives, environmental hazards, safe havens, and tower wave encounters.
 - **Progression and economy:** XP and levels, skill points and a branching skill tree, gear and equipment bonuses, credits, loot, and merchant trading.
 - **Social and persistence:** guest play and optional username/password accounts, friends, parties, chat, inbox, gifting, and saved operative profiles.
 - **Modularity:** server and client features are discovered from module folders at startup, keeping systems separable from the game hosts.
