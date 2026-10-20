@@ -161,6 +161,9 @@ and tested.)
 
 ## Server modules (`server/modules/`, auto-discovered)
 
+- **core-meditation** — safe-haven Cipher Core awards 5 credits every 5
+  minutes after 30 seconds of inactivity, with a 20-credit UTC-day cap
+  persisted per operative; city Core no longer grants active-zone skill points.
 - **archive-terminals** (priority 50) — readable lore terminals per zone;
   first-read XP + core bounty, persisted per operative.
 - **hub-services** (priority 20) — city merchants, credits buy/sell, gear
