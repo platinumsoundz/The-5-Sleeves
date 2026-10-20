@@ -490,6 +490,15 @@
       <button class="action-button primary" data-action="attack" aria-label="Fire energy blast">BLAST</button>
     </div>
     <div id="module-root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => console.info('PWA service worker registered:', registration.scope))
+            .catch((error) => console.warn('PWA service worker registration failed:', error));
+        }, { once: true });
+      }
+    </script>
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="/client.js"></script>
   </body>
