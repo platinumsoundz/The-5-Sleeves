@@ -1,7 +1,7 @@
 // Pure analog-stick maths: turn a drag offset into a unit-scaled vector in any
 // direction. Exported so Node tests can prove 360-degree movement without a DOM.
 import { loadKeybinds } from './keybinds.js';
-import { getShootingMode, normalizeAim, SHOOTING_MODE, shouldRepeatFire, FIRE_REPEAT_MS } from './shooting.js';
+import { getShootingMode, normalizeAim, SHOOTING_MODE, shouldRepeatFire } from './shooting.js';
 
 export function stickVector(dx, dy, max = 52, deadZone = 5) {
   const length = Math.hypot(dx, dy);
@@ -27,6 +27,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     if (active) fireSources.add(source); else fireSources.delete(source);
     if (!wasHeld && fireSources.size) { lastShotAt = performance.now(); triggerAction('attack'); }
   }
+  document.body?.classList.toggle('twin-stick', shootingMode === SHOOTING_MODE.TWIN);
   window.addEventListener('shooting-mode:changed', (event) => { shootingMode = event.detail || getShootingMode(); });
   window.addEventListener('pointermove', (event) => { if (event.pointerType === 'mouse' && getMouseAim?.()) setMode('keyboard'); });
   const directionButtons = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
@@ -83,7 +84,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
       const rect = base.getBoundingClientRect();
       let dx = event.clientX - rect.left - rect.width / 2, dy = event.clientY - rect.top - rect.height / 2;
       const max = Math.max(24, rect.width * 0.34), length = Math.hypot(dx, dy);
-      aimStick.vector = normalizeAim(dx, dy);
+      aimStick.vector = length < 5 ? null : normalizeAim(dx, dy);
       if (aimStick.vector) lastManualAim = aimStick.vector;
       if (length > max) { dx *= max / length; dy *= max / length; }
       moveNub(dx, dy);
