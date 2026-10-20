@@ -1,6 +1,7 @@
 import { CORE_DEFAULT, MOVE_SPEED, PERIMETER_MARGIN, SEND_INTERVAL, WORLD_DEFAULT } from './src/config.js';
 import { createCamera, addShake, screenToWorld, setZoomScale } from './src/camera.js';
 import { createInputManager } from './src/inputManager.js';
+import { autoAimVector, getShootingMode, normalizeAim, SHOOTING_MODE } from './src/shooting.js';
 import { createAudioManager } from './src/audioManager.js';
 import { createNetcode } from './src/netcode.js';
 import { renderFrame } from './src/renderer.js';
@@ -42,6 +43,7 @@ const state = {
 
 let ui;
 let input;
+let mousePosition = null;
 const audio = createAudioManager(document.getElementById('mute-button'));
 const network = createNetcode(state, {
   status: (message, connected) => ui?.setStatus(message, connected),
@@ -157,8 +159,13 @@ ui = createUIManager({
 });
 
 function performAction(action) {
-  const direction = input?.vector() || state.lastAim;
-  const aim = direction.x || direction.y ? direction : state.lastAim;
+  const movement = input?.vector() || state.lastAim;
+  let aim = movement.x || movement.y ? movement : state.lastAim;
+  if (action === 'attack') {
+    if (getShootingMode() === SHOOTING_MODE.AUTO) aim = autoAimVector(state) || aim;
+    else aim = input?.aimVector?.() || state.lastAim || aim;
+  }
+  if (aim?.x || aim?.y) state.lastAim = aim;
   bus.emit('action', action, aim);
   network.action(action, aim);
 }
@@ -166,6 +173,7 @@ input = createInputManager({
   onAction: performAction,
   onMenu: (open) => ui.toggleMenu(open),
   onMode: (mode) => ui.setInputMode(mode),
+  getMouseAim: mouseAimVector,
   audio
 });
 
@@ -210,6 +218,17 @@ function frame(time) {
   // Modules get one logic tick per rendered frame (dt in seconds).
   bus.emit('frame', { canvas, context, state, time, dt });
   requestAnimationFrame(frame);
+}
+
+canvas.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'mouse') mousePosition = { x: event.clientX, y: event.clientY };
+});
+
+function mouseAimVector() {
+  if (!mousePosition || !state.localPlayer) return null;
+  const rect = canvas.getBoundingClientRect();
+  const target = screenToWorld(state.camera, mousePosition.x - rect.left, mousePosition.y - rect.top, rect.width, rect.height);
+  return normalizeAim(target.x - state.localPlayer.x, target.y - state.localPlayer.y);
 }
 
 canvas.addEventListener('click', (event) => {
