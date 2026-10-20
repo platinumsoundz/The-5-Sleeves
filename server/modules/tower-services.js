@@ -50,7 +50,8 @@ function clearTower(ctx, zone, now) {
     ctx.playerSockets()[player.id]?.emit('tower:cleared', {
       index: zone.towerIndex, name: zone.tower?.name || zone.name,
       credits: rewardCredits, unlockedCities: player.unlockedCities, towers: player.towers,
-      cipherIntro
+      cipherIntro,
+      cipherTowerClear: true
     });
   }
   zone.send('hub:notice', (zone.tower?.name || 'Tower') + ' is online. The east road is open.');
