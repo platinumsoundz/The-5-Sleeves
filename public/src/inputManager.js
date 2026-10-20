@@ -73,7 +73,11 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     const nub = document.getElementById('aim-joystick-nub');
     if (!base || !nub) return;
     const moveNub = (x, y) => { nub.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)'; };
-    const reset = () => { aimStick.vector = null; base.classList.remove('active'); moveNub(0, 0); };
+    const reset = () => {
+      aimStick.vector = null;
+      setFireSource('aim-stick', false);
+      base.classList.remove('active'); moveNub(0, 0);
+    };
     base.addEventListener('pointerdown', (event) => {
       event.preventDefault(); audio?.unlock(); setMode('touch');
       base.setPointerCapture(event.pointerId); base.classList.add('active');
@@ -85,7 +89,10 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
       let dx = event.clientX - rect.left - rect.width / 2, dy = event.clientY - rect.top - rect.height / 2;
       const max = Math.max(24, rect.width * 0.34), length = Math.hypot(dx, dy);
       aimStick.vector = length < 5 ? null : normalizeAim(dx, dy);
-      if (aimStick.vector) lastManualAim = aimStick.vector;
+      if (aimStick.vector) {
+        lastManualAim = aimStick.vector;
+        setFireSource('aim-stick', true);
+      } else setFireSource('aim-stick', false);
       if (length > max) { dx *= max / length; dy *= max / length; }
       moveNub(dx, dy);
     });
