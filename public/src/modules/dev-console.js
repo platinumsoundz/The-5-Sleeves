@@ -8,7 +8,9 @@ export default {
     if (!socket || typeof fetch !== 'function' || typeof MutationObserver !== 'function') return;
 
     let statusElement = null, tokenElement = null, unlockButton = null, grantButton = null;
+    let isAuthorized = false;
     socket.on('dev:authorized', (message) => {
+      isAuthorized = true;
       if (tokenElement) { tokenElement.value = ''; tokenElement.disabled = true; }
       if (unlockButton) unlockButton.hidden = true;
       if (grantButton) grantButton.hidden = false;
@@ -56,6 +58,9 @@ export default {
         statusElement = status;
         unlockButton = unlock;
         grantButton = grant;
+        token.disabled = isAuthorized;
+        unlock.hidden = isAuthorized;
+        grant.hidden = !isAuthorized;
       };
       attach();
       new MutationObserver(attach).observe(document.body, { childList: true, subtree: true });
