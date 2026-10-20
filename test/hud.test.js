@@ -9,8 +9,8 @@ function recorder() {
   const ctx = {
     font: '', textAlign: '', fillStyle: '', strokeStyle: '', lineWidth: 1,
     save() {}, restore() {}, setTransform() {},
-    fillRect(x, y, w, h) { events.push({ type: 'rect', x, y, w, h }); },
-    strokeRect(x, y, w, h) { events.push({ type: 'rect', x, y, w, h }); },
+    fillRect(x, y, w, h) { events.push({ type: 'rect', x, y, w, h, color: this.fillStyle }); },
+    strokeRect(x, y, w, h) { events.push({ type: 'rect', x, y, w, h, color: this.strokeStyle }); },
     fillText(text, x, y) { events.push({ type: 'text', text, x, y }); }
   };
   return { ctx, events };
@@ -27,7 +27,7 @@ function withSlot(rect, run) {
 }
 
 function player() {
-  return { id: 'p1', hp: 80, maxHp: 100, level: 3, credits: 42, xpIntoLevel: 10, xpNeeded: 120, abilityName: 'Conduit Pulse', abilityCooldown: 0 };
+  return { id: 'p1', hp: 80, maxHp: 100, level: 3, credits: 42, xpIntoLevel: 10, xpNeeded: 120, abilityName: 'Gale Push', abilityCooldown: 0 };
 }
 
 function state(zone = { kind: 'haven' }) {
@@ -43,12 +43,14 @@ test('the compact HUD fits inside a phone-sized slot', () => {
   const texts = events.filter((event) => event.type === 'text').map((event) => event.text);
   assert.ok(texts.includes('LV 3'), 'level is shown');
   assert.ok(texts.includes('CR 42'), 'credits are shown');
-  assert.ok(texts.includes('10/120 XP'), 'XP is shown');
-  assert.ok(!texts.includes('SAFE CITY'), 'compact card drops the zone label');
+  assert.ok(texts.includes('SAFE CITY'), 'zone label remains available');
+  assert.ok(!texts.some((text) => text.startsWith('HP ')), 'the top HUD no longer duplicates character health');
 
   const rects = events.filter((event) => event.type === 'rect');
-  assert.ok(rects.length > 3, 'bars and frame are drawn');
-  for (const box of rects) {
+  const xpLine = rects.find((box) => box.x === 0 && box.y === 0 && box.w === 360 && box.h === 3);
+  assert.ok(xpLine, 'XP progress is a three-pixel line at the absolute screen top');
+  assert.ok(!rects.some((box) => box.color === '#f25d75'), 'the red top health bar is removed');
+  for (const box of rects.filter((box) => box !== xpLine)) {
     assert.ok(box.x >= rect.left - 1 && box.x + box.w <= rect.left + rect.width + 1, 'horizontal bounds: ' + JSON.stringify(box));
     assert.ok(box.y >= rect.top - 1 && box.y + box.h <= rect.top + rect.height + 1, 'vertical bounds: ' + JSON.stringify(box));
   }
@@ -61,15 +63,17 @@ test('the full HUD returns on a desktop-sized slot', () => {
 
   const texts = events.filter((event) => event.type === 'text').map((event) => event.text);
   assert.ok(texts.some((text) => text.includes('SAFE CITY')), 'zone label is shown');
-  assert.ok(texts.includes('READY'), 'ability state is shown');
-  assert.ok(texts.some((text) => text.includes('CONDUIT PULSE')), 'ability name is shown');
+  assert.ok(texts.some((text) => text.includes('READY')), 'ability state is shown');
+  assert.ok(texts.some((text) => text.includes('GALE PUSH')), 'ability name is shown');
+  assert.ok(!texts.some((text) => text.startsWith('HP ')), 'health is not duplicated in the top HUD');
 });
 
 test('the HUD falls back to fixed coordinates without a DOM slot', () => {
   const { ctx, events } = recorder();
   withSlot(null, () => drawHud(ctx, state(), 900));
   const texts = events.filter((event) => event.type === 'text').map((event) => event.text);
-  assert.ok(texts.includes('HP 80/100'), 'fallback slot still renders the full card');
+  assert.ok(!texts.some((text) => text.startsWith('HP ')), 'fallback HUD also omits the red health bar');
+  assert.ok(events.some((event) => event.type === 'rect' && event.x === 0 && event.y === 0 && event.h === 3), 'XP remains at the screen top without a DOM slot');
 });
 
 test('nothing renders before an operative joins', () => {
