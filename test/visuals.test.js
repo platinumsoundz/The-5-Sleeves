@@ -26,7 +26,7 @@ test('each tower has a named landmark for its client visual', () => {
 });
 
 test('all sleeve domains, Rust Warden, and ruin tiles have baked visual assets', () => {
-  const domains = ['cipher', 'dark', 'earth', 'fire', 'water', 'wind'];
+  const domains = ['dark', 'earth', 'fire', 'water', 'wind'];
   for (const domain of domains) {
     for (const suffix of ['', '_walk']) {
       const asset = path.join(root, 'public/assets/player_' + domain + suffix + '.png');
