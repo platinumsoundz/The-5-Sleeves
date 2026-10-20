@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 640" role="img" aria-labelledby="title desc">
+  <title id="title">Cipher, holographic companion</title>
+  <desc id="desc">A warm, observant woman with long braids appears as a cyan-blue hologram.</desc>
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#101a24"/><stop offset="1" stop-color="#050b12"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#1de4ff" stop-opacity=".24"/><stop offset="1" stop-color="#00a8ff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="skin" x2=".8" y2="1"><stop stop-color="#a75c3c"/><stop offset=".46" stop-color="#75402f"/><stop offset="1" stop-color="#432a25"/></linearGradient>
+    <linearGradient id="hair" x2=".9" y2="1"><stop stop-color="#241c1b"/><stop offset=".55" stop-color="#090d12"/><stop offset="1" stop-color="#332522"/></linearGradient>
+    <linearGradient id="shirt" x2="0" y2="1"><stop stop-color="#25303a"/><stop offset="1" stop-color="#090e15"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="scan" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 0h6" stroke="#70eaff" stroke-opacity=".12"/></pattern>
+  </defs>
+  <rect width="512" height="640" rx="24" fill="url(#bg)"/>
+  <ellipse cx="258" cy="285" rx="235" ry="285" fill="url(#halo)"/>
+  <g fill="none" stroke="#49ddff" stroke-opacity=".7" stroke-width="2"><path d="M28 80V28h72M412 28h72v52M28 560v52h72M484 560v52h-72"/><path d="M37 128h12M463 174h12M26 438h18M469 488h16"/></g>
+  <g opacity=".25" fill="#4be4ff"><path d="M32 150h3v82h-3zM476 215h2v54h-2zM27 348h2v36h-2zM482 390h3v76h-3z"/><path d="M64 42h36v2H64zM409 598h42v2h-42z"/></g>
+  <path d="M70 640c8-112 46-170 116-197h144c73 30 104 92 114 197z" fill="url(#shirt)" stroke="#4ce4ff" stroke-opacity=".55" stroke-width="3"/>
+  <path d="M184 423h144l31 67c-28 29-62 43-104 43s-79-14-105-43z" fill="#573629"/>
+  <path d="M196 440h119l39 153-99 39-99-39z" fill="url(#shirt)" stroke="#74818b" stroke-opacity=".5" stroke-width="2"/>
+  <!-- Long braided hair silhouette and crown -->
+  <path d="M134 255c-25-112 25-194 122-197 102-3 143 78 116 200l35 241-45 91-47-100-119 1-53 100-48-91z" fill="url(#hair)" stroke="#60e8ff" stroke-opacity=".45" stroke-width="3"/>
+  <path d="M144 191c9-86 63-127 116-127 64 0 110 42 119 125-26-24-43-45-55-71-28 34-85 56-180 73z" fill="#151315"/>
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#3e2b27" stroke-width="13"><path d="M155 202c-34 61-32 155-23 270l-13 90M178 174c-29 76-17 206-7 334l-25 74M201 157c-20 78-9 222-4 372l-24 50M352 166c26 86 19 205 11 345l18 65M376 188c34 70 28 175 18 290l22 86M331 151c21 96 8 237 5 389l21 24"/></g>
+    <g stroke="#9a6745" stroke-opacity=".75" stroke-width="2"><path d="M153 215c-21 61-13 150-14 250M176 188c-19 75-7 201-11 292M199 174c-12 92-2 213-6 317M350 183c18 85 9 207 10 294M375 207c23 63 18 169 16 248M331 171c17 96 4 222 6 316"/></g>
+    <g stroke="#d59b6a" stroke-opacity=".65" stroke-width="3"><path d="M146 280l18 14-17 15 19 15-17 14M171 253l17 14-16 15 17 15-16 15M196 230l14 13-14 15 15 14-14 14M348 229l-16 14 16 15-16 15 15 14M374 260l-17 14 17 15-16 15 16 14M329 220l-15 14 15 15-14 14 13 14"/></g>
+  </g>
+  <!-- Face, softly lit and expressive -->
+  <path d="M174 176c7-73 37-111 84-113 53-2 86 38 87 111l-7 98c-8 73-44 119-82 119-44 0-77-49-83-119z" fill="url(#skin)" stroke="#e3a178" stroke-opacity=".42" stroke-width="2"/>
+  <path d="M171 190c-13-80 22-143 82-151 69-9 108 47 96 139-15-11-29-29-38-52-31 28-76 42-140 43z" fill="#171312"/>
+  <path d="M184 229c18-18 43-20 62-6M272 222c18-14 42-12 58 4" fill="none" stroke="#281a18" stroke-width="8" stroke-linecap="round"/>
+  <path d="M190 242c14-9 35-9 49 1-15 17-34 17-49-1zM279 242c14-10 34-9 48 2-15 16-34 16-48-2z" fill="#f1d0af"/>
+  <ellipse cx="215" cy="244" rx="6" ry="8" fill="#171617"/><ellipse cx="302" cy="244" rx="6" ry="8" fill="#171617"/>
+  <circle cx="217" cy="241" r="2" fill="#efffff"/><circle cx="304" cy="241" r="2" fill="#efffff"/>
+  <path d="M258 245c-3 22-12 44-15 55 7 7 17 9 26 4" fill="none" stroke="#4c2b23" stroke-width="5" stroke-linecap="round"/>
+  <path d="M225 326c17-13 41-13 60 0-16 24-43 25-60 0z" fill="#7a3d38"/>
+  <path d="M231 327c16 5 32 5 48 0" fill="none" stroke="#f2b5a0" stroke-width="3" stroke-linecap="round"/>
+  <path d="M175 274c9 77 42 124 82 124 38 0 73-46 84-121" fill="none" stroke="#edb18a" stroke-opacity=".22" stroke-width="3"/>
+  <!-- Earrings and necklace -->
+  <path d="M174 280v29c0 12 20 12 20 0v-14M350 278v30c0 12-20 12-20 0v-13" fill="none" stroke="#d5e8ee" stroke-width="5"/>
+  <path d="M181 424c10 42 32 70 75 70s65-28 75-70" fill="none" stroke="#c3a779" stroke-width="3"/>
+  <circle cx="256" cy="494" r="5" fill="#8ff3ff" stroke="#f1d59c" stroke-width="2"/>
+  <!-- Hologram edge light and scan texture -->
+  <path d="M132 255c-22-119 31-204 124-207 103-3 151 79 122 205M107 509l17 74M404 503l-10 80" fill="none" stroke="#3fe6ff" stroke-opacity=".75" stroke-width="3" filter="url(#glow)"/>
+  <rect width="512" height="640" rx="24" fill="url(#scan)"/>
+  <g fill="#67eaff" opacity=".75"><path d="M42 184h28v3H42zM429 313h39v3h-39zM65 467h16v3H65zM413 111h22v3h-22z"/><path d="M469 333h8v20h-8zM39 389h7v13h-7zM448 525h19v4h-19z"/></g>
+  <rect x="1.5" y="1.5" width="509" height="637" rx="23" fill="none" stroke="#5ee9ff" stroke-opacity=".36" stroke-width="3"/>
+</svg>
