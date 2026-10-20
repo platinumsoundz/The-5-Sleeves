@@ -35,8 +35,9 @@ it committed and tested after running the full suite.)
   skill point + core charge + XP.
 - **Persistence** — `player-profiles.json`: name, domain, stats, skill
   points, XP/level, core charge/points, credits, home city, unlocked cities,
-  completed towers, inventory/equipment, friends and inbox. Atomic
-  tmp+rename saves, periodic (10 s) + on-event flushes.
+  completed towers, inventory/equipment, friends, inbox and the persisted
+  `cipherIntroSeen` first-meeting milestone. Atomic tmp+rename saves, periodic
+  (10 s) + on-event flushes.
   Modules extend the record via the `persist` hook.
 - **Safe cities & arenas** — each haven is a full-map safe rectangle with a
   merchant and Arena Master; attacks/abilities are rejected inside, damage
