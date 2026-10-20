@@ -54,7 +54,9 @@ and tested.)
 
 - **shop-catalog.js** — merchant stock with credit prices and sell values,
   starter inventory/equipment, item lookup and tier-based loot tables.
-  Equipped gear contributes `gearAtk` (weapons/armour = small damage bonus).
+  Salvage-only Shattered Circuitry and Corroded Relay Parts drop in the
+  matching wasteland tiers, remain sellable through city merchants, and are
+  excluded from merchant purchases. Equipped gear contributes `gearAtk`.
 - **skill-tree.js** — server mirror of the eight-node branching skill tree;
   node costs, parent requirements and descriptions.
 
