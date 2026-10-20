@@ -2,6 +2,28 @@ export function shouldShowCipherIntro(payload) {
   return payload?.cipherIntro === true;
 }
 
+export function shouldShowCipherMessage(payload) {
+  return payload?.cipherTowerClear === true;
+}
+
+export function cipherTowerDialogue(payload) {
+  if (shouldShowCipherIntro(payload)) {
+    return {
+      kicker: 'TOWER LINK RESTORED · FIRST CONTACT',
+      message: 'Thank you for bringing the tower back online. I’m Cipher. I’m here to help you find and restore the remaining towers, if you’ll accept my guidance.'
+    };
+  }
+  const tower = payload?.name || ('Tower ' + (payload?.index || ''));
+  const finalTower = Number(payload?.index) === 5;
+  return {
+    kicker: 'TOWER RESTORED · ' + tower.toUpperCase(),
+    message: finalTower
+      ? tower + ' is restored. The eastern passage is open. A vast wilderness lies beyond it.'
+      : tower + ' is restored. The road east is open. There are more towers ahead.'
+  };
+}
+
+const WELCOME_MESSAGE = 'Thank you for joining the fight. Become strong enough to unlock all the towers.';
 const LAYER_CSS = 'inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(2,8,14,.78);backdrop-filter:blur(7px);';
 
 function element(tag, text, className) {
@@ -13,7 +35,7 @@ function element(tag, text, className) {
 
 export default {
   name: 'cipher-companion',
-  summary: 'Introduces the allied Cipher AI after an operative clears their first tower.',
+  summary: 'Cipher welcomes operatives and appears after every tower clear.',
   priority: 45,
   setup(ctx) {
     const layer = ctx.dom(LAYER_CSS);
@@ -38,28 +60,40 @@ export default {
     portrait.src = '/assets/cipher-companion.svg';
     portrait.alt = 'Cipher, warmly smiling through a cyan holographic projection';
     const copy = element('div', null, 'cipher-copy');
-    copy.append(
-      element('div', 'TOWER LINK RESTORED · FIRST CONTACT', 'cipher-kicker'),
-      Object.assign(element('h2', 'CIPHER'), { id: 'cipher-intro-title' }),
-      element('div', 'ALLIED AI COMPANION', 'cipher-role'),
-      element('p', 'Thank you for bringing the tower back online. I’m Cipher. I’m here to help you find and restore the remaining towers, if you’ll accept my guidance.')
-    );
-    const closeIntro = () => { layer.style.display = 'none'; };
+    const kicker = element('div', null, 'cipher-kicker');
+    const title = Object.assign(element('h2', 'CIPHER'), { id: 'cipher-intro-title' });
+    const role = element('div', 'ALLIED AI COMPANION', 'cipher-role');
+    const message = element('p');
     const close = element('button', 'CONTINUE');
     close.type = 'button';
-    close.addEventListener('click', closeIntro);
-    copy.append(close);
+    const closeDialog = () => { layer.style.display = 'none'; };
+    const showMessage = (headline, body) => {
+      kicker.textContent = headline;
+      message.textContent = body;
+      layer.style.display = 'flex';
+      close.focus();
+    };
+    close.addEventListener('click', closeDialog);
+    copy.append(kicker, title, role, message, close);
     panel.append(portrait, copy);
     layer.append(style, panel);
-    layer.addEventListener('click', (event) => { if (event.target === layer) closeIntro(); });
+    layer.addEventListener('click', (event) => { if (event.target === layer) closeDialog(); });
     window.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && layer.style.display === 'flex') closeIntro();
+      if (event.key === 'Escape' && layer.style.display === 'flex') closeDialog();
+    });
+
+    let welcomedPlayerId = null;
+    ctx.on('frame', ({ state }) => {
+      const player = state?.localPlayer;
+      if (!player) { welcomedPlayerId = null; return; }
+      if (player.id === welcomedPlayerId) return;
+      welcomedPlayerId = player.id;
+      showMessage('WELCOME, OPERATIVE', WELCOME_MESSAGE);
     });
     ctx.on('net:tower-cleared', (payload) => {
-      if (shouldShowCipherIntro(payload)) {
-        layer.style.display = 'flex';
-        close.focus();
-      }
+      if (!shouldShowCipherMessage(payload)) return;
+      const dialogue = cipherTowerDialogue(payload);
+      showMessage(dialogue.kicker, dialogue.message);
     });
   }
 };
