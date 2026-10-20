@@ -174,7 +174,12 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   setMode(mode);
 
   return {
-    update: updateGamepad,
+    update,
+    aimVector() {
+      if (mode === 'touch') return lastManualAim;
+      if (mode === 'controller') return gamepadAim || lastManualAim;
+      return getMouseAim?.() || lastManualAim;
+    },
     vector() {
       if (mode === 'controller') return { ...padVector };
       if (mode === 'touch' && (stick.vector.x || stick.vector.y)) return { ...stick.vector };
