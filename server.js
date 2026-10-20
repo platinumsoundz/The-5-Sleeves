@@ -25,6 +25,7 @@ const {
 const { gearAtkFor } = require('./server/shop-catalog.js');
 const { skillBonuses } = require('./server/skill-tree.js');
 const { levelFromXp } = require('./server/progression.js');
+const { canUseExit } = require('./server/exit-rules.js');
 const secureTransport = require('./server/secure-transport.js');
 
 // PROFILE_FILE lets the test suite point profiles at a throwaway file, so
@@ -120,6 +121,7 @@ function lobbyPayload() {
 function zoneMeta(zone) {
   return {
     id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint, biome: zone.biome,
+    world: { ...zone.world }, bossSites: zone.bossSites || [],
     kind: zone.kind, mode: zone.mode, arena: !!zone.arena, friendlyFire: zone.friendlyFire !== false,
     danger: zone.danger || 0, levelBand: zone.levelBand || null,
     towerIndex: zone.towerIndex || null, towerName: zone.towerName || zone.tower?.name || null,
@@ -137,14 +139,6 @@ function entrySpawn(zone, entry) {
   return { x: base.x, y: base.y };
 }
 const EDGE_ENTRY = { east: 'west', west: 'east', north: 'south', south: 'north' };
-function canUseExit(player, zone, direction) {
-  // Cities gate their east road behind the regional tower. The north gate is
-  // always open so the player can go and clear it.
-  if (zone.kind === 'haven' && direction === 'east' && zone.towerIndex && !player.towers?.[zone.towerIndex]) {
-    return { ok: false, reason: 'Clear ' + (zone.towerName || zone.tower?.name || 'the regional tower') + ' before leaving the city.' };
-  }
-  return { ok: true };
-}
 function unlockHaven(player, zone, socket) {
   if (zone.kind !== 'haven') return;
   player.unlockedCities = Array.isArray(player.unlockedCities) ? player.unlockedCities : ['haven-perimeter'];
