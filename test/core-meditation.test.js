@@ -38,6 +38,27 @@ test('Core meditation pays after idling and stops at the daily cap', () => {
   assert.equal(player.meditationCredits, 20);
 });
 
+test('every safe-city Cipher Core heals by 3% maximum health per second and caps at full health', () => {
+  hooks.get('left')({ id: 'meditator' });
+  const player = makePlayer();
+  player.hp = 40;
+  const zone = makeZone(player);
+  hooks.get('joining')(player, {});
+  hooks.get('tick')(zone, 1000, 1);
+  assert.equal(player.hp, 43, 'one second in a haven Core restores 3% maximum HP');
+  player.hp = 99;
+  hooks.get('tick')(zone, 2000, 1);
+  assert.equal(player.hp, 100, 'healing never exceeds maximum HP');
+  player.x = 700;
+  hooks.get('tick')(zone, 3000, 1);
+  assert.equal(player.hp, 100, 'leaving the Core ends healing');
+  player.hp = 50;
+  zone.kind = 'wild';
+  player.x = 500;
+  hooks.get('tick')(zone, 4000, 1);
+  assert.equal(player.hp, 50, 'combat wilderness has no safe-Core healing');
+});
+
 test('movement cancels the current idle wait without spending in combat zones', () => {
   hooks.get('left')({ id: 'meditator' });
   const player = makePlayer();
