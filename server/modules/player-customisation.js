@@ -1,7 +1,5 @@
-// Player self-expression: suit palette plus the sleeve-faction choice made on
-// the title screen. Factions are the six active domains; the choice sets the
-// aura, signature ability and faction chat channel, and is persisted here so
-// it survives rejoins. Validation stays server-side.
+// Player self-expression: suit palette plus one of five playable sleeve
+// factions. Cipher is a non-playable AI ally; validation stays server-side.
 const { ACTIVE_DOMAINS, SLEEVE_COLORS, SLEEVE_ACCENTS } = require('../sim/spec.js');
 const { DEFAULT_PALETTE, findPalette } = require('../player-palettes.js');
 
