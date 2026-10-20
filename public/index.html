@@ -433,7 +433,7 @@
     <div id="control-hints" aria-live="polite"></div>
     <section id="character-menu" class="hidden" aria-modal="true" role="dialog" aria-labelledby="menu-title">
       <div class="menu-panel">
-        <div class="menu-heading"><h2 id="menu-title">OPERATIVE MENU</h2><button id="menu-close" type="button">CLOSE</button></div>
+        <div class="menu-heading"><h2 id="menu-title">OPERATIVE MENU</h2><button id="menu-close" data-gamepad-back type="button">CLOSE</button></div>
         <div id="skill-points">Level 1 · Skill Points: 0</div>
         <nav id="menu-tabs" role="tablist" aria-label="Menu pages">
           <button class="menu-tab selected" data-menu-page="character" type="button" role="tab" aria-selected="true">CHARACTER</button>
@@ -455,12 +455,12 @@
       </div>
     </section>
     <section id="chat-actions" class="hidden" role="dialog" aria-label="Chat player actions">
-      <div class="chat-actions-head"><span id="chat-actions-name">Operative</span><button id="chat-actions-close" type="button" aria-label="Close player actions">×</button></div>
+      <div class="chat-actions-head"><span id="chat-actions-name">Operative</span><button id="chat-actions-close" data-gamepad-back type="button" aria-label="Close player actions">×</button></div>
       <div id="chat-actions-list"></div>
     </section>
     <section id="shop-panel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="shop-title">
       <div class="shop-panel-inner">
-        <div class="shop-heading"><h2 id="shop-title">QUARTERMASTER VALE</h2><button id="shop-close" type="button">CLOSE</button></div>
+        <div class="shop-heading"><h2 id="shop-title">QUARTERMASTER VALE</h2><button id="shop-close" data-gamepad-back type="button">CLOSE</button></div>
         <div id="shop-balance">CORE POINTS: 0</div>
         <div id="shop-items"></div>
         <div id="shop-status" role="status" aria-live="polite"></div>
@@ -468,7 +468,7 @@
     </section>
     <section id="arena-panel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="arena-title">
       <div class="arena-panel-inner">
-        <div class="arena-heading"><h2 id="arena-title">ARENA MASTER</h2><button id="arena-close" type="button">CLOSE</button></div>
+        <div class="arena-heading"><h2 id="arena-title">ARENA MASTER</h2><button id="arena-close" data-gamepad-back type="button">CLOSE</button></div>
         <p id="arena-note">Choose a PvP or PvE minigame. Death returns you to your last city.</p>
         <div id="arena-options"></div>
       </div>
