@@ -129,9 +129,9 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
 
   const isPressed = (pad, index) => !!pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5);
   function updateGamepad() {
-    if (!navigator.getGamepads) return;
+    if (!navigator.getGamepads) { setFireSource('gamepad', false); return; }
     const pad = Array.from(navigator.getGamepads()).find((item) => item?.connected);
-    if (!pad) { padVector = { x: 0, y: 0 }; return; }
+    if (!pad) { padVector = { x: 0, y: 0 }; setFireSource('gamepad', false); return; }
     let x = Math.abs(pad.axes[0] || 0) < 0.18 ? 0 : pad.axes[0];
     let y = Math.abs(pad.axes[1] || 0) < 0.18 ? 0 : pad.axes[1];
     const left = isPressed(pad, 14), right = isPressed(pad, 15), up = isPressed(pad, 12), down = isPressed(pad, 13);
@@ -140,20 +140,34 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     const magnitude = Math.hypot(x, y);
     if (magnitude > 1) { x /= magnitude; y /= magnitude; }
     padVector = { x, y };
+    const aimX = Math.abs(pad.axes[2] || 0) < 0.2 ? 0 : pad.axes[2];
+    const aimY = Math.abs(pad.axes[3] || 0) < 0.2 ? 0 : pad.axes[3];
+    gamepadAim = normalizeAim(aimX, aimY);
+    if (gamepadAim) lastManualAim = gamepadAim;
     const pressed = Array.from({ length: pad.buttons.length }, (_, index) => isPressed(pad, index));
     const edge = (buttons) => buttons.some((index) => pressed[index] && !previousButtons[index]);
-    if (magnitude || pressed.some(Boolean)) setMode('controller');
-    if (edge([0, 5])) triggerAction('attack');
+    if (magnitude || gamepadAim || pressed.some(Boolean)) setMode('controller');
+    setFireSource('gamepad', pressed[0] || pressed[5]);
     if (edge([2, 4])) triggerAction('dash');
     if (edge([1, 6])) triggerAction('shield');
     if (edge([7, 10])) triggerAction('ability');
     if (edge([3])) triggerAction('interact'); // Y / triangle: read terminals
-    if (edge([9, 8])) onMenu();
+    if (edge([9, 8])) { fireSources.clear(); onMenu(); }
     previousButtons = pressed;
+  }
+  function update() {
+    updateGamepad();
+    if (document.body?.dataset?.menuOpen === 'true') { fireSources.clear(); return; }
+    const now = performance.now();
+    if (fireSources.size && shouldRepeatFire(now, lastShotAt)) {
+      lastShotAt = now;
+      triggerAction('attack');
+    }
   }
   window.addEventListener('gamepadconnected', () => { previousButtons = []; setMode('controller'); });
   window.addEventListener('gamepaddisconnected', () => {
-    previousButtons = []; padVector = { x: 0, y: 0 };
+    previousButtons = []; padVector = { x: 0, y: 0 }; gamepadAim = null;
+    setFireSource('gamepad', false);
     const another = navigator.getGamepads && Array.from(navigator.getGamepads()).some((item) => item?.connected);
     if (!another) setMode(hasTouch ? 'touch' : 'keyboard');
   });
