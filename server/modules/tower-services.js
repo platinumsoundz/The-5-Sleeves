@@ -2,6 +2,7 @@
 // complete for everyone inside. Clearing a city's tower opens its east road.
 const { spawnWarden } = require('../sim/wardens.js');
 const { TOWER_WAVES, TOWER_WAVE_SIZE, XP_TOWER_CLEAR, CREDITS_TOWER_CLEAR } = require('../sim/spec.js');
+const { markIntroSeen } = require('./cipher-companion-memory.js');
 
 function freshRun(zone) {
   return {
@@ -44,10 +45,12 @@ function clearTower(ctx, zone, now) {
     player.credits = (player.credits || 0) + rewardCredits;
     player.skillPoints = (player.skillPoints || 0) + 1;
     ctx.applyXp(player, XP_TOWER_CLEAR + (zone.towerIndex || 1) * 20);
+    const cipherIntro = markIntroSeen(player);
     ctx.persistPlayer(player);
     ctx.playerSockets()[player.id]?.emit('tower:cleared', {
       index: zone.towerIndex, name: zone.tower?.name || zone.name,
-      credits: rewardCredits, unlockedCities: player.unlockedCities, towers: player.towers
+      credits: rewardCredits, unlockedCities: player.unlockedCities, towers: player.towers,
+      cipherIntro
     });
   }
   zone.send('hub:notice', (zone.tower?.name || 'Tower') + ' is online. The east road is open.');
