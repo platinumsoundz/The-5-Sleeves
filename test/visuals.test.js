@@ -10,7 +10,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const { zoneCatalog } = require('../server/zones-catalog.js');
 const { createSimulation } = require('../server/sim/state.js');
 
- test('all regions propagate their assigned biome to the live simulation', async () => {
+test('all regions propagate their assigned biome to the live simulation', async () => {
   const { BIOMES } = await import(pathToFileURL(path.join(root, 'public/src/biomes.js')).href);
   for (const zone of zoneCatalog()) {
     assert.ok(zone.biome in BIOMES, `${zone.id} has a known background biome`);
