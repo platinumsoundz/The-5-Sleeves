@@ -20,7 +20,7 @@ const SAFE_CUBE = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.
 const TERMINALS = {
   perimeter: [
     { id: 'terminal-transit', name: 'Transit Manifest Terminal', x: 138, y: 556, log: 'Transit Manifest, Last Entry: Platform 3 evacuees were told to hold for a second train that never came. The manifest lists 214 names, and someone has crossed out the last forty-one by hand.' },
-    { id: 'terminal-observatory', name: 'Observatory Console', x: 872, y: 132, log: 'Observatory Log: From the east parapet the fog reads like weather, but it keeps a rhythm. Ashley counted eleven pulses per minute and marked each one with a tally. The tally runs off the edge of the panel.' },
+    { id: 'terminal-observatory', name: 'Observatory Console', x: 872, y: 132, log: 'Observatory Log: From the east parapet the fog reads like weather, but it keeps a rhythm. An observer counted eleven pulses per minute and marked each one with a tally. The tally runs off the edge of the panel.' },
     { id: 'terminal-vault', name: 'Sealed Vault Interface', x: 486, y: 626, log: 'Vault Interface: Access card 09 was issued to a cipher engineer whose name has been sanded off the record. Beneath the seal, someone left a note reading: "the sleeve remembers what we delete."' }
   ],
   coast: [
