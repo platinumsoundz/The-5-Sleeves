@@ -40,7 +40,8 @@ function drawSummary(ctx, player, state, x, y, width, height) {
   ctx.fillText(zoneLabel(state.zone), x + 9, y + height - 8);
   ctx.textAlign = 'right'; ctx.fillStyle = (player.abilityCooldown || 0) > 0 ? '#8faeb0' : '#7dffe4';
   const cooldown = player.abilityCooldown || 0;
-  const ability = String(player.abilityName || 'SLEEVE').toUpperCase();
+  const abilityName = width < COMPACT_WIDTH ? (player.abilityShort || 'SLEEVE') : (player.abilityName || 'SLEEVE');
+  const ability = String(abilityName).toUpperCase();
   ctx.fillText(ability + ' · ' + (cooldown > 0 ? (cooldown / 1000).toFixed(1) + 's' : 'READY'), x + width - 9, y + height - 8);
 }
 
