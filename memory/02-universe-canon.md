@@ -34,9 +34,11 @@ content. This chapter is the game-dev digest.
 
 The game begins after the five-book comic's events; it is a continuation, not
 an adaptation of those chapters. A new operative explores the changed world
-and restores regional towers. Cipher is an allied AI; after the operative's
-first tower clear, she appears, thanks them, and offers to help. Each region
-still uses the comic's established places and history:
+and restores regional towers. Cipher is an allied AI: she welcomes each new
+operative on joining and appears after every tower clear. The Eastern Expanse
+beyond the fifth tower is a new game addition, not established comic canon;
+keep it marked as proposed game content pending owner/canon review. Each
+established region still uses the comic's places and history:
 
 | Book | Zones | Associated spirit/AI | Note |
 |---|---|---|---|---|
