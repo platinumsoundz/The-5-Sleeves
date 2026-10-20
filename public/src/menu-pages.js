@@ -527,7 +527,7 @@ export function renderSettingsPage(root, { actions, refresh }) {
   root.append(shootingToggle);
   root.append(make('p', 'menu-empty', shootingMode === SHOOTING_MODE.AUTO
     ? 'Press or hold BLAST; shots seek the nearest hostile. Twin-stick adds a right aim stick / right gamepad stick.'
-    : 'Aim with the right touch stick, right gamepad stick, or mouse; hold BLAST to fire.'));
+    : 'Aim with mouse or the right gamepad stick and hold BLAST. On touch, deflect the right aim stick to aim and fire.'));
 
   section(root, 'KEYBINDS');
   const binds = loadKeybinds();
