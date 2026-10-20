@@ -4,7 +4,6 @@ const { distance, damageTarget, damageableTargets, isHostile, inSafeZone, applyS
 const { skillBonuses } = require('../skill-tree.js');
 
 const DOMAIN_ABILITIES = {
-  cipher: { id: 'conduit-pulse', name: 'Conduit Pulse', short: 'PULSE', cooldown: 6000, kind: 'pulse', radius: 135, damage: 14, knockback: 70, charge: 20 },
   wind: { id: 'gale-push', name: 'Gale Push', short: 'GALE', cooldown: 5200, kind: 'gale', radius: 125, damage: 8, knockback: 215, hasteMs: 1600 },
   water: { id: 'tide-snare', name: 'Tide Snare', short: 'SNARE', cooldown: 7000, kind: 'pool', cast: 95, radius: 110, duration: 3600, tickDamage: 5, slowMs: 2200 },
   fire: { id: 'ember-lance', name: 'Ember Lance', short: 'LANCE', cooldown: 5200, kind: 'lance', damage: 16, speed: 430, burnMs: 2600, burnPower: 6, blast: 75, blastDamage: 10 },
@@ -20,11 +19,6 @@ function abilityFor(player) {
     ...base,
     cooldown: Math.round(base.cooldown * bonuses.abilityCooldownScale)
   };
-  if (ability.kind === 'pulse') {
-    ability.radius += bonuses.pulseRadius;
-    ability.damage += bonuses.pulseDamage;
-    if (bonuses.pulseSlowMs) ability.slowMs = bonuses.pulseSlowMs;
-  }
   if (ability.kind === 'gale') {
     ability.radius += bonuses.galeRadius;
     ability.damage += bonuses.galeDamage;
