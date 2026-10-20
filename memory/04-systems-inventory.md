@@ -101,8 +101,9 @@ and tested.)
   (`render:world`, `render:fx`, `render:overlay`).
 - **biomes.js** — biome metadata + procedural ground painters for grass,
   water, scorched earth, frost-and-ember, wind, cipher and arena; wasteland
-  reuses the baked ruin tiles. Zone backgrounds are cached per
-  biome + world size in renderer.js.
+  reuses the baked ruin tiles. Zone backgrounds are cached per biome + world
+  size in renderer.js; the live simulation now preserves each catalog biome.
+  Most regions have procedural backgrounds rather than dedicated PNGs.
 - **netcode.js** — every socket event in one place, including hub state,
   world map, tower runs, arena menu, fast travel, shop, friends/inbox/gifts,
   skill unlocks and arena zone changes.
@@ -124,8 +125,9 @@ and tested.)
 - **world.js** — deterministic ruin props, named landmarks, terminal
   helpers (pure, Node-testable).
 - **assetLoader.js / characterRenderer.js** — baked PNG sheets with
-  procedural fallback; per-domain idle + 4-frame walk, plus the cosmetic
-  palette overlay (scarf/strap/belt) and palette aura sparks.
+  procedural fallback; all six domains have idle + 4-frame walk art, Rust
+  Wardens have baked art + fallback, plus cosmetic palette overlay and aura.
+  Tower rooms use named, region-biome-tinted procedural landmarks.
 - **audioManager.js** — Web Audio SFX, mute toggle.
 - **config.js** — world/core/colour constants.
 
@@ -139,9 +141,9 @@ and tested.)
   legacy joins land in `wild-perimeter` for tests.
 - **sim/state.js** — `createSimulation(catalogZone, host)`: all per-zone
   state (players, wardens, projectiles, effects, bursts, echoes,
-  objectives, faction scores, match, tower run) plus a zone-scoped `send()`
-  and `broadcast()` (empty rooms skip broadcasts). Safe zones support both
-  rectangles (cities) and circles.
+  objectives, faction scores, match, tower run, biome) plus a zone-scoped
+  `send()` and `broadcast()` (empty rooms skip broadcasts). Safe zones support
+  both rectangles (cities) and circles.
 - **sim/spec.js** — every shared tuning number (warden stats and explicit
   per-tier scaling multipliers, XP bounties,
   respawn delays, sleeve colours, archive log lines, env knobs).
@@ -216,6 +218,9 @@ and tested.)
 - `npm start` / `npm run dev` (watch) / `npm test` (node --test) /
   `npm run sprites` (bake art via `tools/generate-sprites.js`).
 - `tools/png.js` — dependency-free PNG writer + supersampled rasteriser.
+- Visual coverage regression suite (`test/visuals.test.js`) checks zone
+  biome propagation, named tower landmarks and required baked sprite files;
+  **added but unrun**.
 - 17 suites: server boot/health, server modules, cities/merchants/arenas,
   world travel/tower completion, zones, fixed timestep, spectate/replay,
   abilities, wardens, objectives, progression, camera, interpolation,
