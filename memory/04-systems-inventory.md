@@ -161,6 +161,10 @@ and tested.)
 
 ## Server modules (`server/modules/`, auto-discovered)
 
+- **dev-console** — non-production only when explicitly enabled with a
+  32-character server token; socket authorization is rate-limited and
+  session-scoped. Grants credits, skill points, items, skills and terminal
+  reads through server-owned state.
 - **core-meditation** — safe-haven Cipher Core awards 5 credits every 5
   minutes after 30 seconds of inactivity, with a 20-credit UTC-day cap
   persisted per operative; city Core no longer grants active-zone skill points.
