@@ -296,7 +296,7 @@ const ZONES = [
     spawn: { x: 92, y: 1050 },
     exits: { west: 'haven-citadel' },
     bossSites: EASTERN_EXPANSE_SITES,
-    guardianSpawns: EASTERN_EXPANSE_SITES.slice(0, 4),
+    guardianSpawns: EASTERN_EXPANSE_SITES,
     desc: 'A broad frontier beyond the Citadel, marked for future threats.'
   }),
 
