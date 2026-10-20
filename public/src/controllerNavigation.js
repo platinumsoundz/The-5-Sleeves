@@ -4,6 +4,17 @@ export const GAMEPAD_BUTTONS = Object.freeze({
   leftStick: 10, rightStick: 11, up: 12, down: 13, left: 14, right: 15
 });
 
+export const GAMEPAD_ACTION_BUTTONS = Object.freeze({
+  attack: GAMEPAD_BUTTONS.rightTrigger,
+  interact: GAMEPAD_BUTTONS.a,
+  dash: GAMEPAD_BUTTONS.b,
+  shield: GAMEPAD_BUTTONS.y,
+  ability: Object.freeze([GAMEPAD_BUTTONS.x, GAMEPAD_BUTTONS.rightBumper]),
+  confirm: GAMEPAD_BUTTONS.a,
+  back: GAMEPAD_BUTTONS.b,
+  menu: Object.freeze([GAMEPAD_BUTTONS.start, GAMEPAD_BUTTONS.select])
+});
+
 const OVERLAYS = '#title-screen, #character-menu, #shop-panel, #arena-panel, #party-invite-toast, #chat-actions, #chat-panel';
 const FOCUSABLE = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])';
 
