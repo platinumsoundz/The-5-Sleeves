@@ -21,6 +21,7 @@ function makeZone(player) {
 }
 
 test('Core meditation pays after idling and stops at the daily cap', () => {
+  hooks.get('left')({ id: 'meditator' });
   const player = makePlayer();
   const zone = makeZone(player);
   hooks.get('joining')(player, {});
@@ -38,6 +39,7 @@ test('Core meditation pays after idling and stops at the daily cap', () => {
 });
 
 test('movement cancels the current idle wait without spending in combat zones', () => {
+  hooks.get('left')({ id: 'meditator' });
   const player = makePlayer();
   const zone = makeZone(player);
   hooks.get('joining')(player, {});
