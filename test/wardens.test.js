@@ -10,6 +10,10 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PORT = 3127;
 const url = `http://127.0.0.1:${PORT}`;
 
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { scaledStats } = require('../server/sim/wardens.js');
+
 function startServer(env = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PROFILE_FILE: TEST_PROFILE_FILE, PORT: String(PORT), ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -38,6 +42,18 @@ async function connect(name) {
   const accepted = await once(socket, 'join:accepted');
   return { socket, id: accepted.playerId };
 }
+
+test('warden balance grows by explicit danger-tier steps', () => {
+  const base = scaledStats(1);
+  const tierThree = scaledStats(3);
+  assert.equal(base.hp, 90);
+  assert.equal(base.damage, 12);
+  assert.equal(base.credits, 14);
+  assert.equal(tierThree.hp, 140);
+  assert.equal(tierThree.damage, 17);
+  assert.equal(tierThree.xp, 23);
+  assert.equal(tierThree.credits, 29);
+});
 
 const positions = (aiState) => Object.values(aiState).map((warden) => `${Math.round(warden.x)},${Math.round(warden.y)}`).join('|');
 
