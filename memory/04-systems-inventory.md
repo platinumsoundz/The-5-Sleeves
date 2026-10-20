@@ -53,6 +53,10 @@ and tested.)
 
 ## Server support files
 
+- **account-store.js** — separate account ledger (`users.json`) with salted
+  scrypt password hashes and atomic temp-file replacement; legacy named
+  profiles remain separate.
+
 - **shop-catalog.js** — merchant stock with credit prices and sell values,
   starter inventory/equipment, item lookup and tier-based loot tables.
   Salvage-only Shattered Circuitry and Corroded Relay Parts drop in the
@@ -161,6 +165,12 @@ and tested.)
 
 ## Server modules (`server/modules/`, auto-discovered)
 
+- **auth** (priority 5) — optional guest/register/login flow using username
+  and password; rate-limited, HTTPS-required outside development, with
+  server-side join guards, separate account profile keys and legacy-name
+  reservation. Client join controls live in `uiManager.js`; socket calls in
+  `netcode.js`. Username/password only: no email verification or reset.
+  **Implemented but not yet tested.**
 - **dev-console** — non-production only when explicitly enabled with
   server-configured redeem codes; code attempts are rate-limited and grant
   types are allowlisted server-side. Grants credits, skill points, items,
