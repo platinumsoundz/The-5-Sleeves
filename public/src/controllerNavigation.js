@@ -48,6 +48,14 @@ function visible(element) {
   return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
 }
 
+function effectiveZIndex(element) {
+  let top = 0;
+  for (let node = element; node && node !== document.body; node = node.parentElement) {
+    top = Math.max(top, Number.parseInt(getComputedStyle(node).zIndex, 10) || 0);
+  }
+  return top;
+}
+
 export function activeUiOverlay() {
   const overlays = Array.from(document.querySelectorAll(OVERLAYS)).filter(visible);
   return overlays.reduce((top, element) => {
