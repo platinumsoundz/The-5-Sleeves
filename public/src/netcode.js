@@ -18,6 +18,7 @@ export function createNetcode(state, callbacks = {}, audio = null) {
   });
   socket.on('join:accepted', (data) => {
     state.zone = data.zone || state.zone;
+    state.world = data.zone?.world || state.world;
     callbacks.joinAccepted?.(data);
   });
   socket.on('zone:changed', (payload) => {
@@ -29,6 +30,7 @@ export function createNetcode(state, callbacks = {}, audio = null) {
       friendlyFire: payload?.friendlyFire !== false
     };
     state.zoneMode = payload?.mode || next.mode || state.zoneMode;
+    state.world = next.world || state.world;
     if (next.kind !== 'tower') state.towerRun = null;
     // Clear city-only overlays immediately when leaving a safe city; waiting
     // for hub:state would leave a one-frame stale safe cube in the wilds.
