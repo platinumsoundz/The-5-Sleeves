@@ -50,8 +50,8 @@ test('relays are captured by presence and fought over by rival factions', async 
   t.after(() => { sockets.forEach((socket) => socket.close()); server.kill('SIGKILL'); });
 
   const suffix = Date.now().toString(36);
-  const one = await connect('HoldA' + suffix, 'cipher');
-  const two = await connect('HoldB' + suffix, 'cipher');
+  const one = await connect('HoldA' + suffix, 'wind');
+  const two = await connect('HoldB' + suffix, 'wind');
   const rival = await connect('Rival' + suffix, 'fire');
   sockets.push(one.socket, two.socket, rival.socket);
 
@@ -62,20 +62,20 @@ test('relays are captured by presence and fought over by rival factions', async 
   rival.socket.emit('player:move', { x: 920, y: 380 });
   await once(rival.socket, 'players', (players) => players[rival.id] && Math.hypot(players[rival.id].x - 920, players[rival.id].y - 380) < 20, 6000, 'rival reaches the corner');
 
-  // Two Cipher operatives stand on the west relay: progress then ownership.
+  // Two Wind operatives stand on the west relay: progress then ownership.
   one.socket.emit('player:move', { x: 240, y: 170 });
   two.socket.emit('player:move', { x: 262, y: 190 });
   const gaining = await waitFor(one.socket, (payload) => payload.nodes['relay-west'].progress > 0, 12000, 'capture progress');
-  assert.equal(gaining.nodes['relay-west'].progressColor, 'cipher', 'progress is attributed to the standing faction');
+  assert.equal(gaining.nodes['relay-west'].progressColor, 'wind', 'progress is attributed to the standing faction');
   assert.equal(gaining.nodes['relay-west'].ownerId, null, 'the relay starts neutral');
 
-  const owned = await waitFor(one.socket, (payload) => payload.nodes['relay-west'].ownerId === 'cipher', 15000, 'capture complete');
+  const owned = await waitFor(one.socket, (payload) => payload.nodes['relay-west'].ownerId === 'wind', 15000, 'capture complete');
   assert.ok(owned.nodes['relay-west'].ownerColor, 'the relay reports a holder colour');
   assert.equal(owned.nodes['relay-west'].progress, 100);
 
   // Holding scores over time.
-  const scored = await waitFor(one.socket, (payload) => (payload.scores.cipher || 0) > 0, 10000, 'score accrual');
-  assert.ok(scored.scores.cipher > 0, 'held relays score for their faction');
+  const scored = await waitFor(one.socket, (payload) => (payload.scores.wind || 0) > 0, 10000, 'score accrual');
+  assert.ok(scored.scores.wind > 0, 'held relays score for their faction');
 
   // A rival faction starting to flip a neutral relay…
   rival.socket.emit('player:move', { x: 500, y: 560 });
@@ -85,7 +85,7 @@ test('relays are captured by presence and fought over by rival factions', async 
   assert.equal(threatened.nodes['relay-south'].progressColor, 'fire', 'capture progress tracks the rival');
   assert.equal(threatened.nodes['relay-south'].contested, false, 'a lone faction is not contested');
 
-  // …is frozen the moment a Cipher operative steps in.
+  // …is frozen the moment a Wind operative steps in.
   two.socket.emit('player:move', { x: 512, y: 548 });
   const contested = await waitFor(one.socket, (payload) => payload.nodes['relay-south'].contested === true, 12000, 'contest');
   assert.equal(contested.nodes['relay-south'].occupants, 2);
@@ -95,11 +95,11 @@ test('relays are captured by presence and fought over by rival factions', async 
 
   // The rival leaving hands the relay to Cipher; ownership outlasts the occupant.
   rival.socket.emit('player:move', { x: 900, y: 640 });
-  const captured = await waitFor(one.socket, (payload) => payload.nodes['relay-south'].ownerId === 'cipher', 15000, 'second capture');
-  assert.equal(captured.nodes['relay-south'].ownerId, 'cipher');
+  const captured = await waitFor(one.socket, (payload) => payload.nodes['relay-south'].ownerId === 'wind', 15000, 'second capture');
+  assert.equal(captured.nodes['relay-south'].ownerId, 'wind');
   two.socket.emit('player:move', { x: 900, y: 120 });
   const emptied = await waitFor(one.socket, (payload) => payload.nodes['relay-south'].occupants === 0, 10000, 'relay emptied');
-  assert.equal(emptied.nodes['relay-south'].ownerId, 'cipher', 'ownership is not lost when everyone walks away');
+  assert.equal(emptied.nodes['relay-south'].ownerId, 'wind', 'ownership is not lost when everyone walks away');
 });
 
 test('a faction that reaches the score limit wins the match', async (t) => {
