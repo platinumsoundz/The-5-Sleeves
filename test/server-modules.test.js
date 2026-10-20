@@ -84,7 +84,7 @@ test('archive terminals are served by the plug-and-play module', async (t) => {
 
   // The master publishes the client module manifest for the browser runner.
   const manifest = await fetch(`http://127.0.0.1:${PORT}/api/client-modules`).then((response) => response.json());
-  for (const name of ['terminals', 'combat-juice', 'world-decor']) {
+  for (const name of ['terminals', 'combat-juice', 'world-decor', 'cipher-companion']) {
     assert.ok(manifest.modules.includes(name), `${name} listed in the client manifest`);
   }
 
