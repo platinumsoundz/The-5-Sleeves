@@ -92,7 +92,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   function updateGamepad() {
     const pad = navigator.getGamepads && Array.from(navigator.getGamepads()).find((item) => item?.connected);
     if (!pad) {
-      padVector = { x: 0, y: 0 }; previousButtons = []; shooting.updateGamepad(null); return;
+      padVector = { x: 0, y: 0 }; previousButtons = []; lastMenuDirection = null; shooting.updateGamepad(null); return;
     }
     const pressed = Array.from({ length: pad.buttons.length }, (_, index) => !!pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5));
     const edge = (buttons) => buttons.some((index) => pressed[index] && !previousButtons[index]);
