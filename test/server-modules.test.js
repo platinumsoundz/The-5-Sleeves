@@ -35,6 +35,7 @@ test('the module master scans server/modules and boots every module', () => {
   const { context } = stubContext();
   const loaded = loadModules(path.join(root, 'server', 'modules'), context);
   assert.ok(loaded.includes('archive-terminals'), 'archive terminals module is discovered automatically');
+  assert.ok(loaded.includes('cipher-companion-memory'), 'Cipher intro persistence is discovered automatically');
 });
 
 test('a broken module is skipped instead of crashing the master', (t) => {
