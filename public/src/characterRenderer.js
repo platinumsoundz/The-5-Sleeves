@@ -18,7 +18,7 @@ function drawAjaye(ctx, x, y, player, time) {
   ctx.fillStyle = '#27292a'; ctx.fillRect(-8, 19, 8, 3); ctx.fillRect(1, 19, 8, 3);
   // Ordinary cloth right arm and warm skin: explicitly no Sleeve on this arm.
   ctx.fillStyle = '#252729'; ctx.fillRect(-13, -2, 5, 13); ctx.fillStyle = '#bc805f'; ctx.fillRect(-13, 9, 5, 3);
-  const domain = player.energyColor || 'cipher';
+  const domain = player.energyColor || 'wind';
   const primary = player.color || DOMAINS[domain]?.primary || '#00ffff';
   // Dark segmented forearm device and cyan/selected-domain channels on anatomical left.
   ctx.fillStyle = '#151c21'; ctx.fillRect(8, -2, 6, 14);
@@ -119,10 +119,10 @@ function drawStatusEffects(ctx, player, time) {
 }
 
 export function drawPlayer(ctx, player, localId, time) {
-  const domain = DOMAINS[player.energyColor] || DOMAINS.cipher;
+  const domain = DOMAINS[player.energyColor] || DOMAINS.wind;
   const color = player.color || domain.primary;
   drawAura(ctx, player, time, color, player.accentColor || domain.accent);
-  const key = player.energyColor || 'cipher';
+  const key = player.energyColor || 'wind';
   const speed = Math.hypot(player.vx || 0, player.vy || 0);
   const moving = speed > MOVING_THRESHOLD;
   // Match the stride to actual speed so a dash reads faster than a walk.
