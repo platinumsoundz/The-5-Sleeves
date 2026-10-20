@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { SHOP_ITEMS } = require('../shop-catalog.js');
+const { ITEM_CATALOG } = require('../shop-catalog.js');
 const { SKILL_TREE } = require('../skill-tree.js');
 
 const MAX_CREDITS = 999999;
@@ -47,7 +47,7 @@ module.exports = {
       player.credits = MAX_CREDITS;
       player.skillPoints = MAX_SKILL_POINTS;
       player.corePoints = MAX_CORE_POINTS;
-      player.inventory = Array.from(new Set([...(player.inventory || []), ...SHOP_ITEMS.map((item) => item.id)]));
+      player.inventory = Array.from(new Set([...(player.inventory || []), ...Object.keys(ITEM_CATALOG)]));
       player.skills = Object.fromEntries(SKILL_TREE.map((node) => [node.id, true]));
       player.terminalsRead = Array.from(new Set([...(player.terminalsRead || []), ...Object.values(ctx.zones()).flatMap((zone) => (zone.terminals || []).map((item) => item.id))]));
       ctx.persistPlayer(player);
