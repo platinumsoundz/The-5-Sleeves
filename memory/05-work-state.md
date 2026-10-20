@@ -3,7 +3,22 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 17 player palette + faction identity; current session has untested salvage + balance updates).
+Last updated: 2026-10-20 (step 17 player palette + faction identity; subsequent salvage, balance, and meditation changes are untested).
+
+## Current session — Safe-city Core meditation (IMPLEMENTED, UNVERIFIED)
+
+- Added auto-discovered `server/modules/core-meditation.js`: players in a
+  safe city's Cipher Core receive 5 credits after 30 seconds idle, then every
+  5 minutes, capped at 20 credits per UTC day. Movement or combat actions
+  reset the idle timer; the daily cap persists through the existing profile
+  persist hooks.
+- Safe-haven Core no longer pays the existing charge-to-skill-point bounty;
+  the old active Core reward remains in non-haven zones. No client rendering
+  or input code changed.
+- Added `test/core-meditation.test.js` for timing, cap, and movement behavior.
+  **Tests were not run, as requested.**
+- The prior salvage economy and progression balance edits are also untested.
+  Test before committing or deploying; do not treat this as verified.
 
 ## Current session — tuning transparency and tiered skill costs (IMPLEMENTED, UNVERIFIED)
 
