@@ -24,7 +24,7 @@ module.exports = {
       for (const player of Object.values(zone.players)) {
         let session = sessions.get(player.id);
         if (!session) {
-          session = { x: player.x, y: player.y, activity: activityStamp(player), idleSince: now, nextRewardAt: now + REWARD_INTERVAL_MS, earned: 0, inCore: false };
+          session = { x: player.x, y: player.y, activity: activityStamp(player), idleSince: now, nextRewardAt: now + IDLE_MS, earned: 0, inCore: false };
           sessions.set(player.id, session);
         }
         const inside = zone.kind === 'haven' && player.hp > 0 && distance(player, CORE) <= CORE.radius;
@@ -37,17 +37,17 @@ module.exports = {
         if (!inside) {
           session.inCore = false;
           session.idleSince = now;
-          session.nextRewardAt = now + REWARD_INTERVAL_MS;
+          session.nextRewardAt = now + IDLE_MS;
           continue;
         }
         if (!session.inCore) {
           session.inCore = true;
           session.idleSince = now;
-          session.nextRewardAt = now + REWARD_INTERVAL_MS;
+          session.nextRewardAt = now + IDLE_MS;
         }
         if (moved || acted) {
           session.idleSince = now;
-          session.nextRewardAt = now + REWARD_INTERVAL_MS;
+          session.nextRewardAt = now + IDLE_MS;
           continue;
         }
         if (now - session.idleSince < IDLE_MS || now < session.nextRewardAt || session.earned >= SESSION_CREDIT_CAP) continue;
