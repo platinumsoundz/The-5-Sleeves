@@ -64,6 +64,7 @@
       .title-kicker { color: #69f5d9; letter-spacing: .32em; font-size: 10px; }
       .title-panel h1 { margin: 12px 0 6px; color: #eafffa; font-size: clamp(23px, 6.5vw, 34px); line-height: 1.1; letter-spacing: .05em; text-shadow: 0 0 18px rgba(76,255,222,.42); }
       .title-panel p { color: #91aeb9; margin: 0 0 18px; font-size: 13px; }
+      .timeline-label { margin-top: 5px; color: #77dff1; font-size: 10px; font-weight: 800; letter-spacing: .17em; }
       #username-input { width: 100%; padding: 11px 12px; border: 1px solid #3d8d8b; border-radius: 9px; outline: none; background: #0b1c2a; color: #effffb; font: inherit; font-size: 16px; }
       #username-input:focus { border-color: #67ffde; box-shadow: 0 0 0 3px rgba(103,255,222,.12); }
       #enter-button { width: 100%; margin-top: 11px; padding: 12px; border: 1px solid #adfff0; border-radius: 9px; background: linear-gradient(110deg,#087a79,#23bda0); color: #f1fffb; font: 800 14px system-ui,sans-serif; letter-spacing: .12em; }
@@ -374,7 +375,8 @@
       <form class="title-panel" id="join-form">
         <div class="title-kicker">OPERATIVE IDENTIFICATION</div>
         <h1 id="game-title">THE 5 SLEEVES:<br />CIPHER CONDUIT</h1>
-        <p>Choose your name to enter the Conduit.</p>
+        <div class="timeline-label">POST-COMIC CONTINUATION</div>
+        <p>A new operative’s story begins after the comic’s events. Choose a name and a Sleeve faction.</p>
         <div id="zone-picker" role="radiogroup" aria-label="Choose a zone">
           <div class="zone-kicker">DEPLOYMENT ZONE</div>
           <div id="zone-options"></div>
