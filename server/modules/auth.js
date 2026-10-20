@@ -21,6 +21,12 @@ module.exports = {
     const rate = new Map();
     const dummyHash = hashPassword('not-a-real-account-password');
 
+    function secureTransport(socket) {
+      if (process.env.NODE_ENV !== 'production' || socket.request?.connection?.encrypted) return true;
+      const proxyTls = process.env.TRUSTED_PROXY_TLS === 'true'
+        && socket.handshake?.headers?.['x-forwarded-proto']?.split(',')[0].trim() === 'https';
+      return !!proxyTls;
+    }
     function allowAttempt(socket) {
       const key = socket.handshake?.address || socket.id;
       const now = Date.now();
@@ -53,6 +59,7 @@ module.exports = {
     });
 
     ctx.registerSocket('auth:register', async (player, payload, socket) => {
+      if (!secureTransport(socket)) { socket.emit('auth:error', 'Accounts require HTTPS in production.'); return; }
       if (player) { socket.emit('auth:error', 'Log out before registering a different account.'); return; }
       const username = typeof payload?.username === 'string' ? payload.username.trim() : '';
       const key = username.toLowerCase();
@@ -77,6 +84,7 @@ module.exports = {
     });
 
     ctx.registerSocket('auth:login', async (player, payload, socket) => {
+      if (!secureTransport(socket)) { socket.emit('auth:error', 'Accounts require HTTPS in production.'); return; }
       if (player) { socket.emit('auth:error', 'Log out before switching accounts.'); return; }
       const username = typeof payload?.username === 'string' ? payload.username.trim() : '';
       const password = typeof payload?.password === 'string' ? payload.password : '';
@@ -91,5 +99,6 @@ module.exports = {
     });
 
     ctx.on('left', (player) => sessions.delete(player.id));
+    ctx.io.on('connection', (socket) => socket.once('disconnect', () => sessions.delete(socket.id)));
   }
 };
