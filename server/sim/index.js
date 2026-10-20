@@ -59,6 +59,22 @@ function stepZone(sim, now, deltaSeconds) {
   // Lingering abilities: water pools tick damage/slow, earth walls soak shots.
   for (const [id, effect] of Object.entries(sim.effects)) {
     if (now > effect.expiresAt) { delete sim.effects[id]; continue; }
+    // Bastion Seal walls mend friendly operatives standing in their shadow.
+    if (effect.kind === 'wall') {
+      if (effect.healAllies && now >= (effect.nextHealAt || 0)) {
+        effect.nextHealAt = now + 1000;
+        const owner = sim.players[effect.ownerId];
+        if (owner) {
+          for (const ally of Object.values(sim.players)) {
+            if (ally.hp <= 0) continue;
+            if (isHostile(owner, ally, sim)) continue;
+            if (distance(ally, effect) > (effect.healRadius || effect.radius + 80)) continue;
+            ally.hp = Math.min(ally.maxHp, ally.hp + 5);
+          }
+        }
+      }
+      continue;
+    }
     if (effect.kind !== 'pool') continue;
     if (now < effect.nextTickAt) continue;
     effect.nextTickAt = now + 250;

@@ -19,6 +19,7 @@ export function createUIManager(actions) {
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
   let profileSnapshot = JSON.stringify(profile);
+  let menuSignature = '';
   if (typeof profile.name === 'string') nameInput.value = profile.name;
 
   const menuController = createMenu({ actions, getState: actions.getState, getPlayer: actions.getPlayer });
@@ -315,6 +316,14 @@ export function createUIManager(actions) {
         inventory: player.inventory, equipped: player.equipped, skills: player.skills, friends: player.friends
       };
       saveProfile(); updateMenu(player);
+      // Menu pages read the live snapshot. Rebuild them only when skills,
+      // gear, points or resources actually change — not on every tick — so a
+      // tap on a skill node is not swallowed by a constant re-render.
+      const signature = [player.level, player.skillPoints, player.xp, player.credits, player.gearAtk, player.atk, player.plating, player.overclock, player.energyColor, Math.ceil(player.hp || 0), (player.inventory || []).length, JSON.stringify(player.equipped || {}), JSON.stringify(player.skills || {})].join('|');
+      if (signature !== menuSignature) {
+        menuSignature = signature;
+        if (menuController.isOpen()) menuController.refresh();
+      }
       if (player.abilityShort) {
         abilityButton.textContent = player.abilityShort;
         abilityButton.setAttribute('aria-label', 'Cast ' + (player.abilityName || 'sleeve ability'));

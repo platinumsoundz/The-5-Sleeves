@@ -190,5 +190,16 @@ module.exports = {
       socket.emit('shop:update', shopPayload(player));
       ctx.playerZone(player.id)?.broadcast();
     });
+
+    ctx.registerSocket('player:unequip', (player, payload, socket) => {
+      const slot = payload?.slot;
+      if (!player || !['head', 'chest', 'legs', 'feet', 'weapon'].includes(slot)) return;
+      player.equipped = player.equipped || {};
+      player.equipped[slot] = null;
+      recalcGear(player);
+      ctx.persistPlayer(player);
+      socket.emit('shop:update', shopPayload(player));
+      ctx.playerZone(player.id)?.broadcast();
+    });
   }
 };

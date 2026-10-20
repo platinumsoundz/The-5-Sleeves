@@ -70,7 +70,7 @@ export function createNetcode(state, callbacks = {}, audio = null) {
   socket.on('towers', (towers) => { state.towers = towers || []; });
   socket.on('tower:unlocked', (payload) => callbacks.towerUnlocked?.(payload));
   socket.on('shop:open', (payload) => callbacks.shop?.(payload));
-  socket.on('shop:update', (payload) => callbacks.shop?.(payload));
+  socket.on('shop:update', (payload) => callbacks.shopUpdate?.(payload));
   socket.on('shop:error', (message) => callbacks.shopError?.(message));
   socket.on('friends:state', (friends) => { state.friends = friends || []; callbacks.friends?.(state.friends); });
   socket.on('friends:error', (message) => callbacks.notice?.(message));
@@ -182,6 +182,7 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     buyItem: (itemId) => socket.emit('shop:buy', { itemId }),
     sellItem: (itemId) => socket.emit('shop:sell', { itemId }),
     equipItem: (itemId) => socket.emit('player:equip', { itemId }),
+    unequipItem: (slot) => socket.emit('player:unequip', { slot }),
     enterArena: (zoneId) => socket.emit('arena:enter', { zoneId }),
     fastTravel: (zoneId) => socket.emit('city:travel', { zoneId }),
     addFriend: (targetId, name) => socket.emit('friends:add', { targetId, name }),

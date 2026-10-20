@@ -44,12 +44,12 @@ export const ITEM_CATALOG = Object.freeze(Object.fromEntries(SHOP_ITEMS.map((ite
 
 // Branching skill tree; mirrors server/skill-tree.js.
 export const SKILL_TREE = Object.freeze([
-  { id: 'conduit-root', name: 'Conduit Attunement', branch: 'Conduit', cost: 1, x: 50, y: 88, requires: [], desc: 'Open a second channel through the sleeve.' },
-  { id: 'pulse-focus', name: 'Pulse Focus', branch: 'Conduit', cost: 1, x: 24, y: 68, requires: ['conduit-root'], desc: 'Tighten Conduit Pulse into a cleaner wave.' },
-  { id: 'pulse-echo', name: 'Resonant Echo', branch: 'Conduit', cost: 1, x: 12, y: 46, requires: ['pulse-focus'], desc: 'Pulse energy lingers for a heartbeat.' },
-  { id: 'gale-thread', name: 'Gale Thread', branch: 'Wind', cost: 1, x: 50, y: 60, requires: ['conduit-root'], desc: 'Thread a tailwind behind every dash.' },
-  { id: 'gale-crown', name: 'Storm Crown', branch: 'Wind', cost: 1, x: 50, y: 34, requires: ['gale-thread'], desc: 'Gale Push reaches farther across open ground.' },
-  { id: 'void-step', name: 'Void Step', branch: 'Void', cost: 1, x: 50, y: 10, requires: ['gale-crown'], desc: 'Slip briefly out of phase while dashing.' },
-  { id: 'ward-plate', name: 'Ward Plating', branch: 'Earth', cost: 1, x: 76, y: 68, requires: ['conduit-root'], desc: 'Bulwark walls gain an extra layer of stone.' },
-  { id: 'ward-bastion', name: 'Bastion Seal', branch: 'Earth', cost: 1, x: 88, y: 46, requires: ['ward-plate'], desc: 'Held ground slowly repairs nearby allies.' }
+  { id: 'conduit-root', name: 'Conduit Attunement', branch: 'Conduit', cost: 1, x: 50, y: 88, requires: [], desc: 'All sleeve abilities recharge 10% faster.' },
+  { id: 'pulse-focus', name: 'Pulse Focus', branch: 'Conduit', cost: 1, x: 24, y: 68, requires: ['conduit-root'], desc: 'Conduit Pulse radius +20 and damage +2.' },
+  { id: 'pulse-echo', name: 'Resonant Echo', branch: 'Conduit', cost: 1, x: 12, y: 46, requires: ['pulse-focus'], desc: 'Conduit Pulse also slows caught enemies for 1.4s.' },
+  { id: 'gale-thread', name: 'Gale Thread', branch: 'Wind', cost: 1, x: 50, y: 60, requires: ['conduit-root'], desc: 'Dash cooldown reduced by 18%.' },
+  { id: 'gale-crown', name: 'Storm Crown', branch: 'Wind', cost: 1, x: 50, y: 34, requires: ['gale-thread'], desc: 'Gale Push radius +25 and damage +3.' },
+  { id: 'void-step', name: 'Void Step', branch: 'Void', cost: 1, x: 50, y: 10, requires: ['gale-crown'], desc: 'Dash travels 34 units farther.' },
+  { id: 'ward-plate', name: 'Ward Plating', branch: 'Earth', cost: 1, x: 76, y: 68, requires: ['conduit-root'], desc: 'Bulwark walls gain +60 wall HP.' },
+  { id: 'ward-bastion', name: 'Bastion Seal', branch: 'Earth', cost: 1, x: 88, y: 46, requires: ['ward-plate'], desc: 'Bulwark walls last 1.8s longer and mend nearby allies.' }
 ]);

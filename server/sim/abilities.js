@@ -1,6 +1,7 @@
 // The six signature sleeve abilities, resolved server-side. One ability per
 // domain; `kind` decides how the cast resolves, everything else is tuning.
 const { distance, damageTarget, damageableTargets, isHostile, inSafeZone, applySlow, applyHaste, applyBurn, knockback, spawnBurst } = require('./combat.js');
+const { skillBonuses } = require('../skill-tree.js');
 
 const DOMAIN_ABILITIES = {
   cipher: { id: 'conduit-pulse', name: 'Conduit Pulse', short: 'PULSE', cooldown: 6000, kind: 'pulse', radius: 135, damage: 14, knockback: 70, charge: 20 },
@@ -11,7 +12,31 @@ const DOMAIN_ABILITIES = {
   dark: { id: 'void-siphon', name: 'Void Siphon', short: 'SIPHON', cooldown: 8000, kind: 'siphon', radius: 155, damage: 12, drain: 0.6 }
 };
 
-function abilityFor(player) { return DOMAIN_ABILITIES[player?.energyColor] || DOMAIN_ABILITIES.cipher; }
+// Skill nodes nudge the base ability rather than replacing it, so the six
+// domains keep their identity while progression feels tangible.
+function abilityFor(player) {
+  const base = DOMAIN_ABILITIES[player?.energyColor] || DOMAIN_ABILITIES.cipher;
+  const bonuses = skillBonuses(player);
+  const ability = {
+    ...base,
+    cooldown: Math.round(base.cooldown * bonuses.abilityCooldownScale)
+  };
+  if (ability.kind === 'pulse') {
+    ability.radius += bonuses.pulseRadius;
+    ability.damage += bonuses.pulseDamage;
+    if (bonuses.pulseSlowMs) ability.slowMs = bonuses.pulseSlowMs;
+  }
+  if (ability.kind === 'gale') {
+    ability.radius += bonuses.galeRadius;
+    ability.damage += bonuses.galeDamage;
+  }
+  if (ability.kind === 'wall') {
+    ability.wallHp += bonuses.wallHp;
+    ability.duration += bonuses.wallDuration;
+    ability.healAllies = bonuses.wallHeal;
+  }
+  return ability;
+}
 
 // Every ability resolves here. `aim` is a unit vector, `origin` the caster.
 function castAbility(sim, player, aim) {
@@ -28,6 +53,7 @@ function castAbility(sim, player, aim) {
       if (ability.kind === 'siphon' && dealt) drained += dealt * ability.drain;
       if (ability.knockback) knockback(sim, target, player.x, player.y, ability.knockback);
       if (ability.kind === 'siphon' && target.hp > 0) applySlow(target, 700);
+      if (ability.slowMs && target.hp > 0) applySlow(target, ability.slowMs);
     }
     if (ability.charge) player.coreCharge = Math.min(99.99, player.coreCharge + ability.charge);
     if (ability.hasteMs) applyHaste(player, ability.hasteMs);
@@ -53,6 +79,7 @@ function castAbility(sim, player, aim) {
     sim.effects[id] = {
       id, kind: 'wall', ownerId: player.id, x: castX, y: castY, radius: ability.radius,
       hp: ability.wallHp, maxHp: ability.wallHp, color: player.color, accentColor: player.accentColor,
+      healAllies: !!ability.healAllies, healRadius: ability.radius + 80, nextHealAt: now + 1000,
       createdAt: now, expiresAt: now + ability.duration
     };
     spawnBurst(sim, { kind: 'wall-burst', x: castX, y: castY, radius: ability.radius + 14, color: player.color, accentColor: player.accentColor });

@@ -4,13 +4,27 @@
 import { DOMAINS, ITEM_CATALOG, SKILL_TREE, WORLD_DEFAULT } from './config.js';
 import { KEYBIND_ACTIONS, keyLabel, loadKeybinds, saveKeybinds } from './keybinds.js';
 
-const SLOTS = [['head', 'HEAD'], ['chest', 'CHEST'], ['legs', 'LEGS'], ['feet', 'FEET'], ['weapon', 'WEAPON']];
+const SLOTS = [
+  ['head', 'HEAD'], ['chest', 'CHEST'], ['legs', 'LEGS'], ['feet', 'FEET'], ['weapon', 'WEAPON']
+];
+const SLOT_CLASS = { head: 'slot-head', chest: 'slot-chest', legs: 'slot-legs', feet: 'slot-feet', weapon: 'slot-weapon' };
+const SLOT_ORDER = Object.fromEntries(SLOTS.map(([slot], index) => [slot, index]));
+
+// Inventory filter survives page refreshes (e.g. after equipping) while the
+// menu stays open. Clicking the same doll slot again clears it.
+let gearFilter = 'all';
 
 function make(tag, className, text) {
   const element = document.createElement(tag);
   if (className) element.className = className;
   if (text !== undefined) element.textContent = text;
   return element;
+}
+
+function svgNode(tag, attributes = {}) {
+  const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+  return node;
 }
 
 function section(root, title) {
@@ -23,61 +37,104 @@ function empty(root, text) {
   root.append(make('p', 'menu-empty', text));
 }
 
+function statChip(label, value, note, color) {
+  const chip = make('div', 'spec-chip');
+  if (color) chip.style.borderColor = color;
+  chip.append(make('small', '', label));
+  chip.append(make('strong', '', value));
+  if (note) chip.append(make('span', 'spec-note', note));
+  return chip;
+}
+
+function paperdollFigure() {
+  const svg = svgNode('svg', { viewBox: '0 0 100 200', role: 'presentation', 'aria-hidden': 'true' });
+  svg.classList.add('paperdoll-figure');
+  svg.append(
+    svgNode('circle', { cx: 50, cy: 26, r: 13, class: 'doll-head' }),
+    svgNode('path', { d: 'M50 39 L50 112', class: 'doll-spine' }),
+    svgNode('path', { d: 'M22 64 L50 54 L78 64', class: 'doll-spine' }),
+    svgNode('path', { d: 'M22 64 L16 106 M78 64 L84 106', class: 'doll-limb' }),
+    svgNode('path', { d: 'M50 112 L34 158 L28 192 M50 112 L66 158 L72 192', class: 'doll-limb' }),
+    svgNode('path', { d: 'M50 56 L64 74 L50 94 L36 74 Z', class: 'doll-chest' })
+  );
+  return svg;
+}
+
+function paperdollSlot(slot, label, player, refresh) {
+  const item = ITEM_CATALOG[player.equipped?.[slot]];
+  const selected = gearFilter === slot;
+  const button = make('button', 'paperdoll-slot ' + SLOT_CLASS[slot] + (item ? ' filled' : '') + (selected ? ' selected' : ''));
+  button.type = 'button';
+  button.setAttribute('aria-pressed', String(selected));
+  button.setAttribute('aria-label', label + ': ' + (item ? item.name : 'empty slot'));
+  button.append(make('span', 'paperdoll-label', label));
+  button.append(make('strong', 'paperdoll-item', item ? item.name : 'EMPTY'));
+  button.append(make('small', 'paperdoll-tier', item ? item.tier + (item.atkBonus ? ' · ATK +' + item.atkBonus : ' · UTILITY') : 'No gear'));
+  button.addEventListener('click', () => {
+    gearFilter = selected ? 'all' : slot;
+    refresh?.();
+  });
+  return button;
+}
+
 export function renderCharacterPage(root, { player, actions }) {
   root.replaceChildren();
   if (!player) { empty(root, 'Join the Conduit to inspect your operative.'); return; }
-  section(root, 'GEAR SLOTS');
-  const gear = make('div', 'gear-grid');
-  for (const [slot, label] of SLOTS) {
-    const item = ITEM_CATALOG[player.equipped?.[slot]];
-    const cell = make('div', 'gear-slot' + (item ? ' filled' : ''));
-    cell.append(make('span', 'gear-slot-label', label));
-    cell.append(make('strong', 'gear-slot-name', item ? item.name : 'EMPTY'));
-    cell.append(make('small', 'gear-slot-tier', item ? item.tier : 'No item equipped'));
-    gear.append(cell);
-  }
-  root.append(gear);
+  const domain = DOMAINS[player.energyColor] || DOMAINS.cipher;
+  const power = (player.atk || 0) + (player.gearAtk || 0);
+  const overclock = player.overclock || 0;
+
+  // Identity card: who you are, which sleeve faction you channel, and how far
+  // the current level has progressed. Gear lives on the Inventory page now.
+  const identity = make('div', 'operative-card');
+  identity.style.setProperty('--domain', domain.primary);
+  identity.style.setProperty('--domain-accent', domain.accent);
+  const monogram = make('div', 'operative-monogram', (player.name || '?').slice(0, 1).toUpperCase());
+  const copy = make('div', 'operative-identity');
+  copy.append(make('strong', '', player.name || 'Operative'));
+  copy.append(make('span', 'operative-faction', domain.label.toUpperCase()));
+  copy.append(make('small', '', 'LEVEL ' + (player.level || 1) + ' · ' + power + ' POWER · ' + (player.energyColor || 'cipher').toUpperCase() + ' CHANNEL'));
+  identity.append(monogram, copy);
+  root.append(identity);
+
+  const xpInto = Math.max(0, player.xpIntoLevel || 0);
+  const xpNeeded = Math.max(1, player.xpNeeded || 120);
+  const xp = make('div', 'xp-block');
+  const xpLabels = make('div', 'xp-labels');
+  xpLabels.append(make('span', '', 'LEVEL ' + (player.level || 1)), make('span', '', xpInto + ' / ' + xpNeeded + ' XP'));
+  const xpTrack = make('div', 'xp-track');
+  const xpFill = make('div', 'xp-fill');
+  xpFill.style.width = Math.min(100, Math.round((xpInto / xpNeeded) * 100)) + '%';
+  xpTrack.append(xpFill);
+  xp.append(xpLabels, xpTrack);
+  root.append(xp);
+
+  section(root, 'STATISTICS');
+  const stats = make('div', 'spec-strip');
+  stats.append(
+    statChip('HEALTH', Math.ceil(player.hp || 0) + ' / ' + (player.maxHp || 0), 'current / maximum', '#8ce0ff'),
+    statChip('POWER', String(power), (player.gearAtk ? 'incl. +' + player.gearAtk + ' gear' : 'base ATK'), '#8effe6'),
+    statChip('PLATING', 'Lv ' + (player.plating || 0), '+' + ((player.plating || 0) * 15) + ' max HP', '#8ce0ff'),
+    statChip('OVERCLOCK', 'Lv ' + overclock, '−' + Math.round((1 - Math.pow(0.9, overclock)) * 100) + '% dash/shield cooldowns', '#c9a6ff'),
+    statChip('CORE CHARGE', Math.floor(player.coreCharge || 0) + '%', 'standing in the Core', '#ffe9a0'),
+    statChip('SKILL POINTS', String(player.skillPoints || 0), 'spend on the Skill Tree', '#ffd479'),
+    statChip('CREDITS', String(player.credits || 0), 'merchant currency', '#ffe9a0'),
+    statChip('TOTAL XP', String(player.xp || 0), 'earned lifetime', '#a7ffd0')
+  );
+  root.append(stats);
 
   section(root, 'ACTIVE SLEEVE SPECS');
-  const domain = DOMAINS[player.energyColor] || DOMAINS.cipher;
   const specs = make('div', 'spec-strip');
-  for (const [label, value, color] of [
-    ['DOMAIN', domain.label, domain.primary],
-    ['ABILITY', player.abilityName || 'Conduit Pulse', domain.accent],
-    ['LEVEL', 'LV ' + (player.level || 1), '#ffe9a0'],
-    ['POWER', 'ATK ' + ((player.atk || 0) + (player.gearAtk || 0)) + (player.gearAtk ? ' (+' + player.gearAtk + ')' : ''), '#8effe6'],
-    ['PLATING', 'HP ' + (player.plating || 0), '#8ce0ff'],
-    ['OVERCLOCK', 'SPD ' + (player.overclock || 0), '#c9a6ff']
-  ]) {
-    const chip = make('div', 'spec-chip');
-    chip.append(make('small', '', label));
-    chip.append(make('strong', '', value));
-    chip.style.borderColor = color;
-    specs.append(chip);
-  }
+  specs.append(
+    statChip('DOMAIN', domain.label, player.energyColor || 'cipher', domain.primary),
+    statChip('SIGNATURE ABILITY', player.abilityName || 'Conduit Pulse', 'press Q / RT to cast', domain.accent),
+    statChip('RECHARGE', (player.abilityCooldownMax ? (player.abilityCooldownMax / 1000).toFixed(1) : '—') + 's', 'affected by Conduit Attunement', '#8effe6'),
+    statChip('FACTION CHANNEL', (player.energyColor || 'cipher').toUpperCase(), 'chat with /f', '#ffd479')
+  );
   root.append(specs);
 
-  section(root, 'CORE UPGRADES');
-  const rows = [
-    ['atk', 'Sleeve Power (ATK)', '+3 Energy Blast damage per level'],
-    ['plating', 'Conduit Plating (HP)', '+15 maximum health per level'],
-    ['overclock', 'Overclock (SPD)', 'Dash and Shield cooldowns −10% per level']
-  ];
-  for (const [stat, title, note] of rows) {
-    const row = make('div', 'skill-row');
-    const copy = make('div');
-    copy.append(make('strong', '', title));
-    copy.append(make('small', '', note));
-    const level = make('span', 'skill-level', 'Lv ' + (player[stat] || 0));
-    const button = make('button', 'upgrade-button', '+');
-    button.type = 'button';
-    button.disabled = (player.skillPoints || 0) <= 0 || (player[stat] || 0) >= 99;
-    button.addEventListener('click', () => actions.upgrade(stat));
-    row.append(copy, level, button);
-    root.append(row);
-  }
-
-  section(root, 'SLEEVE DOMAIN');
+  section(root, 'SLEEVE DOMAIN · FACTION');
+  root.append(make('p', 'menu-empty', 'Every domain is a sleeve faction. Your choice sets the signature ability, aura and faction chat channel. Switching is free and takes effect immediately.'));
   const colors = make('div', 'color-options');
   for (const [key, info] of Object.entries(DOMAINS)) {
     const button = make('button', 'color-option domain-option' + (player.energyColor === key ? ' selected' : ''), info.label);
@@ -94,13 +151,55 @@ export function renderCharacterPage(root, { player, actions }) {
 export function renderSkillsPage(root, { player, actions }) {
   root.replaceChildren();
   if (!player) { empty(root, 'Join the Conduit to unlock sleeve nodes.'); return; }
-  root.append(make('p', 'menu-empty', 'Spend skill points to branch into active and passive sleeve paths.'));
+  const points = player.skillPoints || 0;
+  const skills = player.skills || {};
+  const unlocked = SKILL_TREE.filter((node) => skills[node.id]).length;
+
+  // One glance summary; the same pool pays for core upgrades and tree nodes.
+  const summary = make('div', 'skill-summary');
+  const available = make('div', 'skill-summary-cell');
+  available.append(make('strong', '', String(points)), make('small', '', 'POINTS AVAILABLE'));
+  const progress = make('div', 'skill-summary-cell');
+  progress.append(make('strong', '', unlocked + ' / ' + SKILL_TREE.length), make('small', '', 'NODES UNLOCKED'));
+  summary.append(available, progress);
+  root.append(summary);
+  root.append(make('p', 'menu-empty', 'Points come from levelling up and charging the Core. Core upgrades are permanent stat tiers; tree nodes add new behaviour to your sleeve.'));
+
+  section(root, 'CORE UPGRADES');
+  const rows = [
+    ['atk', 'Sleeve Power (ATK)', '+3 Energy Blast damage per level'],
+    ['plating', 'Conduit Plating (HP)', '+15 maximum health per level'],
+    ['overclock', 'Overclock (SPD)', 'Dash and Shield cooldowns −10% per level']
+  ];
+  for (const [stat, title, note] of rows) {
+    const row = make('div', 'skill-row');
+    const copy = make('div');
+    copy.append(make('strong', '', title));
+    copy.append(make('small', '', note));
+    const level = make('span', 'skill-level', 'Lv ' + (player[stat] || 0));
+    const button = make('button', 'upgrade-button', '+');
+    button.type = 'button';
+    button.disabled = points <= 0 || (player[stat] || 0) >= 99;
+    button.title = points <= 0 ? 'Earn a skill point first' : 'Spend 1 skill point';
+    button.addEventListener('click', () => actions.upgrade(stat));
+    row.append(copy, level, button);
+    root.append(row);
+  }
+
+  section(root, 'SLEEVE SKILL TREE');
+  const legend = make('div', 'skill-legend');
+  legend.append(
+    make('span', 'legend-dot available', 'AVAILABLE'),
+    make('span', 'legend-dot unlocked', 'UNLOCKED'),
+    make('span', 'legend-dot locked', 'LOCKED')
+  );
+  root.append(legend);
+
   const map = make('div', 'skill-tree');
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 100 100');
   svg.setAttribute('preserveAspectRatio', 'none');
   svg.classList.add('skill-links');
-  const skills = player.skills || {};
   for (const node of SKILL_TREE) {
     for (const parentId of node.requires) {
       const parent = SKILL_TREE.find((candidate) => candidate.id === parentId);
@@ -114,26 +213,52 @@ export function renderSkillsPage(root, { player, actions }) {
   }
   map.append(svg);
   for (const node of SKILL_TREE) {
-    const unlocked = !!skills[node.id];
-    const available = !unlocked && node.requires.every((required) => skills[required]);
-    const button = make('button', 'skill-node' + (unlocked ? ' unlocked' : available ? ' available' : ' locked'));
+    const isUnlocked = !!skills[node.id];
+    const canUnlock = !isUnlocked && node.requires.every((required) => skills[required]);
+    const short = canUnlock && points < node.cost;
+    const button = make('button', 'skill-node' + (isUnlocked ? ' unlocked' : canUnlock ? ' available' : ' locked') + (short ? ' short' : ''));
     button.type = 'button';
     button.style.left = 'clamp(var(--node-half), ' + node.x + '%, calc(100% - var(--node-half)))';
     button.style.top = (100 - node.y) + '%';
-    button.disabled = !available || (player.skillPoints || 0) < node.cost;
+    button.disabled = !canUnlock || short;
+    button.title = isUnlocked
+      ? 'Unlocked: ' + node.desc
+      : !canUnlock
+        ? 'Unlock the preceding node first'
+        : short
+          ? 'Needs ' + node.cost + ' skill point' + (node.cost === 1 ? '' : 's')
+          : 'Spend ' + node.cost + ' point' + (node.cost === 1 ? '' : 's');
     button.append(make('strong', '', node.name));
-    button.append(make('small', '', node.branch + ' · ' + node.cost + ' SP'));
+    button.append(make('small', '', node.branch + ' · ' + node.cost + ' SP' + (isUnlocked ? ' · ONLINE' : '')));
     button.append(make('span', '', node.desc));
     button.addEventListener('click', () => actions.unlockSkill(node.id));
     map.append(button);
   }
   root.append(map);
-  root.append(make('p', 'menu-empty', 'Unlocked nodes: ' + Object.keys(skills).length + '/' + SKILL_TREE.length + ' · Skill points: ' + (player.skillPoints || 0)));
+  root.append(make('p', 'menu-empty', 'Hover or tap a node to read its effect. Unlocked nodes apply immediately — no respawn needed.'));
 }
 
-export function renderInventoryPage(root, { player, actions }) {
+export function renderInventoryPage(root, { player, actions, refresh }) {
   root.replaceChildren();
   if (!player) { empty(root, 'Join the Conduit to open your inventory.'); return; }
+  const domain = DOMAINS[player.energyColor] || DOMAINS.cipher;
+  const equippedCount = SLOTS.filter(([slot]) => ITEM_CATALOG[player.equipped?.[slot]]).length;
+
+  section(root, 'EQUIPPED LOADOUT');
+  const doll = make('div', 'paperdoll');
+  doll.style.setProperty('--domain', domain.primary);
+  doll.style.setProperty('--domain-accent', domain.accent);
+  doll.append(paperdollFigure());
+  for (const [slot, label] of SLOTS) doll.append(paperdollSlot(slot, label, player, refresh));
+  root.append(doll);
+
+  const loadoutNote = make('div', 'loadout-note');
+  loadoutNote.append(
+    make('strong', '', equippedCount + ' / ' + SLOTS.length + ' SLOTS FILLED'),
+    make('span', '', 'GEAR POWER +' + (player.gearAtk || 0) + ' ATK · TOTAL ' + ((player.atk || 0) + (player.gearAtk || 0)) + ' ATK')
+  );
+  root.append(loadoutNote);
+
   section(root, 'RESOURCES');
   const resources = make('div', 'resource-row');
   for (const [label, value] of [
@@ -148,24 +273,45 @@ export function renderInventoryPage(root, { player, actions }) {
   }
   root.append(resources);
 
-  section(root, 'ITEMS & GEAR');
-  const inventory = player.inventory || [];
+  section(root, 'PACK');
+  const filterRow = make('div', 'gear-filter-row');
+  for (const [slot, label] of [['all', 'ALL'], ...SLOTS]) {
+    const chip = make('button', 'gear-filter' + (gearFilter === slot ? ' selected' : ''), label);
+    chip.type = 'button';
+    chip.setAttribute('aria-pressed', String(gearFilter === slot));
+    chip.addEventListener('click', () => { gearFilter = slot; refresh?.(); });
+    filterRow.append(chip);
+  }
+  root.append(filterRow);
+
+  const inventory = (player.inventory || []).map((id) => ITEM_CATALOG[id]).filter(Boolean);
+  const shown = inventory
+    .filter((item) => gearFilter === 'all' || item.slot === gearFilter)
+    .sort((a, b) => (SLOT_ORDER[a.slot] ?? 9) - (SLOT_ORDER[b.slot] ?? 9));
   if (!inventory.length) empty(root, 'Your pack is empty. Visit a city merchant to buy gear.');
+  else if (!shown.length) empty(root, 'No ' + (gearFilter === 'all' ? '' : gearFilter + ' ') + 'gear in your pack. Choose another slot or ALL.');
   const grid = make('div', 'inventory-grid');
-  for (const id of inventory) {
-    const item = ITEM_CATALOG[id];
-    if (!item) continue;
-    const card = make('div', 'inventory-card');
-    card.append(make('strong', '', item.name));
-    card.append(make('small', 'inventory-slot', item.tier + ' · ' + item.slot.toUpperCase()));
-    card.append(make('p', '', item.desc || ''));
+  for (const item of shown) {
     const equipped = player.equipped?.[item.slot] === item.id;
+    const card = make('div', 'inventory-card' + (equipped ? ' equipped' : ''));
+    card.append(make('strong', '', item.name));
+    card.append(make('small', 'inventory-slot', item.tier + ' · ' + item.slot.toUpperCase() + (item.atkBonus ? ' · ATK +' + item.atkBonus : '')));
+    card.append(make('p', '', item.desc || ''));
     if (item.slot !== 'supply') {
-      const button = make('button', 'menu-action' + (equipped ? ' selected' : ''), equipped ? 'EQUIPPED' : 'EQUIP');
-      button.type = 'button';
-      button.disabled = equipped;
-      button.addEventListener('click', () => actions.equipItem(item.id));
-      card.append(button);
+      const controls = make('div', 'inventory-actions');
+      if (equipped) {
+        controls.append(make('span', 'equipped-tag', 'EQUIPPED'));
+        const remove = make('button', 'menu-action ghost', 'UNEQUIP');
+        remove.type = 'button';
+        remove.addEventListener('click', () => actions.unequipItem(item.slot));
+        controls.append(remove);
+      } else {
+        const button = make('button', 'menu-action', 'EQUIP');
+        button.type = 'button';
+        button.addEventListener('click', () => actions.equipItem(item.id));
+        controls.append(button);
+      }
+      card.append(controls);
     }
     grid.append(card);
   }

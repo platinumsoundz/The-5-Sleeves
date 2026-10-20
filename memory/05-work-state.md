@@ -3,7 +3,33 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 14 mobile-first HUD and menu polish).
+Last updated: 2026-10-20 (step 15 menu cleanup, paperdoll, functional skill tree).
+
+## Step 15 — Menu cleanup, paperdoll and working skill tree (DONE)
+
+- **Character page** is now an identity + statistics sheet: domain-coloured
+  monogram card, level/XP bar, eight live stat chips (HP, power, plating,
+  overclock, core charge, skill points, credits, lifetime XP), active sleeve
+  specs and the faction/domain chooser. Gear no longer lives here.
+- **Inventory page** owns equipment. A stick-figure paperdoll (inline SVG,
+  domain-tinted) places HEAD/CHEST on the left, WEAPON/LEGS on the right and
+  FEET below; tapping a slot filters the pack to that slot (tap again or ALL
+  to clear). Cards show tier/ATK, EQUIP or EQUIPPED + UNEQUIP. Added the
+  server-validated `player:unequip` socket and client action.
+- **Skills page** now holds both CORE UPGRADES and the tree, with a points /
+  nodes-unlocked summary and an available/unlocked/locked legend. Every node
+  has a real effect: `server/skill-tree.js` exports `skillBonuses(player)`,
+  applied by `abilityFor` (cooldown/radius/damage/slow/wall HP/duration) and
+  the dash handler (cooldown/distance). Bastion Seal walls mend nearby
+  operatives once per second in the simulation tick.
+- **Stale-menu fix** — the open menu re-renders only when a relevant player
+  field changes (level, points, XP, credits, stats, gear, skills, inventory
+  length). Before this, `skill:update` refreshed against the pre-broadcast
+  snapshot, so unlocks looked like they did nothing until the menu reopened.
+- **Shop fix** — `shop:update` now reaches `ui.shopUpdate` (render only)
+  instead of `showShop` (open the merchant), so equipping from the inventory
+  no longer pops the shop panel.
+- 5 new tests in `test/skill-tree.test.js`; suite green **70/70** (~74 s).
 
 ## Step 14 — Mobile-first HUD and menu (DONE)
 
@@ -153,15 +179,16 @@ Last updated: 2026-10-20 (step 14 mobile-first HUD and menu polish).
 
 ## In progress
 
-- None. Step 14 (mobile-first HUD and menu polish) is COMPLETE and green
-  (65/65), committed as this build.
+- None. Step 15 (menu cleanup, paperdoll, functional skill tree) is COMPLETE
+  and green (70/70), committed as this build.
 
 ## What is left / next session
 
-- **Polish continues (owner-directed).** Step 14 covered HUD/menu sizing and
-  phone layout. Remaining polish candidates, in rough priority order:
-  MENU page content density (map canvas text, inventory cards), title-screen
-  zone picker, chat/party panel visuals, world/landmark draw polish.
+- **Polish continues (owner-directed).** Step 15 restructured the MENU pages
+  (character stats, inventory paperdoll, skills + core upgrades, real node
+  effects). Remaining polish candidates, in rough priority order: per-region
+  backgrounds, player colour customisation, faction identity/UI, title-screen
+  zone picker, chat/party panel visuals, map canvas text.
 - Playtest the city → tower → road loop; tune enemy scaling/credit prices.
 - Approve or rewrite the PROPOSED terminal lore.
 - Next system after polish (suggested): private rooms → auth → PWA → store.

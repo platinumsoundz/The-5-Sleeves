@@ -23,6 +23,7 @@ const {
   MAX_WARDENS, LEVEL_HP_GAIN
 } = require('./server/sim/spec.js');
 const { gearAtkFor } = require('./server/shop-catalog.js');
+const { skillBonuses } = require('./server/skill-tree.js');
 const { levelFromXp } = require('./server/progression.js');
 
 // PROFILE_FILE lets the test suite point profiles at a throwaway file, so
@@ -677,12 +678,14 @@ io.on('connection', (socket) => {
     if (!player) return;
     const aim = validDirection(direction);
     const now = Date.now();
-    if (!aim || player.hp <= 0 || now - player.lastDashAt < Math.max(250, 1300 * Math.pow(0.9, player.overclock))) return;
+    const dash = skillBonuses(player);
+    if (!aim || player.hp <= 0 || now - player.lastDashAt < Math.max(250, 1300 * Math.pow(0.9, player.overclock) * dash.dashCooldownScale)) return;
     player.lastDashAt = now;
     const zone = playerZone(player);
     if (!zone) return;
-    player.x = clamp(player.x + aim.x * 120, 40, zone.world.width - 40);
-    player.y = clamp(player.y + aim.y * 120, 40, zone.world.height - 40);
+    const travel = 120 + dash.dashDistance;
+    player.x = clamp(player.x + aim.x * travel, 40, zone.world.width - 40);
+    player.y = clamp(player.y + aim.y * travel, 40, zone.world.height - 40);
     socket.emit('player:position', { x: player.x, y: player.y });
     tryEdgeTravel(player, socket, zone);
   });
