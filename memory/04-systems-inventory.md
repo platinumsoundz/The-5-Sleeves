@@ -87,7 +87,7 @@ and tested.)
 - **sleeve-skills** — server-validated skill-node unlocks; spends skill
   points only when the parent chain is complete.
 
-## Client core (`public/client.js` + `public/src/`, 16 modules)
+## Client core (`public/client.js` + `public/src/`, 19 modules)
 
 - **camera.js** — follow, look-ahead, auto/scroll/key zoom, shake hook,
   viewport culling, minimap.
@@ -119,9 +119,12 @@ and tested.)
 - **keybinds.js** — remappable combat/menu action keys with localStorage
   persistence and readable key labels.
 - **inputManager.js** — keyboard (WASD/arrows move; remappable Space/Shift/
-  E/Q/F/C defaults, +/- zoom), touch 360-degree analog joystick
-  (bottom-left, dead zone, clamped drag vector) + action buttons (incl.
-  READ), gamepad (Y/triangle = interact) with dynamic HUD hints.
+  E/Q/F/C defaults, +/- zoom), touch movement joystick, action buttons,
+  gamepad (Y/triangle = interact) and dynamic HUD hints.
+- **shooting.js / shootingControls.js** — Settings-persisted Auto-Aim +
+  Hold-to-Fire or Twin-Stick Manual Aim; mouse, gamepad and touch aim input,
+  500 ms client repeat cadence. **New implementation is unverified**; server
+  remains authoritative for combat and safe-zone rules.
 - **world.js** — deterministic ruin props, named landmarks, terminal
   helpers (pure, Node-testable).
 - **assetLoader.js / characterRenderer.js** — baked PNG sheets with
@@ -221,11 +224,10 @@ and tested.)
 - Visual coverage regression suite (`test/visuals.test.js`) checks zone
   biome propagation, named tower landmarks and required baked sprite files;
   **added but unrun**.
-- 17 suites: server boot/health, server modules, cities/merchants/arenas,
-  world travel/tower completion, zones, fixed timestep, spectate/replay,
-  abilities, wardens, objectives, progression, camera, interpolation,
-  renderer, sprites, module import resolution, client module contract,
-  analog-stick maths. 60 tests, all green.
+- `test/shooting.test.js` adds six regressions for mode persistence, aim
+  normalization/selection and repeat cadence. The suite was not run; recent
+  auth, hazard, visual, balance and shooting changes also remain unverified.
+  Run `npm test` before treating the current tree as green.
 
 ## Planned next (owner-directed)
 
