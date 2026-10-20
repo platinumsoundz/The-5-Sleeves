@@ -128,6 +128,8 @@ test('a tower clears after three waves, pays credits and opens the east road', (
   assert.equal(player.towers[1], true, 'tower completion is saved on the operative');
   assert.equal(player.credits, 190, 'tower clear pays credits');
   assert.ok(player.xp > 0, 'tower clear pays XP');
-  assert.ok(socketEvents.some((entry) => entry.event === 'tower:cleared' && entry.payload.index === 1));
+  const clearedEvent = socketEvents.find((entry) => entry.event === 'tower:cleared' && entry.payload.index === 1);
+  assert.ok(clearedEvent, 'the player receives the tower completion event');
+  assert.equal(clearedEvent.payload.cipherIntro, true, 'a first tower clear triggers Cipher’s introduction');
   assert.ok(events.some((entry) => entry.event === 'tower:state' && entry.payload.state === 'cleared'));
 });
