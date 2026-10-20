@@ -3,6 +3,7 @@
 // thin coordinator. No top-level DOM access (safe to import in tests).
 import { DEFAULT_PALETTE, DOMAINS, ITEM_CATALOG, PLAYER_PALETTES, SKILL_TREE, WORLD_DEFAULT } from './config.js';
 import { KEYBIND_ACTIONS, keyLabel, loadKeybinds, saveKeybinds } from './keybinds.js';
+import { getShootingMode, setShootingMode, SHOOTING_MODE } from './shooting.js';
 
 const SLOTS = [
   ['head', 'HEAD'], ['chest', 'CHEST'], ['legs', 'LEGS'], ['feet', 'FEET'], ['weapon', 'WEAPON']
@@ -512,6 +513,21 @@ export function renderSettingsPage(root, { actions, refresh }) {
   sound.type = 'button';
   sound.addEventListener('click', () => { actions.toggleSfx?.(); refresh(); });
   root.append(sound);
+
+  section(root, 'COMBAT CONTROLS');
+  const shootingMode = getShootingMode();
+  const shootingToggle = make('button', 'settings-toggle', shootingMode === SHOOTING_MODE.AUTO ? 'AUTO-AIM · HOLD TO FIRE' : 'TWIN-STICK · MANUAL AIM');
+  shootingToggle.type = 'button';
+  shootingToggle.setAttribute('aria-label', 'Shooting style');
+  shootingToggle.setAttribute('aria-pressed', String(shootingMode === SHOOTING_MODE.TWIN));
+  shootingToggle.addEventListener('click', () => {
+    setShootingMode(shootingMode === SHOOTING_MODE.AUTO ? SHOOTING_MODE.TWIN : SHOOTING_MODE.AUTO);
+    refresh();
+  });
+  root.append(shootingToggle);
+  root.append(make('p', 'menu-empty', shootingMode === SHOOTING_MODE.AUTO
+    ? 'Press or hold BLAST; shots seek the nearest hostile. Twin-stick adds a right aim stick / right gamepad stick.'
+    : 'Aim with the right touch stick, right gamepad stick, or mouse; hold BLAST to fire.'));
 
   section(root, 'KEYBINDS');
   const binds = loadKeybinds();
