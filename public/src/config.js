@@ -51,7 +51,9 @@ export const SHOP_ITEMS = Object.freeze([
   { id: 'chest-bastion', name: 'Rebind Bastion Plate', slot: 'chest', price: 400, sell: 200, tier: 'Rare', atkBonus: 0, desc: 'Citadel plate etched with a counter-conduit schematic.' },
   { id: 'blade-void', name: 'Void Reaver', slot: 'weapon', price: 520, sell: 260, tier: 'Epic', atkBonus: 11, desc: 'A dark blade that cuts a half-second after it passes.' },
   { id: 'weapon-apex', name: 'Apex Conduit Blade', slot: 'weapon', price: 900, sell: 450, tier: 'Apex', atkBonus: 16, desc: 'The last pattern the Citadel forge produced.' },
-  { id: 'repair-kit', name: 'Conduit Repair Kit', slot: 'supply', price: 25, sell: 12, tier: 'Supply', atkBonus: 0, desc: 'A giftable kit of conduit seals and copper tape.' }
+  { id: 'repair-kit', name: 'Conduit Repair Kit', slot: 'supply', price: 25, sell: 12, tier: 'Supply', atkBonus: 0, desc: 'A giftable kit of conduit seals and copper tape.' },
+  { id: 'shattered-circuitry', name: 'Shattered Circuitry', slot: 'salvage', price: 0, sell: 8, tier: 'Junk', atkBonus: 0, desc: 'Bent contacts and cracked boards. A city merchant will buy it.' },
+  { id: 'corroded-relay-parts', name: 'Corroded Relay Parts', slot: 'salvage', price: 0, sell: 15, tier: 'Junk', atkBonus: 0, desc: 'Oxidised relay scrap recovered from a Rust Warden.' }
 ]);
 export const ITEM_CATALOG = Object.freeze(Object.fromEntries(SHOP_ITEMS.map((item) => [item.id, item])));
 
