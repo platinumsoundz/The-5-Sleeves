@@ -65,9 +65,10 @@ Last updated: 2026-10-20 (Cipher join welcome/every-tower dialogue and Tower 5 E
   the aftermath. Cipher remains a character but is now a non-playable allied
   AI; the five selectable factions are Wind, Water, Earth, Fire and Dark.
   Legacy Cipher-domain profiles map to Wind.
-- On each operative's first cleared tower (any tower), the server persists
-  `cipherIntroSeen` and sends `cipherIntro: true`; the client companion
-  module shows Cipher's thank-you/help offer with a custom hologram portrait.
+- The first cleared tower (any tower) persists `cipherIntroSeen` and sends
+  `cipherIntro: true`; later clears keep the milestone but now trigger a
+  separate Cipher line. See the current work item above for join welcome and
+  every-clear behavior.
 - Added `server/modules/cipher-companion-memory.js`,
   `public/src/modules/cipher-companion.js`, `public/assets/cipher-companion.svg`,
   and regression coverage in `test/cipher-companion.test.js`, `test/world.test.js`,
