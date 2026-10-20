@@ -1,7 +1,7 @@
 // PvE: Rust Wardens — patrolling defence drones (canon: dormant tower
 // network defence). Wild roads scale them by danger tier; tower rooms spawn
 // controlled waves through spawnWarden(sim, { x, y, tier }).
-const { WARDEN } = require('./spec.js');
+const { WARDEN, WARDEN_SCALING } = require('./spec.js');
 const { clampToWorld, distance, inSafeZone, spawnBurst } = require('./combat.js');
 const { CORE, PERIMETER_MARGIN } = require('./state.js');
 
@@ -20,13 +20,13 @@ function wardenSpawnPoint(sim) {
 function scaledStats(tier) {
   const step = Math.max(0, (Number(tier) || 1) - 1);
   return {
-    hp: Math.round(WARDEN.hp * (1 + step * 0.28)),
-    damage: Math.round(WARDEN.damage * (1 + step * 0.2)),
-    speed: WARDEN.speed * (1 + step * 0.035),
-    aggro: WARDEN.aggro + step * 18,
-    attackRange: WARDEN.attackRange + step * 10,
-    xp: Math.round(WARDEN.xp * (1 + step * 0.45)),
-    credits: Math.round(WARDEN.credits * (1 + step * 0.55)),
+    hp: Math.round(WARDEN.hp * (1 + step * WARDEN_SCALING.hpPerTier)),
+    damage: Math.round(WARDEN.damage * (1 + step * WARDEN_SCALING.damagePerTier)),
+    speed: WARDEN.speed * (1 + step * WARDEN_SCALING.speedPerTier),
+    aggro: WARDEN.aggro + step * WARDEN_SCALING.aggroPerTier,
+    attackRange: WARDEN.attackRange + step * WARDEN_SCALING.rangePerTier,
+    xp: Math.round(WARDEN.xp * (1 + step * WARDEN_SCALING.xpPerTier)),
+    credits: Math.round(WARDEN.credits * (1 + step * WARDEN_SCALING.creditsPerTier)),
     level: Math.max(1, Math.round(tier))
   };
 }
