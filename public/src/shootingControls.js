@@ -1,8 +1,9 @@
 import { loadKeybinds } from './keybinds.js';
 import { normalizeAim, shouldRepeatFire } from './shooting.js';
+import { GAMEPAD_BUTTONS } from './controllerNavigation.js';
 
 // Owns held-fire sources and the manual aim devices; callers still resolve the shot.
-export function createShootingControls({ onFire, getMouseAim, setMode }) {
+export function createShootingControls({ onFire, getMouseAim, setMode, isUiBlocked = () => document.body?.dataset?.menuOpen === 'true' }) {
   const binds = loadKeybinds(), fireSources = new Set();
   let lastShotAt = 0, lastManualAim = null;
   window.addEventListener('keybinds:changed', () => Object.assign(binds, loadKeybinds()));
@@ -13,7 +14,7 @@ export function createShootingControls({ onFire, getMouseAim, setMode }) {
   }
   const clearFire = () => fireSources.clear();
   window.addEventListener('keydown', (event) => {
-    if (event.target?.closest?.('input, textarea') || document.body?.dataset?.menuOpen === 'true') return;
+    if (event.target?.closest?.('input, textarea') || isUiBlocked()) return;
     if (event.code === binds.attack) { event.preventDefault(); setMode('keyboard'); setFireSource('keyboard', true); }
   });
   window.addEventListener('keyup', (event) => {
@@ -61,7 +62,7 @@ export function createShootingControls({ onFire, getMouseAim, setMode }) {
   return {
     clearFire,
     update() {
-      if (document.body?.dataset?.menuOpen === 'true') { clearFire(); return; }
+      if (isUiBlocked()) { clearFire(); return; }
       const now = performance.now();
       if (fireSources.size && shouldRepeatFire(now, lastShotAt)) { lastShotAt = now; onFire(); }
     },
@@ -71,7 +72,7 @@ export function createShootingControls({ onFire, getMouseAim, setMode }) {
       const aim = normalizeAim(x, y);
       if (aim) lastManualAim = aim;
       if (pad && (aim || pressed.some(Boolean))) setMode('controller');
-      setFireSource('gamepad', !!(pressed[0] || pressed[5]));
+      setFireSource('gamepad', !!pressed[GAMEPAD_BUTTONS.rightTrigger]);
     },
     aimVector(mode) {
       if (mode === 'keyboard') return getMouseAim?.() || lastManualAim;
