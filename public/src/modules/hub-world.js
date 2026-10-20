@@ -82,7 +82,7 @@ export default {
       if (exits.west) drawGate(draw, state, time, 'WEST', 34, 350, Math.PI);
       if (exits.north) drawGate(draw, state, time, zone.kind === 'haven' ? 'TOWER GATE' : 'NORTH', 500, 34, -Math.PI / 2);
       if (exits.south) drawGate(draw, state, time, 'CITY', 500, 666, Math.PI / 2);
-      if (zone.kind === 'tower' && zone.tower) drawTower(draw, zone.tower, time, state.towerRun);
+      if (zone.kind === 'tower' && zone.tower) drawTower(draw, zone.tower, time, state.towerRun, zone.biome);
       for (const npc of state.npcs || []) drawNpc(draw, npc, time);
     });
 
