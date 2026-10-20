@@ -36,7 +36,9 @@ module.exports = {
     }
     ctx.on('joined', (player, socket) => sendCurrent(socket, ctx.playerZone(player.id)));
     ctx.on('zoneChanged', (player, socket) => sendCurrent(socket, ctx.playerZone(player.id)));
-    ctx.on('left', (player) => lastHitCycle.delete(player.id));
+    ctx.on('left', (player) => {
+      for (const hazard of Object.values(HAZARDS)) lastHitCycle.delete(player.id + ':' + hazard.id);
+    });
     ctx.on('tick', (zone, now) => {
       const hazard = HAZARDS[zone.id];
       if (!hazard || zone.kind !== 'wild') return;
