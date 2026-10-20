@@ -3,7 +3,20 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (username/password auth implemented but unverified; preceding salvage, balance, meditation, and developer-code builds are also untested).
+Last updated: 2026-10-20 (zone hazards implemented with regression tests, but tests not run; all recent builds remain unverified).
+
+## Current session — Wilderness zone hazards (IMPLEMENTED, UNVERIFIED)
+
+- Added server/client modules for five timed, telegraphed hazard fields in
+  the five wilderness roads. Each cycles idle → warning → active and applies
+  12 damage at most once per active cycle to players in its radius.
+- Hazard state is sent to players on join/zone travel; safe-zone protections
+  still apply. Client draws the field warning rings in world space.
+- Added `test/zone-hazards.test.js` for phase timing, damage cadence, warning
+  delivery and safe-zone protection. **Tests were not run:** the user
+  authorized proceeding unverified because no shell runner is available.
+- This is the first gameplay slice only. Do not start another feature build
+  until a test-capable session runs `npm test` and fixes any failures.
 
 ## Current session — Optional account registration and login (IMPLEMENTED, UNVERIFIED)
 
