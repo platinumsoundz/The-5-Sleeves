@@ -58,8 +58,12 @@ canon-aligned content:
 - **Archive Echoes**: ambient lore pickups.
 - **Rust Wardens**: patrolling defence drones of the ruined tower network —
   consistent with the dormant defence drones awakened in Book One.
-- **Five playable factions**: Wind, Water, Earth, Fire, Dark. Cipher joins
-  as an AI ally after the operative's first tower clear.
+- **Five playable factions**: Wind, Water, Earth, Fire, Dark. Cipher is an
+  allied AI who welcomes operatives on joining and speaks after every tower.
+- **Eastern Expanse**: a new game-only wilderness beyond Tower 5, with five
+  reserved boss sites and existing Rust Warden guardians. This addition is
+  proposed game content, not established source-comic canon; the source
+  documents remain unchanged pending owner/canon review.
 
 New lore-bearing game content must be written to fit these documents and
 added here. Update `public/project-memory.json` → `world_canon_version`
