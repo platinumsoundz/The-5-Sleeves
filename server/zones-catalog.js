@@ -16,6 +16,13 @@ const { HUB } = require('./sim/spec.js');
 
 const WORLD = Object.freeze({ width: 1000, height: 700 });
 const EASTERN_EXPANSE_WORLD = Object.freeze({ width: 3000, height: 2100 });
+const EASTERN_EXPANSE_SITES = Object.freeze([
+  { id: 'site-1', x: 650, y: 430 },
+  { id: 'site-2', x: 1500, y: 350 },
+  { id: 'site-3', x: 2350, y: 520 },
+  { id: 'site-4', x: 2250, y: 1600 },
+  { id: 'site-5', x: 1250, y: 1710 }
+]);
 const SAFE_CUBE = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.height });
 
 const TERMINALS = {
@@ -288,13 +295,8 @@ const ZONES = [
     world: EASTERN_EXPANSE_WORLD,
     spawn: { x: 92, y: 1050 },
     exits: { west: 'haven-citadel' },
-    bossSites: [
-      { id: 'site-1', x: 650, y: 430 },
-      { id: 'site-2', x: 1500, y: 350 },
-      { id: 'site-3', x: 2350, y: 520 },
-      { id: 'site-4', x: 2250, y: 1600 },
-      { id: 'site-5', x: 1250, y: 1710 }
-    ],
+    bossSites: EASTERN_EXPANSE_SITES,
+    guardianSpawns: EASTERN_EXPANSE_SITES.slice(0, 4),
     desc: 'A broad frontier beyond the Citadel, marked for future threats.'
   }),
 
@@ -363,6 +365,7 @@ function zoneCatalog() {
     terminals: (zone.terminals || []).map((terminal) => ({ ...terminal })),
     npcs: (zone.npcs || []).map((npc) => ({ ...npc })),
     bossSites: (zone.bossSites || []).map((site) => ({ ...site })),
+    guardianSpawns: (zone.guardianSpawns || []).map((site) => ({ ...site })),
     world: { ...(zone.world || WORLD) },
     exits: { ...(zone.exits || {}) },
     safe: zone.safe ? { ...zone.safe } : null,
