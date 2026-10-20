@@ -49,7 +49,8 @@ it committed and tested after running the full suite.)
 - **Plug-and-play module system** — `server/hook-bus.js` +
   `server/module-loader.js` auto-scan `server/modules/*.js` at boot with a
   shared context (hooks: joining/joined/left/persist/tick; plus
-  registerSocket, route, distance, applyXp, persistPlayer, xpScale). Broken
+  registerSocket, route, distance, applyXp, persistPlayer, xpScale,
+  secureTransport). Broken
   modules are skipped, never fatal.
 
 ## Server support files
@@ -57,6 +58,9 @@ it committed and tested after running the full suite.)
 - **account-store.js** — separate account ledger (`users.json`) with salted
   scrypt password hashes and atomic temp-file replacement; legacy named
   profiles remain separate.
+- **secure-transport.js** — recognizes native secure sockets, Render's
+  `the-5-sleeves.onrender.com` HTTPS proxy headers, and explicitly trusted
+  reverse proxies (`TRUSTED_PROXY_TLS=true`).
 
 - **shop-catalog.js** — merchant stock with credit prices and sell values,
   starter inventory/equipment, item lookup and tier-based loot tables.
@@ -100,7 +104,9 @@ it committed and tested after running the full suite.)
   walk frames, procedural fallback; draws players, wardens, projectiles,
   effects, bursts, relays, echoes, safe-city rectangles, tower rooms and a
   receding fogline, compact top-centre HUD (credits + zone), top-left
-  radar/mode strip and tower-run status; emits the three module hooks
+  radar/mode strip and tower-run status; the compact top card omits health,
+  a 3 px XP line sits at the viewport top, and alerts stack beneath the left
+  minimap/score strip; emits the three module hooks
   (`render:world`, `render:fx`, `render:overlay`).
 - **biomes.js** — biome metadata + procedural ground painters for grass,
   water, scorched earth, frost-and-ember, wind, cipher and arena; wasteland
@@ -113,17 +119,20 @@ it committed and tested after running the full suite.)
 - **plugin-host.js** — client hook bus (DOM-free, Node-importable).
 - **module-runner.js** — fetches `/api/client-modules`, parallel import,
   priority-ordered setup with loading-screen progress callbacks.
+- **controllerNavigation.js** — shared gamepad button map, focus navigation,
+  topmost modal detection and gameplay input lock.
 - **uiManager.js** — title/join + boot-status line, MENU coordinator
-  (seven pages), shop + arena panels, welcome/toast lifecycle, HUD hints per
-  input mode, party widget + minimap, collapsible chat with unread badge and
-  the chat-name action popup.
+  (seven pages), shop + arena panels, welcome/toast lifecycle, controller-
+  accurate HUD hints, Escape/B-button back handling for dialogs and menus,
+  party widget + minimap, collapsible chat and chat-name action popup.
 - **menu.js / menu-pages.js** — menu navigation plus Character, Skill Tree,
   Inventory, Party & Friends, Inbox, Map and Settings renderers.
 - **keybinds.js** — remappable combat/menu action keys with localStorage
   persistence and readable key labels.
-- **inputManager.js** — keyboard (WASD/arrows move; remappable Space/Shift/
-  E/Q/F/C defaults, +/- zoom), touch movement joystick, action buttons,
-  gamepad (Y/triangle = interact) and dynamic HUD hints.
+- **inputManager.js** — keyboard, unchanged touch joysticks/action buttons,
+  gamepad movement and D-pad/left-stick focus navigation. Controller bindings:
+  A interact/confirm, RT blast, B dash/back, Y shield, X/RB Sleeve ability;
+  Start/Select opens or exits menus.
 - **shooting.js / shootingControls.js** — Settings-persisted Auto-Aim +
   Hold-to-Fire or Twin-Stick Manual Aim; mouse, gamepad and touch aim input,
   500 ms client repeat cadence. **New implementation is unverified**; server
@@ -136,6 +145,8 @@ it committed and tested after running the full suite.)
   and aura.
   Tower rooms use named, region-biome-tinted procedural landmarks.
 - **audioManager.js** — Web Audio SFX, mute toggle.
+- **hud.js** — top-level 3 px XP progress line and a compact level/credit/
+  zone/ability summary; no duplicate health bar.
 - **config.js** — world/core/colour constants.
 
 ## Zones (`server/zones-catalog.js` + `server/sim/`)
@@ -180,7 +191,8 @@ it committed and tested after running the full suite.)
   Matching client module draws world-space danger rings. **Implemented,
   untested.**
 - **auth** (priority 5) — optional guest/register/login flow using username
-  and password; rate-limited, HTTPS-required outside development, with
+  and password; rate-limited, secure-transport checked outside development,
+  including Render HTTPS proxy requests, with
   server-side join guards, separate account profile keys and legacy-name
   reservation. Client join controls live in `uiManager.js`; socket calls in
   `netcode.js`. Username/password only: no email verification or reset.
@@ -237,5 +249,8 @@ it committed and tested after running the full suite.)
 
 ## Planned next (owner-directed)
 
-- (none in flight — roadmap 1–15 complete; next is playtest tuning, canon
-  approval and the future roadmap brainstorm)
+- Step 13 HTTPS/controller/HUD changes are implemented but unverified; see
+  `memory/05-work-state.md`. Run `npm test` and browser/controller playtests
+  before marking the build complete.
+- The roadmap remains complete; future work is playtest tuning, canon
+  approval and the future roadmap brainstorm.
