@@ -1,6 +1,6 @@
 // Safe-city services: merchants, selling loot, gear bonuses and the Arena
 // Master. Every haven has physical NPCs stored on its simulation.
-const { SHOP_ITEMS, DEFAULT_INVENTORY, DEFAULT_EQUIPPED, itemById, gearAtkFor } = require('../shop-catalog.js');
+const { SHOP_ITEMS, SHOP_ITEM_IDS, DEFAULT_INVENTORY, DEFAULT_EQUIPPED, itemById, gearAtkFor } = require('../shop-catalog.js');
 
 const INTERACT_RADIUS = 78;
 const SHOP_RADIUS = 120;
@@ -130,7 +130,7 @@ module.exports = {
       if (!player) return;
       const item = itemById(payload?.itemId);
       const zone = ctx.playerZone(player.id);
-      if (!item || !zone || zone.kind !== 'haven') return;
+      if (!item || !SHOP_ITEM_IDS.has(item.id) || !zone || zone.kind !== 'haven') return;
       const shop = nearestNpc(zone, player);
       if (!shop || shop.kind !== 'shop' || Math.hypot(shop.x - player.x, shop.y - player.y) > SHOP_RADIUS) {
         socket.emit('shop:error', 'Stand at the merchant stall to trade.');
