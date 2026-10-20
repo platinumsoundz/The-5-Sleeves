@@ -48,6 +48,7 @@ function createSimulation(catalogZone, host) {
     book: catalogZone.book,
     spirit: catalogZone.spirit,
     tint: catalogZone.tint,
+    biome: catalogZone.biome || 'wasteland',
     terminals: catalogZone.terminals || [],
     world: WORLD,
     core: CORE,
