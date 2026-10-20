@@ -46,6 +46,7 @@ const audio = createAudioManager(document.getElementById('mute-button'));
 const network = createNetcode(state, {
   status: (message, connected) => ui?.setStatus(message, connected),
   joinAccepted: (payload) => ui?.joinAccepted(payload),
+  authenticated: (payload) => ui?.authenticated(payload),
   zonesLobby: (zones) => ui?.renderZones(zones, selectedZone),
   joinError: (message) => ui?.joinError(message),
   playerUpdate: (player) => ui?.updatePlayer(player),
@@ -121,7 +122,8 @@ const network = createNetcode(state, {
 }, audio);
 let selectedZone = 'haven-perimeter';
 ui = createUIManager({
-  join: (name, faction) => network.join(name, selectedZone, faction),
+  join: (name, faction, mode) => network.join(name, selectedZone, faction, mode),
+  authenticate: (mode, username, password) => network.authenticate(mode, username, password),
   selectZone: (zoneId) => {
     selectedZone = zoneId;
     ui.renderZones(state.zones || [], selectedZone);
