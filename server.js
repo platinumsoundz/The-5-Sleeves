@@ -25,6 +25,7 @@ const {
 const { gearAtkFor } = require('./server/shop-catalog.js');
 const { skillBonuses } = require('./server/skill-tree.js');
 const { levelFromXp } = require('./server/progression.js');
+const secureTransport = require('./server/secure-transport.js');
 
 // PROFILE_FILE lets the test suite point profiles at a throwaway file, so
 // persisted credits/HP/XP from an earlier run can never leak into a fresh
@@ -838,6 +839,7 @@ const moduleContext = {
   canUseExit,
   havenIds: () => HAVEN_IDS,
   gearAtkFor,
+  secureTransport,
   applyXp,
   persistPlayer: (target) => persistPlayer(target),
   xpScale: () => XP_SCALE
