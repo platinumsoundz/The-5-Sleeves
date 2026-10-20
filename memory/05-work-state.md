@@ -5,21 +5,18 @@ Update it after every build (protocol rule 9).
 
 Last updated: 2026-10-20 (step 17 player palette + faction identity; subsequent salvage, balance, meditation, and dev-console changes are untested).
 
-## Current session — Developer grant console (IMPLEMENTED, UNVERIFIED)
+## Current session — Developer grant codes (IMPLEMENTED, UNVERIFIED)
 
-- Added `server/modules/dev-console.js` and a client module that injects a
-  token panel into Settings only when the server reports the feature enabled.
-- The server fails closed by default: `DEV_CONSOLE_ENABLED=true`,
-  `NODE_ENV` must not be `production`, and `DEV_CONSOLE_TOKEN` must be at
-  least 32 characters. The secret stays server-side; token comparisons use
-  `timingSafeEqual`; socket attempts are rate-limited; grants require an
-  authorized live socket.
-- The fixed grant gives 999,999 credits, 9,999 skill points/core points, all
-  catalog items, all tree nodes, and all archive terminal reads. It persists
-  through the existing profile system.
-- Added `test/dev-console.test.js`. **No tests were run, as requested.**
-  This and all earlier pending slices remain unverified and must be tested
-  before commit/deploy.
+- Updated the Settings panel to redeem codes instead of asking for one
+  developer token and a grant button. Server maps codes to a fixed allowlist
+  (`credits`, `skills`, `items`, `collectibles`, `all`); clients cannot send
+  arbitrary amounts or grant types.
+- Enable only on a non-production server with `DEV_CONSOLE_ENABLED=true`
+  and `DEV_CONSOLE_CODES` set to JSON mapping codes (minimum 8 characters)
+  to allowed grant names. Codes stay server-side; comparison is timing-safe
+  and failed attempts are rate-limited.
+- Updated `test/dev-console.test.js` for code redemption. **No tests were run.**
+  All preceding economy, balance, and meditation changes remain unverified.
 
 ## Current session — Safe-city Core meditation (IMPLEMENTED, UNVERIFIED)
 
