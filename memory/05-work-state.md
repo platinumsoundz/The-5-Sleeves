@@ -3,7 +3,26 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (PWA standalone metadata and fullscreen Settings control implemented; tests not run).
+Last updated: 2026-10-20 (Cipher join welcome/every-tower dialogue and Tower 5 Eastern Expanse implemented; tests not run).
+
+## Current session — Cipher welcome and post-Tower-5 Eastern Expanse (IMPLEMENTED, UNVERIFIED)
+
+- Cipher's hologram dialog now welcomes each joined operative with thanks and
+  the goal of becoming strong enough to unlock all towers. The first-contact
+  milestone remains persisted, and a Cipher message follows every tower clear.
+- The Tower 5 safe city's east exit is locked per operative until Tower 5 is
+  cleared. It then leads to a new `Eastern Expanse` zone, 3000×2100, with five
+  empty boss-site markers and five existing Rust Wardens placed as guardians;
+  no new enemy type or boss behavior was added.
+- Zone dimensions now propagate through server metadata and client zone state
+  for camera/world-bound rendering. The gate is visually sealed until unlocked.
+- Added `test/endgame.test.js` and extended `test/world.test.js` for dialogue,
+  per-operative gate, frontier size/markers/guardians and tower-clear payload.
+  The Expanse is proposed game content beyond the source comic; canon source
+  documents remain unchanged.
+- **Tests and browser playtesting were not run** because no shell/browser
+  runner is available. Verify all five tower clears, gate unlock, large-world
+  movement/camera, and guardian behavior before marking complete.
 
 ## Current session — Step 14: PWA and in-game fullscreen (IMPLEMENTED, UNVERIFIED)
 
