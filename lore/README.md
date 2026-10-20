@@ -22,11 +22,14 @@ approved) · `REJECTED` (never reuse).
 - **Setting**: near-future, circa 2036, ~5 years after the modern collapse.
   Recognisably contemporary world — scarcity, repair culture, patched gear.
   Not generic cyberpunk.
-- **Six sleeves in play**: Cipher (a distinct identity linked to the original
-  AI — *not* an elemental domain) + the four elemental domains Wind, Water,
-  Earth, Fire + Darkness, the forbidden 26th ability / sixth Dark spirit.
-  This matches the game's six playable domains
-  (`cipher, wind, water, fire, earth, dark`).
+- **Canon identities**: the source comic establishes Cipher, the four
+  elemental domains (Wind, Water, Earth, Fire), and the Dark spirit. Keep
+  those source documents intact.
+- **Game adaptation**: the post-comic game has five playable factions—Wind,
+  Water, Earth, Fire, and Dark. Cipher is an allied, non-playable AI; never
+  include Cipher in the faction picker or player-domain validation.
+- **Game timeline**: the operative's story begins after the comic's events;
+  do not retell the five-book story as the game's present-day plot.
 - **Modules**: 25 original ability modules (5 per elemental domain, Cipher's
   allocation OPEN). Modules can be stolen, recovered, transferred, shared.
   A spirit is an intelligent agent with its own consent — never a button.
@@ -54,8 +57,8 @@ canon-aligned content:
 - **Archive Echoes**: ambient lore pickups.
 - **Rust Wardens**: patrolling defence drones of the ruined tower network —
   consistent with the dormant defence drones awakened in Book One.
-- **Six faction sleeves**: the playable domains map 1:1 to the canon
-  identities above.
+- **Five playable factions**: Wind, Water, Earth, Fire, Dark. Cipher joins
+  as an AI ally after the operative's first tower clear.
 
 New lore-bearing game content must be written to fit these documents and
 added here. Update `public/project-memory.json` → `world_canon_version`
