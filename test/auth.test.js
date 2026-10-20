@@ -12,6 +12,7 @@ function buildAuth(filename, legacyName = '') {
   process.env.USERS_FILE = filename;
   const handlers = {}, guards = [];
   auth.setup({
+    io: { on() {} },
     registerSocket: (name, handler) => { handlers[name] = handler; },
     registerJoinGuard: (handler) => guards.push(handler),
     legacyProfileExists: (name) => name.toLowerCase() === legacyName.toLowerCase(),
