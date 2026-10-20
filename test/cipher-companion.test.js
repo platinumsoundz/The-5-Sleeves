@@ -23,7 +23,7 @@ test('Cipher introduction is first-clear only and persists between joins', () =>
   assert.equal(companionMemory.markIntroSeen(returningOperative), false);
 });
 
-test('the client companion only opens for the server-marked first tower clear', () => {
+test('the persisted first-contact flag is only set on an operative’s first clear', () => {
   assert.equal(shouldShowCipherIntro(null), false);
   assert.equal(shouldShowCipherIntro({}), false);
   assert.equal(shouldShowCipherIntro({ cipherIntro: false }), false);
