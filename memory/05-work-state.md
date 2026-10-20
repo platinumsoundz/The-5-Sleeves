@@ -3,7 +3,20 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (visual wiring audit found and fixed biome propagation and tower labels; visual regression tests added but not run).
+Last updated: 2026-10-20 (selectable firing styles implemented; regression tests added but not run).
+
+## Current session — Selectable firing styles (IMPLEMENTED, UNVERIFIED)
+
+- Added a Settings toggle for persisted Auto-Aim + Hold-to-Fire and Twin-Stick
+  Manual Aim. Auto-aim chooses the nearest living Warden (or opposing player
+  in a PvP arena); twin-stick supports mouse, gamepad right stick, and a
+  dedicated touch aim stick. Deflecting the touch aim stick fires while held.
+- Fire repeats every 500 ms, above the server's existing 450 ms cooldown;
+  the server still validates cadence, safe-zone rules, collisions and damage.
+- Added `public/src/shooting.js`, `public/src/shootingControls.js`, and
+  `test/shooting.test.js`. **Neither `npm test` nor browser playtesting could
+  be run: this workspace session has no shell or browser runner.** Keep this
+  build unverified until both are checked; no commit was made.
 
 ## Current session — README game overview (DONE)
 
