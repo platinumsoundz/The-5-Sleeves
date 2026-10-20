@@ -3,7 +3,26 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (post-comic five-faction story and Cipher AI introduction implemented; tests not run).
+Last updated: 2026-10-20 (Step 13 HTTPS, controller navigation/bindings and HUD updates implemented; tests not run).
+
+## Current session — Step 13: HTTPS, controller menus, controls and HUD (IMPLEMENTED, UNVERIFIED)
+
+- Shared secure-transport checks now accept native HTTPS/WSS, Render's
+  `the-5-sleeves.onrender.com` forwarded HTTPS, and explicitly trusted
+  proxies. `server.js` passes the check to the auth module; plaintext and
+  arbitrary forwarded-host headers remain blocked in production.
+- Controller bindings are A=interact/confirm, RT=blast, B=dash/back,
+  Y=shield, X/RB=Sleeve ability. Left stick/D-pad navigate focusable controls
+  in title/menu/modal overlays; A activates, B/Escape closes the top dialog.
+  Movement is suppressed while overlays are open. Touch and socket pathways
+  were left intact.
+- Removed the top HUD health bar, moved XP progress to a 3 px line at screen
+  top, and anchored toast/banner/kill notifications below the left minimap
+  and mode strip. Added visible focus styling and compact controller hints.
+- Added tests in `test/auth.test.js`, `test/input.test.js`,
+  `test/hud.test.js`, and `test/renderer.test.js`. **No tests or browser/
+  controller playtests were run** because this workspace has no shell/browser
+  runner; no commit was made. Keep the build unverified until those checks pass.
 
 ## Current session — Post-comic story, five factions, Cipher AI (IMPLEMENTED, UNVERIFIED)
 
