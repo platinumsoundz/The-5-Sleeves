@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.6.5",
+  "version": "2.6.6",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -75,6 +75,7 @@
     "Credits, enemy loot drops and merchant buy/sell",
     "Wasteland salvage economy: tiered Rust Warden drops of sell-only Shattered Circuitry and Corroded Relay Parts; server rejects buying salvage",
     "Balance tuning: explicit 120 XP base/+60 per level curve, named Rust Warden per-tier multipliers, and skill tree depth costs of 1–4 points mirrored client/server",
+    "Safe-city Cipher Core meditation: 5 credits after 30 seconds idle, every 5 minutes, 20-credit UTC-day cap persisted in profiles; safe-haven Core does not grant active-zone skill points",
     "Gear ATK bonuses from equipped weapons and armour",
     "Five tower wave rooms with completion rewards and east-road unlocks",
     "Six instanced arena modes: PvP/PvE domination, team deathmatch and tower capture",
