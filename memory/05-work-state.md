@@ -3,7 +3,23 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 17 player palette + faction identity; subsequent salvage, balance, meditation, and dev-console changes are untested).
+Last updated: 2026-10-20 (username/password auth implemented but unverified; preceding salvage, balance, meditation, and developer-code builds are also untested).
+
+## Current session — Optional account registration and login (IMPLEMENTED, UNVERIFIED)
+
+- Added the auto-discovered `auth` server module, `server/account-store.js`,
+  and a Settings-at-title account mode for guest/register/login. Passwords use
+  Node `scrypt`; account records live separately in ignored `users.json`.
+- Account profile keys are isolated from legacy guest profiles. Registration
+  refuses names already used by a legacy profile; guests cannot claim
+  registered usernames. Authenticated join guards bind the socket to its
+  account profile. Registration/login require HTTPS outside development;
+  attempts are rate-limited.
+- Added `test/auth.test.js`. **No tests were run**, following the request to
+  continue without testing. This is a first username/password slice, not the
+  planned email verification, password reset, or account migration flow.
+- Do not treat auth or earlier untested changes as verified; run the full
+  suite before commit/deployment when testing is authorized.
 
 ## Current session — Developer grant codes (IMPLEMENTED, UNVERIFIED)
 
