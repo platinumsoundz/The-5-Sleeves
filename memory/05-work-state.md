@@ -3,7 +3,57 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 12 Adventure Hub).
+Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
+
+## Step 13b — Test isolation and stable gate tests (DONE)
+
+- **Scratch profiles** — `server.js` now honours a `PROFILE_FILE` env override.
+  Every test server spawns with `PROFILE_FILE` pointing at
+  `tools/profile-scratch.js`'s per-process temp file, wiped on import, so a
+  test run never reads or writes `player-profiles.json`. Operatives start at
+  35 credits / full HP every time.
+- **Unique names** — remaining fixed test names (`HubTester`, `ArenaOne/Two`)
+  now carry a `Date.now()` suffix, matching the rest of the suite.
+- **Gate-hold retries** — `test/zones.test.js` repeats the edge nudge up to
+  four times instead of exactly twice, so a loaded device that coalesces
+  `player:move` packets cannot miss the 320 ms gate hold. Timeout raised to
+  10 s for the same reason.
+- Suite is green and repeatable: **60/60 across three consecutive runs**
+  (~70 s each). The 540 legacy test profiles already inside the gitignored
+  `player-profiles.json` were left alone (they can no longer affect tests).
+
+## Step 13 — Village-scale world, cities, towers, credits (DONE)
+
+- **World chain** — `haven-perimeter` → `wild-perimeter` → `haven-coast`
+  (Tower 1) → `wild-coast` → `haven-scorched` (Tower 2) → `wild-scorched` →
+  `haven-frozen` (Tower 3) → `wild-frozen` → `haven-apex` (Tower 4) →
+  `wild-apex` → `haven-citadel` (Tower 5). Walking into an edge gate moves
+  zones after a short deliberate hold; the destination entry point matches the
+  road used.
+- **Six safe cities** — every haven is a full 1000×700 no-combat cube with a
+  merchant and an Arena Master on the left. Reaching a city unlocks it as a
+  spawn point and sets `homeCity`; city east roads stay gated until that
+  city's tower is cleared.
+- **Five towers** — north of Coast through Spire. Each tower runs three
+  scaled Rust Warden waves, pays credits + XP + a skill point, marks
+  `player.towers[index]`, broadcasts `tower:cleared`, and opens the east road.
+- **Six arena instances** — PvP and PvE each offer domination, team
+  deathmatch and tower capture (`arena-pvp`, `arena-pvp-tdm`,
+  `arena-pvp-tower`, `arena-pve`, `arena-pve-tdm`, `arena-pve-tower`).
+  PvP arrivals auto-balance red/blue teams; PvE is one co-op faction with
+  friendly fire off. Arena and tower deaths return the operative to
+  `homeCity`.
+- **Money + loot** — credits start at 35, drop from kills, and pay for
+  merchant gear. Loot rolls by enemy tier; merchants buy back at 50%.
+  Equipped weapons/armour contribute `gearAtk`, added to projectile damage
+  without changing base combat maths.
+- **Map + fast travel** — `world:map` lists eleven overworld rooms and five
+  towers; the MENU Map page draws the route and fast-travels to unlocked
+  cities. Arenas stay private.
+- **Compatibility** — bare `player:join` (tests/dev tools) still lands in
+  `wild-perimeter`; the real client starts in `haven-perimeter`.
+- Ledger bumped to `2.5.0`; suite green (60/60, including new world/tower
+  coverage in `test/world.test.js`).
 
 ## Step 12 — Adventure Hub, portals and expanded MENU (DONE)
 
@@ -51,8 +101,13 @@ Last updated: 2026-10-20 (step 12 Adventure Hub).
   intact worktree as commit `2d976f5` ("Restore full game after local git
   object-store loss"). **All content is present, but the granular history of
   roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
-- 2 commits ahead of origin after the rebuild; **push regularly** and push
-  soon so a local loss cannot repeat this.
+- Local history has the restored baseline plus Steps 12–13; **push is still
+  pending**. `git push origin main` fails in this environment with
+  "could not read Username for 'https://github.com'" — no credential helper
+  data, no `gh`, no token in the env. The owner must supply a PAT (or run the
+  push from a machine with credentials). Check `git status` /
+  `git log origin/main..HEAD` rather than trusting an old ahead-count; local
+  `main` is 4 commits ahead of `origin/main`.
 - Commit style: imperative summary line + bullet body explaining the system.
 - `npm test` runs test files serially (`--test-concurrency=1`). Parallel
   servers oversubscribe this device and make warden/respawn tests flake;
@@ -72,14 +127,20 @@ Last updated: 2026-10-20 (step 12 Adventure Hub).
 
 ## In progress
 
-- **Archive terminals (#10) — DONE** (server module + client module +
-  interact key F/Y/touch READ button, lore log panel). Committed through
-  8b04151.
-- **Combat juice (#11) — DONE** (combat-juice client module).
-- **Zones (#9) — DONE**: one simulation per canon book (`server/sim/`);
-  zones isolate players, broadcasts, wardens, echoes and matches. Zone
-  travel (`zone:switch` + `zoneChanged` hook) exists server-side; only the
-  title-screen picker has UI for now.
+- None. Step 13 (village-scale world rebuild) is COMPLETE and green; it is
+  committed in the same build as the test-isolation fix. Only the push to
+  origin is outstanding (owner confirmation).
+
+## What is left / next session
+
+- **Push to origin** is blocked on credentials (no PAT/gh in this
+  environment). Ask the owner for a token or push from their machine; 4 local
+  commits are waiting (`Building the village-scale world…` is the newest).
+- Next work is owner-directed: playtest the new city → tower → road loop,
+  tune enemy scaling/credit prices, approve or rewrite proposed terminal lore,
+  then pick the next system (suggested: private rooms → auth → PWA → store).
+- The title screen intentionally offers only the First Village; every other
+  city is unlocked by walking the chain or fast-travelling from the MENU map.
 
 ## Session build queue (this session, in order)
 
@@ -101,23 +162,14 @@ Last updated: 2026-10-20 (step 12 Adventure Hub).
 
 ## What is left / next session
 
-- Step 12 (Adventure Hub, physical portals, expanded MENU, chat actions) is
-  COMPLETE and covered by `test/hub.test.js`. No build is in flight.
-- Roadmap items 1–14 are COMPLETE; step 12 was an owner-directed extension.
-- **Recovery note:** the commit history for those builds was reconstructed
+- Step 12 (Adventure Hub) and Step 13 (village-scale world) are COMPLETE;
+  no build is in flight.
+- Roadmap items 1–14 are COMPLETE; steps 12–13 were owner-directed extensions.
+- **Recovery note:** the commit history for earlier builds was reconstructed
   as one commit (`2d976f5`) after the object-store incident. Future builds
   start clean from there.
 - **Push to origin** is still pending owner confirmation — do this first
-  next session; the local repo has now lost history once.
-- Next work is owner-directed: brainstorm `ROADMAP-FUTURE.md`, approve or
-  rewrite the proposed terminal lore, then pick the next system (suggested
-  order: in-game zone switcher → private rooms → auth → PWA → store).
-- In-game zone switching is exposed through the hub portals (and the server
-  `zone:switch` event); there is still no free-roam zone list in the MENU.
-  The title-screen picker remains the only direct canon-zone choice.
-7. Canon polish + draft the future roadmap for brainstorming (includes
-   the owner's product asks: monetization, email logins, Android/PC +
-   console/iOS — see `07-product-direction.md`).
+  next session; the local repo has lost history once.
 
 ## How to resume after an interruption
 

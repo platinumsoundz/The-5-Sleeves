@@ -30,17 +30,22 @@ content. This chapter is the game-dev digest.
   mirrored.
 - Power has cost. Any mechanic granting power should have a cost or limit.
 
-## Five books = the game's five zones
+## Five books = the game's five regions
 
-The game is an arena side-story inside the canon. Zone map:
+The game is a village-scale adventure side-story inside the canon. Each book
+has a safe city, a wilderness road and a regional tower:
 
-| Book | Zone id | Spirit | Note |
-|---|---|---|---|
-| 1 — The Perimeter and the First Tower | `the-perimeter` | Wind (Korb) | Starter zone; the ruined tower arena |
-| 2 — The Sunken Coast | `sunken-coast` | Water (Ella) | Drowned city |
-| 3 — Shadows of Exile | `scorched-wastes` | Earth (Oscar) | Desert, reservoir archive |
-| 4 — The Frozen Wastes | `frozen-wastes` | Fire (Reegan) | Vault of the 26th ability |
-| 5 — The Apex Citadel | `apex-citadel` | Cipher + Dark | Endgame; the Rebind |
+| Book | Canon region | Zones | Spirit | Note |
+|---|---|---|---|---|
+| 1 — The Perimeter and the First Tower | `haven-perimeter` → `wild-perimeter` | Wind (Korb) | Starter village; road east |
+| 2 — The Sunken Coast | `haven-coast` (Tower 1) → `wild-coast` | Water (Ella) | Drowned city, Drowned Pylon |
+| 3 — Shadows of Exile | `haven-scorched` (Tower 2) → `wild-scorched` | Earth (Oscar) | Emberhold, reservoir archive |
+| 4 — The Frozen Wastes | `haven-frozen` (Tower 3) → `wild-frozen` | Fire (Reegan) | Frosthold, vault of the 26th ability |
+| 5 — The Apex Citadel | `haven-apex` (Tower 4) → `wild-apex` → `haven-citadel` (Tower 5) | Cipher + Dark | Lower Ward, Spire; the Rebind |
+
+Cities gate their east road until their regional tower is cleared. Towers are
+private wave rooms; arenas (`arena-*`) are private PvP/PvE instances and are
+not part of the canon map.
 
 ## Canon-aligned game content
 
@@ -48,10 +53,10 @@ The game is an arena side-story inside the canon. Zone map:
   drones of the tower network).
 - **Archive terminals** — readable lore stations; bounty once per operative.
   New terminal logs must match the zone's book and never resolve an OPEN
-  mystery. The `sunken-coast`, `scorched-wastes`, `frozen-wastes` and
-  `apex-citadel` terminal logs (in `server/zones-catalog.js`) are original
-  flavour written to match their books — they are PROPOSED and need owner
-  review before being treated as canon.
+  mystery. The coast, scorched, frozen, apex and citadel terminal logs (in
+  `server/zones-catalog.js`) are original flavour written to match their
+  books — they are PROPOSED and need owner review before being treated as
+  canon.
 - **Archive Echoes** — fragments of Tower logs.
 - **Domination relays** — "the tower recalibrates" framing.
 - **The Core** — the tower's Cipher Conduit.

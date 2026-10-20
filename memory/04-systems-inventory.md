@@ -18,9 +18,10 @@ and tested.)
   walls that block projectiles.
 - **Rust Wardens (PvE)** — patrol/wander, aggro ring (330), chase, hostile
   fire; 9 s respawn; pay XP + skill point + core charge; `MAX_WARDENS` env.
-- **Domination** — West/East/South relays, uncontested capture (more bodies
-  = faster), mixed factions freeze it, held relay scores 1 pt/s, capture XP,
-  first-to-400 (`SCORE_LIMIT` env) match banner + reset.
+- **Domination** — three relays (one central tower in tower-capture),
+  uncontested capture (more bodies = faster), mixed factions freeze it, held
+  relay scores 1 pt/s, capture XP, per-arena score limits and match reset.
+  PvE counts co-op, PvP counts red/blue; team deathmatch scores kills instead.
 - **Progression** — single `applyXp` funnel; curve in
   `server/progression.js` (`xpForLevel`, `levelFromXp`, cap 40); level-up =
   skill point + 10 max HP + broadcast; `XP_SCALE` env; persisted.
@@ -32,15 +33,16 @@ and tested.)
 - **Archive Echoes** — up to 5 random lore pickups, respawn every 7 s, pay
   skill point + core charge + XP.
 - **Persistence** — `player-profiles.json`: name, domain, stats, skill
-  points, XP/level, core charge/points, inventory/equipment, friends and
-  inbox. Atomic tmp+rename saves, periodic (10 s) + on-event flushes.
+  points, XP/level, core charge/points, credits, home city, unlocked cities,
+  completed towers, inventory/equipment, friends and inbox. Atomic
+  tmp+rename saves, periodic (10 s) + on-event flushes.
   Modules extend the record via the `persist` hook.
-- **Safe hub & arenas** — every canon zone spawns operatives inside a
-  no-combat bubble around the Cipher Core (`HUB` in `server/sim/spec.js`);
-  attacks/abilities are rejected inside, damage to occupants is blocked,
-  wardens ignore them, and respawns return to the hub. Two instanced
-  Domination rooms (`arena-pvp`, `arena-pve`) exist in the zone registry but
-  stay out of the lobby; the co-op room sets `friendlyFire: false`.
+- **Safe cities & arenas** — each haven is a full-map safe rectangle with a
+  merchant and Arena Master; attacks/abilities are rejected inside, damage
+  to occupants is blocked, and wardens ignore them. Six instanced arena
+  rooms cover PvP/PvE domination, team deathmatch and tower capture; PvP
+  arrivals auto-balance red/blue, PvE is one co-op faction. Arena and tower
+  deaths return the operative to `homeCity`.
 - **Tick loop** — single `setInterval(50 ms)`; dt capped at 100 ms.
 - **Plug-and-play module system** — `server/hook-bus.js` +
   `server/module-loader.js` auto-scan `server/modules/*.js` at boot with a
@@ -50,8 +52,9 @@ and tested.)
 
 ## Server support files
 
-- **shop-catalog.js** — Quartermaster Vale stock, starter inventory/equipment
-  and the shared item lookup (gear is collection/visual progression only).
+- **shop-catalog.js** — merchant stock with credit prices and sell values,
+  starter inventory/equipment, item lookup and tier-based loot tables.
+  Equipped gear contributes `gearAtk` (weapons/armour = small damage bonus).
 - **skill-tree.js** — server mirror of the eight-node branching skill tree;
   node costs, parent requirements and descriptions.
 
@@ -61,8 +64,13 @@ and tested.)
   Observatory Console, Sealed Vault Interface), radius-based interact,
   40 XP + 12 core charge once per operative, `terminalsRead` persisted via
   the persist hook. Client UI lives in the terminals client module.
-- **hub-services** — physical shop NPC, PvP/PvE portal travel, tower unlocks
-  (60 XP), inventory/equipment persistence and shop payloads.
+- **hub-services** — every city merchant (buy/sell, gear recalc), Arena
+  Master menu and arena entry, inventory/equipment persistence and shop
+  payloads.
+- **world-services** — unlocked-city fast travel (`city:travel`) and world
+  map broadcast.
+- **tower-services** — three-wave tower runs, completion rewards and
+  east-road unlocks.
 - **social-services** — friends list (mutual add/remove), persistent inbox
   with claimable attachments, and inventory gifting to online operatives.
 - **sleeve-skills** — server-validated skill-node unlocks; spends skill
@@ -76,18 +84,20 @@ and tested.)
   projectiles, capped extrapolation.
 - **renderer.js** — baked offscreen background, sprite sheets with walk
   frames, procedural fallback; draws players, wardens, projectiles,
-  effects, bursts, relays, echoes, safe-hub ring, tower beacons and a
-  receding fogline, compact top-centre HUD and top-left radar/mode strip;
-  emits the three module hooks (`render:world`, `render:fx`, `render:overlay`).
+  effects, bursts, relays, echoes, safe-city rectangles, tower rooms and a
+  receding fogline, compact top-centre HUD (credits + zone), top-left
+  radar/mode strip and tower-run status; emits the three module hooks
+  (`render:world`, `render:fx`, `render:overlay`).
 - **netcode.js** — every socket event in one place, including hub state,
-  towers, shop, friends/inbox/gifts, skill unlocks and arena zone changes.
+  world map, tower runs, arena menu, fast travel, shop, friends/inbox/gifts,
+  skill unlocks and arena zone changes.
 - **plugin-host.js** — client hook bus (DOM-free, Node-importable).
 - **module-runner.js** — fetches `/api/client-modules`, parallel import,
   priority-ordered setup with loading-screen progress callbacks.
 - **uiManager.js** — title/join + boot-status line, MENU coordinator
-  (seven pages), shop panel, welcome/toast lifecycle, HUD hints per input
-  mode, party widget + minimap, collapsible chat with unread badge and the
-  chat-name action popup.
+  (seven pages), shop + arena panels, welcome/toast lifecycle, HUD hints per
+  input mode, party widget + minimap, collapsible chat with unread badge and
+  the chat-name action popup.
 - **menu.js / menu-pages.js** — menu navigation plus Character, Skill Tree,
   Inventory, Party & Friends, Inbox, Map and Settings renderers.
 - **keybinds.js** — remappable combat/menu action keys with localStorage
@@ -105,27 +115,32 @@ and tested.)
 
 ## Zones (`server/zones-catalog.js` + `server/sim/`)
 
-- **zones-catalog.js** — the five canon zones (one per book), each with
-  name, book, spirit/domain, tint and its own lore terminals:
-  `the-perimeter` (Wind), `sunken-coast` (Water), `scorched-wastes`
-  (Earth), `frozen-wastes` (Fire), `apex-citadel` (Cipher).
+- **zones-catalog.js** — six safe cities (`haven-perimeter` through
+  `haven-citadel`), five wilderness roads and five tower rooms, linked by
+  edge exits; each haven carries merchant/arena NPCs, map order, danger band
+  and its tower gate. Six private arena rooms cover PvP/PvE × domination /
+  TDM / tower capture. The real client starts at `haven-perimeter`; bare
+  legacy joins land in `wild-perimeter` for tests.
 - **sim/state.js** — `createSimulation(catalogZone, host)`: all per-zone
   state (players, wardens, projectiles, effects, bursts, echoes,
-  objectives, faction scores, match) plus a zone-scoped `send()` and
-  `broadcast()` (empty rooms skip broadcasts).
+  objectives, faction scores, match, tower run) plus a zone-scoped `send()`
+  and `broadcast()` (empty rooms skip broadcasts). Safe zones support both
+  rectangles (cities) and circles.
 - **sim/spec.js** — every shared tuning number (warden stats, XP bounties,
   respawn delays, sleeve colours, archive log lines, env knobs).
 - **sim/combat.js** — damage/shield mitigation, deaths, respawns, status
   effects, knockback, swept-path collision maths.
 - **sim/abilities.js** — the six domain abilities and Ember Lance blasts.
-- **sim/wardens.js** — warden spawning, patrol/chase AI, shots, respawn.
-- **sim/objectives.js** — per-zone domination relays, capture, match end.
+- **sim/wardens.js** — tier-scaled warden spawning, patrol/chase AI, shots,
+  respawn; tower rooms spawn controlled waves through options.
+- **sim/objectives.js** — domination relays, co-op/PvP team factions,
+  capture, TDM score limits and match end/reset.
 - **sim/projectiles.js** — projectile stepping, wall absorption, hits.
 - **sim/echoes.js** — Archive Echo spawn/collect.
 - **sim/index.js** — `stepZone(sim, now, dt)`: one full zone tick.
 - **server.js** — now host only: lobby (`zones:lobby`), zone registry,
-  zone travel (`zone:switch` + `zoneChanged` hook), squads, chat,
-  profiles/progression, module loader.
+  edge/road travel (`zone:switch`, `city:travel`), city unlock/home-city
+  respawns, squads, chat, profiles/progression, module loader.
 - **Fixed timestep (#13)** — the host accumulates real time and runs whole
   `FIXED_DT_MS` simulation slices (default 50 ms, max 5 catch-up steps
   before resyncing); zone snapshots are broadcast separately every
@@ -135,6 +150,11 @@ and tested.)
 
 - **archive-terminals** (priority 50) — readable lore terminals per zone;
   first-read XP + core bounty, persisted per operative.
+- **hub-services** (priority 20) — city merchants, credits buy/sell, gear
+  bonuses and Arena Master menus/entry.
+- **world-services** (priority 25) — unlocked-city fast travel and world map.
+- **tower-services** (priority 30) — three-wave tower runs, rewards and
+  east-road unlocks.
 - **spectate-replay** (priority 70) — rolling 60 s snapshot buffer per
   active zone (`GET /api/replay/:zoneId`) and observer sockets
   (`spectate:join`) that watch a zone without joining its roster.
@@ -151,21 +171,21 @@ and tested.)
 - **replay-viewer** (priority 10) — observer director camera for
   `?spectate=<zone>` and rolling-buffer playback for
   `?replay=1&zone=<zone>`.
-- **hub-world** (priority 25) — draws the physical Quartermaster and the two
-  arena gates and shows the nearby `F · ...` interaction prompt.
+- **hub-world** (priority 25) — draws city merchants, Arena Masters, road
+  gates, tower rooms and the nearby `F · ...` interaction prompt.
 
 ## Tooling & tests
 
 - `npm start` / `npm run dev` (watch) / `npm test` (node --test) /
   `npm run sprites` (bake art via `tools/generate-sprites.js`).
 - `tools/png.js` — dependency-free PNG writer + supersampled rasteriser.
-- 16 suites: server boot/health, server modules, safe hub/portals, zones,
-  fixed timestep, spectate/replay, abilities, wardens, objectives,
-  progression, camera, interpolation, renderer, sprites, module import
-  resolution, client module contract, analog-stick maths. 56 tests, all green.
+- 17 suites: server boot/health, server modules, cities/merchants/arenas,
+  world travel/tower completion, zones, fixed timestep, spectate/replay,
+  abilities, wardens, objectives, progression, camera, interpolation,
+  renderer, sprites, module import resolution, client module contract,
+  analog-stick maths. 60 tests, all green.
 
-## Planned this session (ROADMAP items, not built yet)
+## Planned next (owner-directed)
 
-- (none — roadmap 1–14 complete; next is canon polish + the future
-  roadmap brainstorm)
-- Spectate + replay = #14.
+- (none in flight — roadmap 1–15 complete; next is playtest tuning, canon
+  approval and the future roadmap brainstorm)

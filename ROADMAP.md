@@ -42,8 +42,8 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done
   captured by standing on them uncontested: one faction alone builds control
   (faster with more operatives), mixed factions freeze the capture, and a held
   relay scores for its faction every second. Captures pay XP to everyone of that
-  faction, a first-to-400-points match ends with a broadcast banner and the tower
-  resets. Client renders the capture rings, progress arcs, minimap relay rings,
+  faction, and a per-mode score limit ends the match with a broadcast banner
+  before the tower resets. Client renders the capture rings, progress arcs, minimap relay rings,
   a faction scoreboard and match banners.
 - [x] **8. Progression** — XP now flows through a single `applyXp` funnel
   (warden kills, player kills, relay captures, Core points, archive echoes) and
@@ -57,6 +57,7 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done
 - [x] **9. Multiple zones/rooms** — lobby + per-zone state instead of one global arena. (server/sim/* per-zone simulation, canon five-book zone catalog, title-screen zone picker)
 - [x] **10. Environmental storytelling** — props, landmarks, interactable Archive terminals. (world-decor + terminals client modules; server module archive-terminals)
 - [x] **11. Combat juice** — hit sparks, damage numbers, screenshake, kill feed, afterimages. (combat-juice client module)
+- [x] **15. Village-scale world rebuild** — six safe cities, five wilderness roads and five tower wave rooms connected by edge travel; credits, loot, merchants, tower-gated roads, region-scaled enemies, six PvP/PvE arena modes and world-map fast travel.
 
 ## Tier 4 — Tech foundation
 - [ ] **12. Rooms/lobbies** — folded into item 9.

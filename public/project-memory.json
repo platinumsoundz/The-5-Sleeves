@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -35,8 +35,8 @@
   ],
   "active_features": [
     "Title Overlay & Onboarding",
-    "JSON Persistence (player-profiles.json): name, domain, stats, core points, skill points, XP, level, terminalsRead",
-    "Realtime Movement & Touch D-Pad",
+    "JSON Persistence (player-profiles.json): name, domain, stats, credits, home/unlocked cities, towers, core points, skill points, XP, level, terminalsRead",
+    "Realtime Movement & 360° Analog Touch Joystick",
     "6 Faction Sleeves & Skill Upgrades",
     "Gamepad / Keyboard Dynamic HUD Hints",
     "Modular Client Architecture & Memory Ledger",
@@ -57,7 +57,7 @@
     "Downed/respawn loop: kill credit, combat:hit / combat:down / combat:respawn events consumed by the client for feedback",
     "Rust Warden PvE drones: patrol/wander, aggro ring, chase, hostile server-resolved fire, shared damageableTargets list, 9s respawn, XP + skill point payout, minimap markers and kill feed entries",
     "Swept-path projectile collision so fast shots no longer tunnel through targets",
-    "Domination mode: three relays (West/East/South) captured by standing uncontested, mixed factions freeze capture, held relay scores per second, capture XP, first-to-400 match banner and tower reset, faction scoreboard",
+    "Domination mode: relays captured by standing uncontested, mixed factions freeze capture, held relays score per second, capture XP, per-arena score limits and tower reset, faction scoreboard",
     "Progression: single applyXp funnel (warden kills, player kills, relay captures, Core points, archive echoes), XP curve in server/progression.js (xpForLevel/levelFromXp, level cap 40), each level grants a skill point and +10 max HP, level:up broadcast, HUD level/XP bar, persisted XP and level",
     "Plug-and-play server module system: server/module-loader.js auto-scans server/modules/*.js at boot with a shared context (hook-bus events joining/joined/left/persist/tick, registerSocket, route, distance, applyXp, persistPlayer, xpScale); broken modules are skipped, never fatal",
     "Archive story terminals (Roadmap #10, COMPLETE): server module archive-terminals.js (3 canon-lore terminals, once-per-operative XP + core bounty, terminalsRead persisted) + client module terminals.js (beacons, READ prompt on F/Y/touch, lore log panel); interact key bound in keyboard, gamepad and touch input",
@@ -70,7 +70,14 @@
     "Top-Right HUD & Top-Left Radar Realignment",
     "360-Degree On-Screen Analog Joystick",
     "Safe Zone Hub & NPCs",
-    "Physical Portals (PvP/PvE Domination)",
+    "Village-Scale World Chain (six safe cities, five wild roads, five towers)",
+    "City Safe Cubes, Merchants and Arena Masters in every haven",
+    "Credits, enemy loot drops and merchant buy/sell",
+    "Gear ATK bonuses from equipped weapons and armour",
+    "Five tower wave rooms with completion rewards and east-road unlocks",
+    "Six instanced arena modes: PvP/PvE domination, team deathmatch and tower capture",
+    "World map overview and fast travel between unlocked city spawn points",
+    "Region-scaled Rust Wardens (HP, damage, XP and credits by danger tier)",
     "Expanded Menu (Inventory, Party, Inbox, Map, Skill Tree)",
     "Interactive Chat Context Actions"
   ],
@@ -78,15 +85,14 @@
   "upcoming_features": [
     "URGENT: push to origin — local git history was lost once (2026-10-20 object-store incident); never delete .git/objects/**/.l2s.tmp_obj_* files (PRoot hardlink backing data)",
     "Owner brainstorm: ROADMAP-FUTURE.md covers monetization (cosmetics only), optional email accounts as an auth module, PWA/Android then iOS/console, private rooms, zone hazards, persistence/observability, and open questions",
-    "Owner review of PROPOSED terminal lore for sunken-coast, scorched-wastes, frozen-wastes, apex-citadel (server/zones-catalog.js)",
-    "In-game zone switcher UI (hub portals already reach the instanced arenas; a free-roam canon-zone list in the MENU is still pending)",
-    "Zones/rooms (roadmap #9, COMPLETE): one simulation per canon book in server/sim/* (combat, abilities, wardens, objectives, projectiles, echoes) with zone-scoped broadcasts; server.js is now a host (lobby, squads, chat, profiles, zone travel); title-screen zone picker; zone-atmosphere client module",
-    "Zone travel: zone:switch moves an operative between the five canon zones and fires the zoneChanged hook (terminals re-announce per zone)",
+    "Owner review of PROPOSED terminal lore for the coast, scorched, frozen, apex and citadel havens (server/zones-catalog.js)",
+    "Playtest and tune the city → tower → east-road loop, enemy scaling and credit prices",
+    "In-game zone switcher is covered by the world map fast-travel page; free-roam jump-to-any-zone remains intentionally locked to walking/fast travel",
     "Fixed-timestep server loop (roadmap #13, COMPLETE): whole FIXED_DT_MS simulation slices with a 5-step catch-up cap, snapshots broadcast on a separate BROADCAST_MS cadence",
     "Spectate + replay (roadmap #14, COMPLETE): spectate-replay server module keeps a rolling 60 s per-zone buffer, serves GET /api/replay/:zoneId and lets observers join a zone room; replay-viewer client module drives ?spectate=<zone> and ?replay=1&zone=<zone> modes",
     "Product direction (see memory/07-product-direction.md, owner sign-off needed): monetization (cosmetics-only, no pay-to-win per canon), email logins as a plug-and-play auth module, PWA/Android packaging, iOS and console later",
     "Faction-specific character animation and combat effects",
     "Progression balancing and additional levels"
   ],
-  "dev_notes": "SESSION BOOTSTRAP: read memory/00-index.md first and follow memory/01-session-protocol.md (one system per build, plug-and-play modules only, save state after each build). Client is split into small browser ES modules under public/src/ (assetLoader, audioManager, camera, characterRenderer, config, inputManager, interpolation, keybinds, menu, menu-pages, netcode, renderer, uiManager, world). public/client.js is the master orchestrator. Server logic lives in server.js with pure helpers extracted to server/ (progression.js, shop-catalog.js, skill-tree.js). Procedural rendering remains active when optional files under public/assets/ are absent; regenerate baked sprites with 'npm run sprites'. Tests run with 'npm test' (node --test) and cover abilities, wardens, objectives, progression, camera, interpolation, renderer, sprites, modules and the server. Ajaye's segmented Cipher Sleeve is rendered on his anatomical left arm only; his right arm remains ordinary clothing and skin. Universe canon lives in lore/ (see lore/README.md): any new lore-bearing content (terminal logs, item names, abilities, characters) must fit those documents, and canon conflicts are raised with the project owner rather than silently resolved."
+  "dev_notes": "SESSION BOOTSTRAP: read memory/00-index.md first and follow memory/01-session-protocol.md (one system per build, plug-and-play modules only, save state after each build). Client is split into small browser ES modules under public/src/ (assetLoader, audioManager, camera, characterRenderer, config, inputManager, interpolation, keybinds, menu, menu-pages, netcode, renderer, uiManager, world). public/client.js is the master orchestrator. Server logic lives in server.js with pure helpers extracted to server/ (progression.js, shop-catalog.js, skill-tree.js). Procedural rendering remains active when optional files under public/assets/ are absent; regenerate baked sprites with 'npm run sprites'. Tests run with 'npm test' (node --test) against a scratch profile file (PROFILE_FILE from tools/profile-scratch.js), so persisted credits/HP never leak between runs; and cover abilities, wardens, objectives, progression, camera, interpolation, renderer, sprites, modules and the server. Ajaye's segmented Cipher Sleeve is rendered on his anatomical left arm only; his right arm remains ordinary clothing and skin. Universe canon lives in lore/ (see lore/README.md): any new lore-bearing content (terminal logs, item names, abilities, characters) must fit those documents, and canon conflicts are raised with the project owner rather than silently resolved."
 }

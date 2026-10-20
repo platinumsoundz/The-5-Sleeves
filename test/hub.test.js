@@ -4,14 +4,16 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
+import { TEST_PROFILE_FILE } from '../tools/profile-scratch.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PORT = 3134;
 const url = `http://127.0.0.1:${PORT}`;
+const START_VILLAGE = 'haven-perimeter';
 
 function startServer(env = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PORT: String(PORT), MAX_WARDENS: '0', ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PROFILE_FILE: TEST_PROFILE_FILE, PORT: String(PORT), MAX_WARDENS: '0', ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('server boot timeout')); }, 15000);
     child.stdout.on('data', (chunk) => { if (String(chunk).includes('is running')) { clearTimeout(timer); resolve(child); } });
     child.stderr.on('data', (chunk) => process.stderr.write(chunk));
@@ -53,41 +55,79 @@ async function connect(name, zone) {
 
 function at(player, x, y) { return Math.abs(player.x - x) < 4 && Math.abs(player.y - y) < 4; }
 
-test('the safe hub spawns inside a no-combat bubble with NPCs and towers', async (t) => {
+test('a safe city has a full no-combat cube, merchant and Arena Master', async (t) => {
   const server = await startServer();
   const players = [];
   t.after(() => { players.forEach((player) => player.socket.close()); server.kill('SIGKILL'); });
 
-  const player = await connect('HubTester');
+  const player = await connect('HubTester' + Date.now().toString(36), START_VILLAGE);
   players.push(player);
   const hub = player.hub;
 
+  assert.equal(hub.kind, 'haven');
   assert.equal(hub.mode, 'wasteland');
   assert.equal(hub.arena, false);
-  assert.ok(hub.safe && hub.safe.radius > 0, 'the hub exposes a safe bubble');
-  assert.deepEqual(hub.npcs.map((npc) => npc.kind).sort(), ['portal', 'portal', 'shop']);
-  assert.equal(hub.towers.length, 3);
+  assert.ok(hub.safe, 'the city exposes a safe rectangle');
+  assert.equal(hub.safe.width, 1000);
+  assert.equal(hub.safe.height, 700);
+  assert.equal(hub.friendlyFire, false);
+  assert.deepEqual(hub.npcs.map((npc) => npc.kind).sort(), ['arena', 'shop']);
+  assert.deepEqual(hub.exits, { east: 'wild-perimeter' });
 
-  const self = await once(player.socket, 'players', (roster) => roster[player.id] && Math.hypot(roster[player.id].x - hub.safe.x, roster[player.id].y - hub.safe.y) <= hub.safe.radius + 1, 5000, 'safe spawn');
-  assert.ok(self[player.id], 'joined inside the safe ring');
+  const self = await once(player.socket, 'players', (roster) => roster[player.id] && roster[player.id].x >= 0 && roster[player.id].y >= 0, 5000, 'safe spawn');
+  assert.ok(self[player.id], 'joined inside the safe cube');
 
-  // Attacks made from inside the bubble never become projectiles.
+  // Attacks made from a city never become projectiles.
   player.socket.emit('player:attack', { x: 1, y: 0 });
   await expectNoEvent(player.socket, 'projectiles', (roster) => Object.values(roster || {}).some((shot) => shot.ownerId === player.id), 650);
 
-  // The shop NPC opens a real shop payload.
-  player.socket.emit('player:move', { x: 395, y: 350 });
-  await once(player.socket, 'players', (roster) => roster[player.id] && at(roster[player.id], 395, 350), 5000, 'shop walk');
+  // The merchant opens a real shop and trades in credits.
+  player.socket.emit('player:move', { x: 330, y: 360 });
+  await once(player.socket, 'players', (roster) => roster[player.id] && at(roster[player.id], 330, 360), 5000, 'shop walk');
   const shop = once(player.socket, 'shop:open');
   player.socket.emit('player:interact');
   const payload = await shop;
   assert.ok(Array.isArray(payload.items) && payload.items.length >= 1, 'shop lists stock');
   assert.ok(payload.inventory.includes('blade-standard'), 'starter gear reaches the shop');
+  assert.ok(payload.credits >= 25, 'new operatives start with credits');
+  const repair = payload.items.find((item) => item.id === 'repair-kit');
+  assert.ok(repair && repair.price > 0 && repair.sell > 0, 'loot has a buy and sell price');
 
-  // Walking onto a dormant regional tower restores it.
-  const unlocked = once(player.socket, 'tower:unlocked', (tower) => tower.id === 'tower-pylon', 5000, 'tower unlock');
-  player.socket.emit('player:move', { x: 500, y: 118 });
-  await unlocked;
+  const bought = once(player.socket, 'shop:update', (state) => state.inventory.includes('repair-kit'), 5000, 'bought kit');
+  player.socket.emit('shop:buy', { itemId: 'repair-kit' });
+  const afterBuy = await bought;
+  assert.equal(afterBuy.credits, payload.credits - repair.price, 'purchase spends credits');
+
+  const sold = once(player.socket, 'shop:update', (state) => !state.inventory.includes('repair-kit'), 5000, 'sold kit');
+  player.socket.emit('shop:sell', { itemId: 'repair-kit' });
+  const afterSell = await sold;
+  assert.equal(afterSell.credits, afterBuy.credits + repair.sell, 'selling loot pays credits back');
+
+  // NPC interactions share a short throttle so one key press cannot open both.
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  // The Arena Master is physically on the left side of every city.
+  player.socket.emit('player:move', { x: 150, y: 360 });
+  await once(player.socket, 'players', (roster) => roster[player.id] && at(roster[player.id], 150, 360), 5000, 'arena walk');
+  const menu = once(player.socket, 'arena:menu');
+  player.socket.emit('player:interact');
+  const arenaMenu = await menu;
+  assert.equal(arenaMenu.options.length, 6, 'PvP and PvE each offer three modes');
+  for (const mode of ['tdm', 'domination', 'tower']) {
+    assert.ok(arenaMenu.options.some((option) => option.mode === mode), mode + ' offer exists');
+  }
+
+  // Reaching a city unlock its map spawn point and prompts the next tower.
+  const coast = once(player.socket, 'zone:changed', (event) => event.zone?.id === 'haven-coast', 5000, 'coast city');
+  const coastHub = once(player.socket, 'hub:state', (state) => state.zoneId === 'haven-coast', 5000, 'coast hub');
+  player.socket.emit('zone:switch', 'haven-coast');
+  const coastZone = await coast;
+  assert.equal(coastZone.zone.kind, 'haven');
+  assert.equal(coastZone.zone.towerIndex, 1);
+  assert.equal(coastZone.zone.exits.north, 'tower-1');
+  const coastHubState = await coastHub;
+  assert.ok(coastHubState.unlockedCities.includes('haven-coast'), 'city unlocked as a spawn point');
+  assert.equal(coastHubState.homeCity, 'haven-coast', 'home city follows the last safe city');
 });
 
 test('hub portals reach instanced arenas and co-op disables friendly fire', async (t) => {
@@ -95,8 +135,9 @@ test('hub portals reach instanced arenas and co-op disables friendly fire', asyn
   const players = [];
   t.after(() => { players.forEach((player) => player.socket.close()); server.kill('SIGKILL'); });
 
-  const one = await connect('ArenaOne');
-  const two = await connect('ArenaTwo');
+  const suffix = Date.now().toString(36);
+  const one = await connect('ArenaOne' + suffix, START_VILLAGE);
+  const two = await connect('ArenaTwo' + suffix, START_VILLAGE);
   players.push(one, two);
 
   const move = (socket, id, x, y) => {

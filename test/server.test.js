@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { TEST_PROFILE_FILE } from '../tools/profile-scratch.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PORT = 3123;
@@ -11,7 +12,7 @@ function startServer() {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ['server.js'], {
       cwd: root,
-      env: { ...process.env, PORT: String(PORT) },
+      env: { ...process.env, PROFILE_FILE: TEST_PROFILE_FILE, PORT: String(PORT) },
       stdio: ['ignore', 'pipe', 'pipe']
     });
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('server boot timeout')); }, 15000);

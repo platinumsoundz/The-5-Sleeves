@@ -29,6 +29,8 @@ const state = {
   safeZone: null,
   npcs: [],
   towers: [],
+  worldMap: [],
+  towerRun: null,
   zoneMode: 'wasteland',
   friendlyFire: true,
   killFeed: [],
@@ -84,6 +86,17 @@ const network = createNetcode(state, {
   chatError: (message) => ui?.chatError(message),
   zoneChanged: (payload) => ui?.zoneChanged(payload),
   hubState: () => ui?.hubState(),
+  worldMap: () => ui?.worldMapChanged?.(),
+  arenaMenu: (payload) => ui?.showArenaMenu(payload),
+  towerState: (payload) => { state.towerRun = payload; },
+  towerCleared: (payload) => {
+    state.banner = { text: (payload.name || 'TOWER') + ' ONLINE', color: '#7dffd8', at: Date.now(), ttl: 4200 };
+    state.killFeed.push({ text: 'TOWER CLEARED · +' + (payload.credits || 0) + ' CREDITS', at: Date.now(), color: '#ffe9a0' });
+    if (state.killFeed.length > 5) state.killFeed.shift();
+    ui?.notice((payload.name || 'Tower') + ' online. +' + (payload.credits || 0) + ' credits.');
+    audio?.play('levelup');
+  },
+  cityUnlocked: (payload) => ui?.notice('Spawn point unlocked: ' + payload.name + '.'),
   towerUnlocked: (tower) => ui?.towerUnlocked(tower),
   shop: (payload) => ui?.showShop(payload),
   shopError: (message) => ui?.shopError(message),
@@ -105,7 +118,7 @@ const network = createNetcode(state, {
     if (away < 420) addShake(state.camera, Math.min(10, (1 - away / 420) * 10));
   }
 }, audio);
-let selectedZone = 'the-perimeter';
+let selectedZone = 'haven-perimeter';
 ui = createUIManager({
   join: (name) => network.join(name, selectedZone),
   selectZone: (zoneId) => {
@@ -116,6 +129,8 @@ ui = createUIManager({
   selectDomain: (domain) => network.selectDomain(domain),
   toggleMenu: (open) => ui.toggleMenu(open),
   switchZone: (zoneId) => network.switchZone(zoneId),
+  enterArena: (zoneId) => network.enterArena(zoneId),
+  fastTravel: (zoneId) => network.fastTravel(zoneId),
   getPlayer: () => state.players[state.playerId] || state.localPlayer,
   getState: () => state,
   getWorld: () => state.world,
@@ -124,6 +139,7 @@ ui = createUIManager({
   sendChat: (channel, text) => network.sendChat(channel, text),
   respondParty: (inviteId, accept) => network.respondParty(inviteId, accept),
   buyItem: (itemId) => network.buyItem(itemId),
+  sellItem: (itemId) => network.sellItem(itemId),
   equipItem: (itemId) => network.equipItem(itemId),
   addFriend: (targetId, name) => network.addFriend(targetId, name),
   removeFriend: (targetId) => network.removeFriend(targetId),
@@ -154,7 +170,7 @@ let lastPositionSend = 0;
 // ?replay=1&zone=<zone> plays the server's rolling 60 s buffer.
 const params = new URLSearchParams(window.location.search);
 const spectateZone = params.get('spectate');
-const replayZone = params.get('replay') ? (params.get('zone') || 'the-perimeter') : null;
+const replayZone = params.get('replay') ? (params.get('zone') || 'wild-perimeter') : null;
 if (spectateZone || replayZone) {
   state.spectateZone = spectateZone || null;
   state.replayZone = replayZone;

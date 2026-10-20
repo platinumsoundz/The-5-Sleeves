@@ -104,7 +104,7 @@ function drawPerimeterBands(ctx, world) {
   ctx.restore();
 }
 
-function drawPerimeterWall(ctx, world, time) {
+function drawPerimeterWall(ctx, world, time, state) {
   const m = PERIMETER_MARGIN;
   ctx.save();
   ctx.setLineDash([13, 8]); ctx.lineWidth = 2;
@@ -112,26 +112,42 @@ function drawPerimeterWall(ctx, world, time) {
   ctx.strokeRect(m, m, world.width - m * 2, world.height - m * 2);
   ctx.setLineDash([]);
   ctx.fillStyle = 'rgba(126,148,102,.7)'; ctx.font = '10px system-ui'; ctx.textAlign = 'center';
-  ctx.fillText('TOWER 1 PERIMETER WALL', world.width / 2, 15);
+  ctx.fillText((state?.zone?.name || 'THE PERIMETER').toUpperCase(), world.width / 2, 15);
   ctx.restore();
 }
 
 function drawSafeZone(ctx, state, time) {
-  const safe = state.hub || state.safeZone || (state.zone?.arena ? null : HUB);
+  const safe = state.hub || state.safeZone || (state.zone?.kind === 'haven' ? HUB : null);
   if (!safe) return;
-  const pulse = 1 + Math.sin(time * 0.0018) * 0.03;
   ctx.save();
-  const glow = ctx.createRadialGradient(safe.x, safe.y, safe.radius * 0.35, safe.x, safe.y, safe.radius * pulse);
-  glow.addColorStop(0, 'rgba(80,255,214,.03)');
-  glow.addColorStop(0.75, 'rgba(80,255,214,.06)');
-  glow.addColorStop(1, 'rgba(80,255,214,0)');
-  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(safe.x, safe.y, safe.radius * pulse, 0, Math.PI * 2); ctx.fill();
-  ctx.setLineDash([12, 10]); ctx.lineDashOffset = -time * 0.012;
-  ctx.strokeStyle = 'rgba(126,255,224,.48)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(safe.x, safe.y, safe.radius, 0, Math.PI * 2); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = 'rgba(160,255,232,.8)'; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center';
-  ctx.fillText('SAFE HUB · NO COMBAT', safe.x, safe.y - safe.radius - 10);
+  const isRect = Number.isFinite(safe.width) && Number.isFinite(safe.height);
+  const pulse = 1 + Math.sin(time * 0.0018) * 0.03;
+  if (isRect) {
+    const cx = safe.x + safe.width / 2, cy = safe.y + safe.height / 2;
+    const glow = ctx.createRadialGradient(cx, cy, safe.width * 0.2, cx, cy, safe.width * 0.72);
+    glow.addColorStop(0, 'rgba(80,255,214,.03)');
+    glow.addColorStop(0.8, 'rgba(80,255,214,.05)');
+    glow.addColorStop(1, 'rgba(80,255,214,0)');
+    ctx.fillStyle = glow; ctx.fillRect(safe.x, safe.y, safe.width, safe.height);
+    ctx.setLineDash([12, 10]); ctx.lineDashOffset = -time * 0.012;
+    ctx.strokeStyle = 'rgba(126,255,224,.48)'; ctx.lineWidth = 3;
+    ctx.strokeRect(safe.x + 20, safe.y + 20, safe.width - 40, safe.height - 40);
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(160,255,232,.85)'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('SAFE CITY · NO COMBAT · EVERY MERCHANT BUYS LOOT', cx, safe.y + 44);
+  } else {
+    const glow = ctx.createRadialGradient(safe.x, safe.y, safe.radius * 0.35, safe.x, safe.y, safe.radius * pulse);
+    glow.addColorStop(0, 'rgba(80,255,214,.03)');
+    glow.addColorStop(0.75, 'rgba(80,255,214,.06)');
+    glow.addColorStop(1, 'rgba(80,255,214,0)');
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(safe.x, safe.y, safe.radius * pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.setLineDash([12, 10]); ctx.lineDashOffset = -time * 0.012;
+    ctx.strokeStyle = 'rgba(126,255,224,.48)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(safe.x, safe.y, safe.radius, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(160,255,232,.8)'; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('SAFE CAMP · NO COMBAT', safe.x, safe.y - safe.radius - 10);
+  }
   ctx.restore();
 }
 
@@ -339,9 +355,15 @@ function drawHud(ctx, state, width) {
   ctx.fillText('HP ' + Math.ceil(player.hp) + '/' + player.maxHp, x + 12, y + 15.5);
   ctx.fillStyle = '#ffe9a0'; ctx.textAlign = 'right'; ctx.font = 'bold 11px system-ui';
   ctx.fillText('LV ' + level, x + w - 9, y + 17);
-  // Conduit Pulse quest information.
-  ctx.fillStyle = '#61ffe0'; ctx.textAlign = 'left'; ctx.font = 'bold 9px system-ui';
-  ctx.fillText('CONDUIT PULSE · CORE ' + Math.floor(player.coreCharge || 0) + '% · ' + (player.corePoints || 0) + ' PTS', x + 8, y + 32);
+  // Credits + zone state replace the old persistent Conduit quest line.
+  const zoneLabel = state.zone?.kind === 'haven' ? 'SAFE CITY'
+    : state.zone?.kind === 'arena' ? 'ARENA'
+      : state.zone?.kind === 'tower' ? 'TOWER'
+        : 'WILDERNESS' + (state.zone?.levelBand ? ' LV ' + state.zone.levelBand[0] + '–' + state.zone.levelBand[1] : '');
+  ctx.fillStyle = '#ffd479'; ctx.textAlign = 'left'; ctx.font = 'bold 10px system-ui';
+  ctx.fillText('CR ' + Math.floor(player.credits || 0), x + 8, y + 32);
+  ctx.fillStyle = '#61ffe0';
+  ctx.fillText('· ' + zoneLabel, x + 52, y + 32);
   ctx.fillStyle = '#8faeb0'; ctx.textAlign = 'right'; ctx.font = '9px system-ui';
   ctx.fillText(String(player.abilityName || 'SLEEVE').toUpperCase(), x + w - 8, y + 32);
   // XP line.
@@ -379,16 +401,20 @@ function drawMinimap(ctx, state, width) {
   for (const echo of Object.values(state.archiveEchoes || {})) {
     ctx.fillStyle = 'rgba(150,255,236,.85)'; ctx.fillRect(x + echo.x * sx - 1, y + echo.y * sy - 1, 2, 2);
   }
-  // Safe hub and regional towers.
+  // Safe city cube or camp ring.
   const safe = state.hub || state.safeZone;
   if (safe) {
-    ctx.strokeStyle = 'rgba(126,255,224,.45)';
-    ctx.beginPath(); ctx.arc(x + safe.x * sx, y + safe.y * sy, safe.radius * sx, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(126,255,224,.55)';
+    if (Number.isFinite(safe.width) && Number.isFinite(safe.height)) {
+      ctx.strokeRect(x + safe.x * sx + 1, y + safe.y * sy + 1, Math.max(1, safe.width * sx - 2), Math.max(1, safe.height * sy - 2));
+    } else {
+      ctx.beginPath(); ctx.arc(x + safe.x * sx, y + safe.y * sy, safe.radius * sx, 0, Math.PI * 2); ctx.stroke();
+    }
   }
-  for (const tower of state.towers || []) {
-    ctx.fillStyle = tower.unlocked ? '#7dffd8' : '#78978d';
-    ctx.fillRect(x + tower.x * sx - 2, y + tower.y * sy - 2, 4, 4);
-    if (!tower.unlocked) { ctx.strokeStyle = 'rgba(120,151,141,.6)'; ctx.strokeRect(x + tower.x * sx - 4, y + tower.y * sy - 4, 8, 8); }
+  const towerMark = state.zone?.tower;
+  if (towerMark) {
+    ctx.fillStyle = '#7dffd8';
+    ctx.fillRect(x + towerMark.x * sx - 2, y + towerMark.y * sy - 2, 4, 4);
   }
   for (const npc of state.npcs || []) {
     ctx.fillStyle = npc.color || '#ffd479';
@@ -413,7 +439,7 @@ function drawMinimap(ctx, state, width) {
     }
   }
   ctx.fillStyle = 'rgba(160,200,190,.75)'; ctx.font = '9px system-ui'; ctx.textAlign = 'left';
-  ctx.fillText('TOWER 1 MAP', x + 5, y + 11);
+  ctx.fillText((state.zone?.kind || 'zone').toUpperCase() + ' · TACTICAL', x + 5, y + 11);
   ctx.restore();
 }
 
@@ -438,11 +464,13 @@ function drawKillFeed(ctx, state, width, time) {
 }
 
 function factionColor(faction) {
-  return (faction && DOMAINS[faction] && DOMAINS[faction].primary) || '#8ce0ff';
+  const teams = { red: '#ff6b7a', blue: '#5fb8ff', 'co-op': '#7dffd8' };
+  return teams[faction] || (faction && DOMAINS[faction] && DOMAINS[faction].primary) || '#8ce0ff';
 }
 
 function factionLabel(faction) {
-  return ((faction && DOMAINS[faction] && DOMAINS[faction].label) || faction || 'UNKNOWN').toUpperCase();
+  const teams = { red: 'RED TEAM', blue: 'BLUE TEAM', 'co-op': 'CO-OP' };
+  return teams[faction] || ((faction && DOMAINS[faction] && DOMAINS[faction].label) || faction || 'UNKNOWN').toUpperCase();
 }
 
 // Domination relays: a dashed capture ring, a progress arc while flipping and a
@@ -503,12 +531,24 @@ function drawScoreboard(ctx, state, width) {
   const mapHeight = Math.round(mapWidth * world.height / world.width);
   const x = radar.x, y = radar.y + mapHeight + 6;
   const limit = (payload.match && payload.match.scoreLimit) || 0;
-  const arena = !!state.zone?.arena || String(state.zone?.mode || '').startsWith('arena');
-  const modeLabel = arena
-    ? (state.friendlyFire === false ? 'CO-OP DOMINATION' : 'PVP DOMINATION')
-    : 'WASTELAND · TOWER HUNT';
-  const towers = state.towers || [];
-  const online = towers.filter((tower) => tower.unlocked).length;
+  const zone = state.zone || {};
+  const arena = !!zone.arena || String(zone.mode || '').startsWith('arena');
+  const me = state.localPlayer || state.players?.[state.playerId] || {};
+  const doneTowers = Object.values(me.towers || {}).filter(Boolean).length;
+  let modeLabel;
+  if (arena) {
+    const team = zone.alignment === 'pve' ? 'CO-OP' : 'PVP';
+    const mode = zone.arenaMode === 'tdm' ? 'TEAM DEATHMATCH' : zone.arenaMode === 'tower' ? 'CAPTURE THE TOWER' : 'DOMINATION';
+    const squad = zone.alignment === 'pvp' && me.arenaTeam ? ' · ' + me.arenaTeam.toUpperCase() : '';
+    modeLabel = team + ' ' + mode + squad;
+  } else if (zone.kind === 'tower') {
+    const run = state.towerRun || {};
+    modeLabel = 'TOWER RUN · WAVE ' + Math.max(1, run.wave || 1) + '/' + (run.waves || 3);
+  } else if (zone.kind === 'haven') {
+    modeLabel = 'SAFE CITY · NO COMBAT';
+  } else {
+    modeLabel = 'WILDERNESS' + (zone.levelBand ? ' · ENEMIES LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '');
+  }
   const rows = Math.max(0, scores.length);
   const panelHeight = 34 + rows * 15;
   ctx.save();
@@ -516,13 +556,16 @@ function drawScoreboard(ctx, state, width) {
   ctx.strokeStyle = 'rgba(118,255,224,.4)'; ctx.lineWidth = 1;
   ctx.strokeRect(x + .5, y + .5, mapWidth - 1, panelHeight - 1);
   ctx.textAlign = 'left'; ctx.font = 'bold 9px system-ui';
-  ctx.fillStyle = arena ? (state.friendlyFire === false ? '#8ce0ff' : '#ff9bad') : '#8effc6';
+  ctx.fillStyle = arena ? (zone.alignment === 'pve' ? '#8ce0ff' : '#ff9bad') : zone.kind === 'haven' ? '#8effc6' : '#ffd479';
   ctx.fillText(modeLabel, x + 8, y + 13);
   ctx.fillStyle = 'rgba(160,200,190,.75)'; ctx.font = '9px system-ui';
-  ctx.fillText(towers.length ? 'TOWERS ' + online + '/' + towers.length + (limit ? ' · ' + limit + ' PTS' : '') : 'REGIONAL TOWER NETWORK', x + 8, y + 26);
+  const towerText = zone.kind === 'tower'
+    ? (state.towerRun?.enemies || 0) + ' ENEMIES LEFT'
+    : 'TOWERS ' + doneTowers + '/5' + (limit && arena ? ' · ' + limit + ' PTS' : '');
+  ctx.fillText(towerText, x + 8, y + 26);
   if (!scores.length) {
     ctx.fillStyle = 'rgba(150,180,180,.55)'; ctx.font = '9px system-ui';
-    ctx.fillText(arena ? 'no relays held' : 'push the fogline back', x + 8, y + 40);
+    ctx.fillText(zone.kind === 'haven' ? 'merchants · arena master · tower gate' : arena ? 'no score yet' : 'travel east to the next city', x + 8, y + 40);
   }
   scores.forEach(([faction, score], index) => {
     const rowY = y + 40 + index * 15;
@@ -583,7 +626,7 @@ export function renderFrame(canvas, ctx, state, time) {
 
   ctx.save();
   applyCamera(ctx, camera, width, height);
-  drawBackground(ctx, world, view); drawPerimeterWall(ctx, world, time);
+  drawBackground(ctx, world, view); drawPerimeterWall(ctx, world, time, state);
   drawSafeZone(ctx, state, time);
   drawTowers(ctx, state, time);
   // Module hook: ground-level decoration (props, landmarks, terminals) —
@@ -598,7 +641,7 @@ export function renderFrame(canvas, ctx, state, time) {
   drawBursts(ctx, state.bursts, time);
   // Module hook: above-entity effects (sparks, damage numbers, afterimages).
   bus.emit('render:fx', { ctx, state, time, view, world });
-  drawFog(ctx, world, time, view, state.towers); ctx.restore();
+  drawFog(ctx, world, time, view, Array.from({ length: 5 }, (_, index) => ({ unlocked: !!(state.localPlayer?.towers?.[index + 1]) }))); ctx.restore();
 
   drawVignette(ctx, width, height);
   drawMinimap(ctx, state, width);

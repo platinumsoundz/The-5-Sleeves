@@ -27,7 +27,7 @@ function stepProjectiles(sim, now, deltaSeconds) {
       if (!isHostile(owner || { id: projectile.ownerId, kind: 'player' }, target, sim)) continue;
       if (target.kind !== 'ai' && inSafeZone(sim, target)) continue;
       if (distanceToSegment(target, fromX, fromY, projectile.x, projectile.y) > 21 + (target.radius || 0)) continue;
-      damageTarget(sim, target, projectile.damage || 20 + 3 * (owner?.atk || 0), owner, 'blast');
+      damageTarget(sim, target, projectile.damage || 20 + 3 * ((owner?.atk || 0) + (owner?.gearAtk || 0)), owner, 'blast');
       if (projectile.explodes) explodeProjectile(sim, projectile, owner);
       delete sim.projectiles[id];
       hit = true;

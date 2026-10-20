@@ -4,14 +4,15 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
+import { TEST_PROFILE_FILE } from '../tools/profile-scratch.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PORT = 3127;
 const url = `http://127.0.0.1:${PORT}`;
 
-function startServer() {
+function startServer(env = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PORT: String(PORT) }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PROFILE_FILE: TEST_PROFILE_FILE, PORT: String(PORT), ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('server boot timeout')); }, 15000);
     child.stdout.on('data', (chunk) => { if (String(chunk).includes('is running')) { clearTimeout(timer); resolve(child); } });
     child.stderr.on('data', (chunk) => process.stderr.write(chunk));
@@ -94,14 +95,14 @@ test('wardens chase and shoot nearby operatives', async (t) => {
 });
 
 test('downing a warden rewards the operative with XP', async (t) => {
-  const server = await startServer();
+  const server = await startServer({ MAX_WARDENS: '1' });
   const sockets = [];
   t.after(() => { sockets.forEach((socket) => socket.close()); server.kill('SIGKILL'); });
 
   const operative = await connect('Hunter' + Date.now().toString(36));
   sockets.push(operative.socket);
 
-  const aiState = await once(operative.socket, 'ai', (payload) => Object.keys(payload || {}).length >= 4, 5000, 'four wardens');
+  const aiState = await once(operative.socket, 'ai', (payload) => Object.keys(payload || {}).length >= 1, 5000, 'a warden');
   const target = Object.values(aiState)[0];
 
   operative.socket.emit('player:move', { x: target.x - 140, y: target.y });

@@ -1,7 +1,7 @@
 // Renderers for the expanded MENU pages. Pure DOM builders: they read the
 // live player/state and call back into the UI actions, so uiManager.js stays a
 // thin coordinator. No top-level DOM access (safe to import in tests).
-import { DOMAINS, HUB, ITEM_CATALOG, SKILL_TREE, TOWERS, WORLD_DEFAULT } from './config.js';
+import { DOMAINS, ITEM_CATALOG, SKILL_TREE, WORLD_DEFAULT } from './config.js';
 import { KEYBIND_ACTIONS, keyLabel, loadKeybinds, saveKeybinds } from './keybinds.js';
 
 const SLOTS = [['head', 'HEAD'], ['chest', 'CHEST'], ['legs', 'LEGS'], ['feet', 'FEET'], ['weapon', 'WEAPON']];
@@ -45,7 +45,7 @@ export function renderCharacterPage(root, { player, actions }) {
     ['DOMAIN', domain.label, domain.primary],
     ['ABILITY', player.abilityName || 'Conduit Pulse', domain.accent],
     ['LEVEL', 'LV ' + (player.level || 1), '#ffe9a0'],
-    ['POWER', 'ATK ' + (player.atk || 0), '#8effe6'],
+    ['POWER', 'ATK ' + ((player.atk || 0) + (player.gearAtk || 0)) + (player.gearAtk ? ' (+' + player.gearAtk + ')' : ''), '#8effe6'],
     ['PLATING', 'HP ' + (player.plating || 0), '#8ce0ff'],
     ['OVERCLOCK', 'SPD ' + (player.overclock || 0), '#c9a6ff']
   ]) {
@@ -137,7 +137,7 @@ export function renderInventoryPage(root, { player, actions }) {
   section(root, 'RESOURCES');
   const resources = make('div', 'resource-row');
   for (const [label, value] of [
-    ['CORE POINTS', player.corePoints || 0],
+    ['CREDITS', player.credits || 0],
     ['CORE CHARGE', Math.floor(player.coreCharge || 0) + '%'],
     ['XP', player.xp || 0],
     ['SKILL POINTS', player.skillPoints || 0]
@@ -150,7 +150,7 @@ export function renderInventoryPage(root, { player, actions }) {
 
   section(root, 'ITEMS & GEAR');
   const inventory = player.inventory || [];
-  if (!inventory.length) empty(root, 'Your pack is empty. Visit Quartermaster Vale in the safe hub.');
+  if (!inventory.length) empty(root, 'Your pack is empty. Visit a city merchant to buy gear.');
   const grid = make('div', 'inventory-grid');
   for (const id of inventory) {
     const item = ITEM_CATALOG[id];
@@ -256,57 +256,90 @@ export function renderInboxPage(root, { player, state, actions }) {
   }
 }
 
-export function renderMapPage(root, { player, state }) {
+export function renderMapPage(root, { player, state, actions }) {
   root.replaceChildren();
-  if (!player) { empty(root, 'Join the Conduit to open the regional map.'); return; }
-  const world = state.world || WORLD_DEFAULT;
+  if (!player) { empty(root, 'Join the Conduit to open the world map.'); return; }
+  const map = (state.worldMap || []).filter((zone) => zone.kind !== 'arena');
+  const unlocked = new Set(player.unlockedCities || ['haven-perimeter']);
+  const towers = player.towers || {};
+  const currentId = state.zone?.id || player.zoneId;
   const canvas = document.createElement('canvas');
   canvas.className = 'menu-map';
-  canvas.width = 640; canvas.height = 420;
+  canvas.width = 660; canvas.height = 360;
   const draw = canvas.getContext('2d');
-  const sx = canvas.width / world.width, sy = canvas.height / world.height;
   draw.fillStyle = '#07131b'; draw.fillRect(0, 0, canvas.width, canvas.height);
-  draw.strokeStyle = 'rgba(120,255,224,.08)'; draw.lineWidth = 1;
-  for (let x = 0; x <= canvas.width; x += 40) { draw.beginPath(); draw.moveTo(x, 0); draw.lineTo(x, canvas.height); draw.stroke(); }
-  for (let y = 0; y <= canvas.height; y += 40) { draw.beginPath(); draw.moveTo(0, y); draw.lineTo(canvas.width, y); draw.stroke(); }
-  const safe = state.hub || HUB;
-  if (safe && !state.zone?.arena) {
-    draw.fillStyle = 'rgba(80,255,214,.08)';
-    draw.beginPath(); draw.arc(safe.x * sx, safe.y * sy, safe.radius * sx, 0, Math.PI * 2); draw.fill();
-    draw.strokeStyle = 'rgba(126,255,224,.55)';
-    draw.beginPath(); draw.arc(safe.x * sx, safe.y * sy, safe.radius * sx, 0, Math.PI * 2); draw.stroke();
+  draw.strokeStyle = 'rgba(120,255,224,.06)'; draw.lineWidth = 1;
+  for (let x = 0; x <= canvas.width; x += 44) { draw.beginPath(); draw.moveTo(x, 0); draw.lineTo(x, canvas.height); draw.stroke(); }
+  for (let y = 0; y <= canvas.height; y += 44) { draw.beginPath(); draw.moveTo(0, y); draw.lineTo(canvas.width, y); draw.stroke(); }
+
+  const ordered = map.filter((zone) => zone.kind !== 'tower').sort((a, b) => a.order - b.order);
+  const pointFor = (zone, branch) => {
+    const x = 54 + (zone.order / Math.max(1, ordered[ordered.length - 1].order)) * (canvas.width - 108);
+    return { x, y: branch ? 108 : 236 };
+  };
+  // Road connectors first so nodes sit on top.
+  draw.strokeStyle = 'rgba(126,255,224,.28)'; draw.lineWidth = 3;
+  for (let i = 1; i < ordered.length; i += 1) {
+    const a = pointFor(ordered[i - 1], false), b = pointFor(ordered[i], false);
+    draw.beginPath(); draw.moveTo(a.x, a.y); draw.lineTo(b.x, b.y); draw.stroke();
   }
-  const towers = state.towers?.length ? state.towers : TOWERS;
-  for (const tower of towers) {
-    draw.fillStyle = tower.unlocked ? '#7dffd8' : '#78978d';
-    draw.fillRect(tower.x * sx - 4, tower.y * sy - 10, 8, 20);
-    draw.fillRect(tower.x * sx - 10, tower.y * sy - 4, 20, 8);
-    draw.fillStyle = tower.unlocked ? 'rgba(125,255,216,.9)' : 'rgba(140,170,162,.75)';
-    draw.font = '9px system-ui'; draw.textAlign = 'center';
-    draw.fillText(tower.name + (tower.unlocked ? ' · ONLINE' : ' · DORMANT'), tower.x * sx, tower.y * sy - 16);
+  // Tower branch lines.
+  for (const tower of map.filter((zone) => zone.kind === 'tower')) {
+    const haven = ordered.find((zone) => zone.id === tower.havenId);
+    if (!haven) continue;
+    const a = pointFor(haven, false), b = pointFor(haven, true);
+    const done = !!towers[tower.towerIndex];
+    draw.strokeStyle = done ? 'rgba(125,255,216,.75)' : 'rgba(126,168,155,.35)';
+    draw.setLineDash(done ? [] : [5, 6]);
+    draw.beginPath(); draw.moveTo(a.x, a.y - 16); draw.lineTo(b.x, b.y + 16); draw.stroke();
+    draw.setLineDash([]);
   }
-  for (const npc of state.npcs || []) {
-    draw.fillStyle = npc.color || '#ffd479';
-    draw.beginPath(); draw.arc(npc.x * sx, npc.y * sy, 4, 0, Math.PI * 2); draw.fill();
+  for (const zone of map) {
+    const isTower = zone.kind === 'tower';
+    const p = pointFor(zone, isTower);
+    const isHaven = zone.kind === 'haven';
+    const done = isTower ? !!towers[zone.towerIndex] : unlocked.has(zone.id);
+    const current = zone.id === currentId;
+    draw.fillStyle = current ? '#ffffff' : isHaven ? (done ? '#7dffd8' : '#3f6d68') : (done ? '#8ce0ff' : '#35606b');
+    draw.beginPath(); draw.arc(p.x, p.y, isTower ? 9 : isHaven ? 11 : 6, 0, Math.PI * 2); draw.fill();
+    if (isHaven || isTower) {
+      draw.strokeStyle = done ? 'rgba(186,255,238,.9)' : 'rgba(120,151,141,.65)';
+      draw.lineWidth = 1.5; draw.beginPath(); draw.arc(p.x, p.y, isTower ? 14 : 16, 0, Math.PI * 2); draw.stroke();
+    }
+    draw.fillStyle = current ? '#ffffff' : (done ? '#dffcf5' : '#87a5a0');
+    draw.font = (isHaven ? '700 10px' : '9px') + ' system-ui';
+    draw.textAlign = 'center';
+    draw.fillText(zone.name.split(' · ').pop(), p.x, p.y + (isTower ? -20 : 28));
+    if (isTower) draw.fillText(done ? 'ONLINE' : 'DORMANT', p.x, p.y - 30);
   }
-  for (const node of Object.values((state.objectives || {}).nodes || {})) {
-    draw.strokeStyle = node.ownerColor || 'rgba(170,210,220,.7)';
-    draw.beginPath(); draw.arc(node.x * sx, node.y * sy, 6, 0, Math.PI * 2); draw.stroke();
-  }
-  for (const other of Object.values(state.players || {})) {
-    draw.fillStyle = other.id === player.id ? '#ffffff' : (other.color || '#8ef');
-    draw.beginPath(); draw.arc(other.x * sx, other.y * sy, other.id === player.id ? 4 : 3, 0, Math.PI * 2); draw.fill();
-  }
-  draw.fillStyle = 'rgba(210,245,240,.85)'; draw.font = '700 10px system-ui'; draw.textAlign = 'left';
-  draw.fillText('REGIONAL TOWER NETWORK · ' + (state.zone?.name || 'THE PERIMETER').toUpperCase(), 10, 18);
+  draw.fillStyle = 'rgba(210,245,240,.9)'; draw.font = '800 12px system-ui'; draw.textAlign = 'left';
+  draw.fillText('WORLD ROUTE · CITIES, WILDS & FIVE TOWERS', 14, 20);
   root.append(canvas);
-  root.append(make('p', 'menu-empty', 'Dormant towers push the fogline back when you stand inside their ring. Online towers reveal the surrounding terrain.'));
-  if (state.zone?.arena) {
-    const back = make('button', 'menu-action', 'RETURN TO SAFE HUB');
-    back.type = 'button';
-    back.addEventListener('click', () => actions.switchZone?.('the-perimeter'));
-    root.append(back);
+
+  section(root, 'UNLOCKED SPAWN POINTS');
+  const cities = map.filter((zone) => zone.kind === 'haven').sort((a, b) => a.order - b.order);
+  const list = make('div', 'friend-list');
+  for (const city of cities) {
+    const row = make('div', 'friend-row');
+    const isUnlocked = unlocked.has(city.id);
+    row.append(make('strong', '', city.name + (city.id === player.homeCity ? ' ★ HOME' : '')));
+    row.append(make('small', '', isUnlocked ? (city.towerIndex ? 'Tower ' + city.towerIndex + (towers[city.towerIndex] ? ' online' : ' dormant') : 'Starting village') : 'Not yet reached'));
+    const travel = make('button', 'menu-action' + (city.id === currentId ? ' ghost' : ''), city.id === currentId ? 'HERE' : 'FAST TRAVEL');
+    travel.type = 'button';
+    travel.disabled = !isUnlocked || city.id === currentId;
+    travel.addEventListener('click', () => actions.fastTravel?.(city.id));
+    row.append(travel);
+    list.append(row);
   }
+  root.append(list);
+
+  if (state.zone?.kind === 'arena' || state.zone?.kind === 'tower') {
+    const home = make('button', 'menu-action', 'RETURN TO ' + (player.homeCity || 'haven-perimeter').replace('haven-', '').toUpperCase());
+    home.type = 'button';
+    home.addEventListener('click', () => actions.fastTravel?.(player.homeCity || 'haven-perimeter'));
+    root.append(home);
+  }
+  root.append(make('p', 'menu-empty', 'Reach a city on foot to unlock its spawn point. Clear its tower to open the next road east.'));
 }
 
 export function renderSettingsPage(root, { actions, refresh }) {

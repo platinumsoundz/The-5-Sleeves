@@ -50,5 +50,11 @@ optional reading.
   on real corruption (`missing`, `corrupt`) and never mass-delete inside
   `.git/objects`.
 - **Never trust "the tests passed earlier".** Re-run them.
+- **Tests must not share the real profile ledger.** Tests spawn servers that
+  persist players to `player-profiles.json`; fixed player names therefore
+  let credits/HP/XP leak between runs (this made `hub.test.js` fail once the
+  starting-credit assertion landed). Every test spawn now passes
+  `PROFILE_FILE` from `tools/profile-scratch.js`, and new tests should use a
+  unique name suffix (`Name + Date.now().toString(36)`).
 - **Commit after each system**, not in batches. A lost session loses at most
   one build.

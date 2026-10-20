@@ -1,5 +1,6 @@
 // PvE: Rust Wardens — patrolling defence drones (canon: dormant tower
-// network defence). One zone's wardens only ever chase that zone's players.
+// network defence). Wild roads scale them by danger tier; tower rooms spawn
+// controlled waves through spawnWarden(sim, { x, y, tier }).
 const { WARDEN } = require('./spec.js');
 const { clampToWorld, distance, inSafeZone, spawnBurst } = require('./combat.js');
 const { CORE, PERIMETER_MARGIN } = require('./state.js');
@@ -9,19 +10,38 @@ function wardenSpawnPoint(sim) {
     const x = PERIMETER_MARGIN + 80 + Math.random() * (sim.world.width - PERIMETER_MARGIN * 2 - 160);
     const y = PERIMETER_MARGIN + 80 + Math.random() * (sim.world.height - PERIMETER_MARGIN * 2 - 160);
     if (distance({ x, y }, CORE) < CORE.radius + 120) continue;
+    if (inSafeZone(sim, { x, y })) continue;
     if (Object.values(sim.players).some((candidate) => distance(candidate, { x, y }) < 220)) continue;
     return { x, y };
   }
   return { x: sim.world.width - PERIMETER_MARGIN - 80, y: sim.world.height - PERIMETER_MARGIN - 80 };
 }
 
-function spawnWarden(sim) {
+function scaledStats(tier) {
+  const step = Math.max(0, (Number(tier) || 1) - 1);
+  return {
+    hp: Math.round(WARDEN.hp * (1 + step * 0.28)),
+    damage: Math.round(WARDEN.damage * (1 + step * 0.2)),
+    speed: WARDEN.speed * (1 + step * 0.035),
+    aggro: WARDEN.aggro + step * 18,
+    attackRange: WARDEN.attackRange + step * 10,
+    xp: Math.round(WARDEN.xp * (1 + step * 0.45)),
+    credits: Math.round(WARDEN.credits * (1 + step * 0.55)),
+    level: Math.max(1, Math.round(tier))
+  };
+}
+
+function spawnWarden(sim, options = {}) {
   const id = 'warden-' + sim.next.warden++;
-  const spot = wardenSpawnPoint(sim);
+  const spot = Number.isFinite(options.x) && Number.isFinite(options.y) ? { x: options.x, y: options.y } : wardenSpawnPoint(sim);
+  const tier = options.tier || sim.danger || 1;
+  const stats = scaledStats(tier);
   const warden = {
     id,
     kind: 'ai',
     name: WARDEN.name,
+    tier,
+    level: stats.level,
     x: spot.x,
     y: spot.y,
     homeX: spot.x,
@@ -33,10 +53,15 @@ function spawnWarden(sim) {
     targetId: null,
     respawnAt: 0,
     facing: 1,
-    hp: WARDEN.hp,
-    maxHp: WARDEN.hp,
+    hp: stats.hp,
+    maxHp: stats.hp,
+    damage: stats.damage,
+    speed: stats.speed,
+    aggro: stats.aggro,
+    attackRange: stats.attackRange,
+    xp: stats.xp,
+    credits: stats.credits,
     radius: WARDEN.radius,
-    xp: WARDEN.xp,
     color: '#c98b3a',
     accentColor: '#ffd9a0'
   };
@@ -67,7 +92,7 @@ function fireWardenShot(sim, warden, target, now) {
     vx: Math.cos(angle) * WARDEN.projectileSpeed,
     vy: Math.sin(angle) * WARDEN.projectileSpeed,
     radius: 7,
-    damage: WARDEN.damage,
+    damage: warden.damage || WARDEN.damage,
     expiresAt: now + 1800,
     color: '#ffb266',
     accentColor: '#ffe0b0'
@@ -87,17 +112,17 @@ function respawnWarden(sim, warden) {
 function updateWardens(sim, now, deltaSeconds) {
   for (const warden of Object.values(sim.ai)) {
     if (warden.hp <= 0) {
-      if (now >= warden.respawnAt) respawnWarden(sim, warden);
+      if (now >= (warden.respawnAt || 0)) respawnWarden(sim, warden);
       continue;
     }
-    const target = nearestPlayer(sim, warden, WARDEN.aggro);
+    const target = nearestPlayer(sim, warden, warden.aggro || WARDEN.aggro);
     warden.targetId = target ? target.id : null;
     let moveX = 0, moveY = 0;
     if (target) {
       const dx = target.x - warden.x, dy = target.y - warden.y;
       const away = Math.hypot(dx, dy) || 1;
-      if (away > WARDEN.attackRange * 0.55) { moveX = dx / away; moveY = dy / away; }
-      if (away <= WARDEN.attackRange && now - warden.lastShotAt >= WARDEN.shotCooldown) {
+      if (away > (warden.attackRange || WARDEN.attackRange) * 0.55) { moveX = dx / away; moveY = dy / away; }
+      if (away <= (warden.attackRange || WARDEN.attackRange) && now - warden.lastShotAt >= WARDEN.shotCooldown) {
         warden.lastShotAt = now;
         fireWardenShot(sim, warden, target, now);
       }
@@ -112,12 +137,12 @@ function updateWardens(sim, now, deltaSeconds) {
       if (away > 14) { moveX = dx / away; moveY = dy / away; }
     }
     if (moveX || moveY) {
-      warden.x += moveX * WARDEN.speed * deltaSeconds;
-      warden.y += moveY * WARDEN.speed * deltaSeconds;
+      warden.x += moveX * (warden.speed || WARDEN.speed) * deltaSeconds;
+      warden.y += moveY * (warden.speed || WARDEN.speed) * deltaSeconds;
       if (Math.abs(moveX) > 0.05) warden.facing = moveX < 0 ? -1 : 1;
       clampToWorld(sim, warden);
     }
   }
 }
 
-module.exports = { spawnWarden, updateWardens };
+module.exports = { spawnWarden, updateWardens, scaledStats };

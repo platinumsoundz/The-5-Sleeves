@@ -12,7 +12,10 @@ const SLEEVE_COLORS = {
   azure: '#43b9ff',
   emerald: '#45f29a',
   crimson: '#ff536b',
-  violet: '#c875ff'
+  violet: '#c875ff',
+  'co-op': '#7dffd8',
+  red: '#ff6b7a',
+  blue: '#5fb8ff'
 };
 const SLEEVE_ACCENTS = { cipher: '#78ff5f', wind: '#a7ffd0', water: '#71d5ff', fire: '#ffb347', earth: '#f0b768', dark: '#ff29d6', azure: '#8ce0ff', emerald: '#a7ffd0', crimson: '#ffb347', violet: '#ff29d6' };
 const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
@@ -37,20 +40,25 @@ const WARDEN = {
   radius: 15,
   xp: 12,
   skillPoints: 1,
-  coreCharge: 10
+  coreCharge: 10,
+  credits: 14
 };
 
-// XP bounties (scaled by XP_SCALE inside applyXp).
+// XP and credit bounties (scaled by XP_SCALE inside applyXp).
 const XP_ECHO = 15;
 const XP_CORE_POINT = 25;
 const XP_PLAYER_KILL = 30;
 const XP_CAPTURE = 20;
 const XP_TOWER = 60;
+const XP_TOWER_CLEAR = 180;
+const CREDITS_PLAYER_KILL = 18;
+const CREDITS_TOWER_CLEAR = 150;
 const LEVEL_HP_GAIN = 10;
+const TOWER_WAVES = 3;
+const TOWER_WAVE_SIZE = 3;
 
-// The protected starting hub around the Cipher Core. Nothing inside this ring
-// can be damaged and attacks cannot be fired from it. NPCs stand just outside
-// the Core ring so their prompts stay readable but inside the safe bubble.
+// Legacy fallback constants kept for older imports/tests. Live cities define
+// their own full-map safe rectangles, NPCs and tower gates in zones-catalog.js.
 const HUB = Object.freeze({
   x: 500, y: 350, radius: 112,
   spawn: Object.freeze({ x: 500, y: 455 })
@@ -61,8 +69,7 @@ const HUB_NPCS = Object.freeze([
   { id: 'npc-pve', kind: 'portal', targetZone: 'arena-pve', name: 'Arena Gate · Co-op', role: 'DOMINATION · NO FRIENDLY FIRE', x: 500, y: 245, radius: 62, color: '#5fd0ff' }
 ]);
 
-// Regional towers outside the hub. Walking up to a dormant tower unlocks it
-// and pushes the fogline back (the client draws the ring and beacon state).
+// Legacy tower markers kept for older imports; live towers are catalog zones.
 const TOWERS = Object.freeze([
   { id: 'tower-pylon', name: 'Tower 1 · Fallen Pylon', x: 500, y: 118, radius: 64 },
   { id: 'tower-parapet', name: 'Tower 2 · East Parapet', x: 872, y: 118, radius: 64 },
@@ -82,7 +89,8 @@ module.exports = {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
   RESPAWN_DELAY, AI_RESPAWN_DELAY, ABILITY_BURST_LIFETIME, BURN_TICK_CAP,
   MAX_WARDENS, WARDEN,
-  XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, XP_TOWER, LEVEL_HP_GAIN,
+  XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, XP_TOWER, XP_TOWER_CLEAR,
+  CREDITS_PLAYER_KILL, CREDITS_TOWER_CLEAR, LEVEL_HP_GAIN, TOWER_WAVES, TOWER_WAVE_SIZE,
   HUB, HUB_NPCS, TOWERS,
   ARCHIVE_LOGS
 };

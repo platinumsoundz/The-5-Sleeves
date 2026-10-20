@@ -27,7 +27,7 @@ export function createMenu({ actions, getState, getPlayer }) {
     const player = getPlayer?.() || null;
     const state = getState?.() || {};
     const points = root.querySelector('#skill-points');
-    if (points) points.textContent = 'Level ' + (player?.level || 1) + ' · Skill Points: ' + (player?.skillPoints || 0) + ' · ' + (state.zone?.name || 'The Perimeter');
+    if (points) points.textContent = 'Level ' + (player?.level || 1) + ' · ' + (player?.credits || 0) + 'c · Skill Points: ' + (player?.skillPoints || 0) + ' · ' + (state.zone?.name || 'The Perimeter');
     for (const page of pages) page.classList.toggle('hidden', page.dataset.menuContent !== current);
     for (const tab of tabs) {
       const selected = tab.dataset.menuPage === current;

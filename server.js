@@ -12,7 +12,7 @@ const httpServer = require('http').createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
 
-const { zoneCatalog, DEFAULT_ZONE_ID } = require('./server/zones-catalog.js');
+const { zoneCatalog, DEFAULT_ZONE_ID, LOBBY_ZONE_IDS, worldMapPayload } = require('./server/zones-catalog.js');
 const { createSimulation } = require('./server/sim/state.js');
 const { stepZone, seedZone } = require('./server/sim/index.js');
 const { spawnWarden } = require('./server/sim/wardens.js');
@@ -22,9 +22,15 @@ const {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
   MAX_WARDENS, LEVEL_HP_GAIN
 } = require('./server/sim/spec.js');
+const { gearAtkFor } = require('./server/shop-catalog.js');
 const { levelFromXp } = require('./server/progression.js');
 
-const PROFILE_FILE = path.join(__dirname, 'player-profiles.json');
+// PROFILE_FILE lets the test suite point profiles at a throwaway file, so
+// persisted credits/HP/XP from an earlier run can never leak into a fresh
+// operative. Production leaves it unset and uses the normal file.
+const PROFILE_FILE = process.env.PROFILE_FILE
+  ? path.resolve(process.env.PROFILE_FILE)
+  : path.join(__dirname, 'player-profiles.json');
 // Tuning knob: scales every XP award (useful for fast progression on small servers).
 const XP_SCALE = Number.isFinite(Number(process.env.XP_SCALE)) ? Math.max(0, Number(process.env.XP_SCALE)) : 1;
 const SCORE_LIMIT = Number.isFinite(Number(process.env.SCORE_LIMIT)) ? Math.max(1, Number(process.env.SCORE_LIMIT)) : 400;
@@ -70,12 +76,15 @@ app.get('/api/client-modules', (_request, response) => {
   response.json({ modules: names });
 });
 
-// ---- Zone registry: one simulation per canon book --------------------------
+// ---- Zone registry: one simulation per world room -------------------------
 const playerSockets = {}; // socketId -> socket (zones only own the player object)
 const zones = {}; // zone id -> simulation
-const zoneOrder = []; // catalog order for the lobby list
-for (const catalogZone of zoneCatalog()) {
-  const sim = createSimulation(catalogZone, {
+const CATALOG = zoneCatalog();
+const HAVEN_IDS = new Set(CATALOG.filter((zone) => zone.kind === 'haven').map((zone) => zone.id));
+const zoneOrder = LOBBY_ZONE_IDS.slice(); // title-screen choices (start village only)
+
+function hostServices() {
+  return {
     io,
     playerSockets,
     scoreLimit: SCORE_LIMIT,
@@ -83,40 +92,68 @@ for (const catalogZone of zoneCatalog()) {
     applyXp,
     awardNearbyParty,
     persistPlayer,
-    sameParty
-  });
-  zones[sim.id] = sim;
-  zoneOrder.push(sim.id);
-  for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
-  seedZone(sim);
+    sameParty,
+    travel: (player, zoneId, entry = 'center') => {
+      const next = zones[zoneId];
+      const socket = playerSockets[player?.id];
+      if (player && next && socket) movePlayerToZone(player, socket, next, entry);
+    }
+  };
 }
-// Two instanced Domination arenas reached only through the hub portals. They
-// are registered in `zones` for travel but deliberately kept out of
-// `zoneOrder`, so the title-screen lobby still lists the five canon zones.
-const ARENA_ZONES = [
-  { id: 'arena-pvp', name: 'Domination Arena · PvP', book: 'Hub Arena', spirit: 'Cipher', tint: 'rgba(255, 80, 120, 0.07)', terminals: [], arena: true, mode: 'arena-pvp', friendlyFire: true },
-  { id: 'arena-pve', name: 'Domination Arena · Co-op', book: 'Hub Arena', spirit: 'Water', tint: 'rgba(80, 190, 255, 0.07)', terminals: [], arena: true, mode: 'arena-pve', friendlyFire: false }
-];
-for (const arena of ARENA_ZONES) {
-  const sim = createSimulation(arena, {
-    io,
-    playerSockets,
-    scoreLimit: SCORE_LIMIT,
-    refreshLevelFields,
-    applyXp,
-    awardNearbyParty,
-    persistPlayer,
-    sameParty
-  });
+
+for (const catalogZone of CATALOG) {
+  const sim = createSimulation(catalogZone, hostServices());
   zones[sim.id] = sim;
-  // PvE arena keeps rogue entities; the PvP arena is players only.
-  if (sim.mode === 'arena-pve') for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
-  seedZone(sim);
+  if (sim.kind === 'wild') for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
+  if (sim.kind === 'arena' && sim.alignment === 'pve') {
+    for (let i = 0; i < Math.min(MAX_WARDENS, 3); i += 1) spawnWarden(sim, { tier: 2 });
+  }
+  if (sim.kind !== 'haven' && sim.kind !== 'tower') seedZone(sim);
 }
 const DEFAULT_ZONE = zones[DEFAULT_ZONE_ID];
 function playerZone(player) { return player ? zones[player.zoneId] || null : null; }
 function lobbyPayload() {
   return zoneOrder.map((id) => ({ id, name: zones[id].name, book: zones[id].book, spirit: zones[id].spirit, players: Object.keys(zones[id].players).length }));
+}
+function zoneMeta(zone) {
+  return {
+    id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint,
+    kind: zone.kind, mode: zone.mode, arena: !!zone.arena, friendlyFire: zone.friendlyFire !== false,
+    danger: zone.danger || 0, levelBand: zone.levelBand || null,
+    towerIndex: zone.towerIndex || null, towerName: zone.towerName || zone.tower?.name || null,
+    havenId: zone.havenId || null, exits: { ...(zone.exits || {}) },
+    safe: zone.safe || null, tower: zone.tower || null,
+    arenaMode: zone.arenaMode || null, alignment: zone.alignment || null
+  };
+}
+function entrySpawn(zone, entry) {
+  const base = zone.spawn || { x: zone.world.width / 2, y: zone.world.height / 2 };
+  if (entry === 'west') return { x: 92, y: base.y };
+  if (entry === 'east') return { x: zone.world.width - 92, y: base.y };
+  if (entry === 'north') return { x: base.x, y: 92 };
+  if (entry === 'south') return { x: base.x, y: zone.world.height - 92 };
+  return { x: base.x, y: base.y };
+}
+const EDGE_ENTRY = { east: 'west', west: 'east', north: 'south', south: 'north' };
+function canUseExit(player, zone, direction) {
+  // Cities gate their east road behind the regional tower. The north gate is
+  // always open so the player can go and clear it.
+  if (zone.kind === 'haven' && direction === 'east' && zone.towerIndex && !player.towers?.[zone.towerIndex]) {
+    return { ok: false, reason: 'Clear ' + (zone.towerName || zone.tower?.name || 'the regional tower') + ' before leaving the city.' };
+  }
+  return { ok: true };
+}
+function unlockHaven(player, zone, socket) {
+  if (zone.kind !== 'haven') return;
+  player.unlockedCities = Array.isArray(player.unlockedCities) ? player.unlockedCities : ['haven-perimeter'];
+  const isNew = !player.unlockedCities.includes(zone.id);
+  if (isNew) player.unlockedCities.push(zone.id);
+  player.homeCity = zone.id;
+  if (isNew) {
+    socket?.emit('city:unlocked', { id: zone.id, name: zone.name, unlockedCities: player.unlockedCities });
+    socket?.emit('hub:notice', 'Spawn point unlocked: ' + zone.name + '.');
+  }
+  persistPlayer(player);
 }
 
 // ---- Host services shared with every zone simulation -----------------------
@@ -173,6 +210,10 @@ function persistPlayer(player, save = true) {
     xp: player.xp,
     level: player.level,
     energyColor: player.energyColor,
+    credits: Math.max(0, Math.round(player.credits || 0)),
+    homeCity: player.homeCity || 'haven-perimeter',
+    unlockedCities: Array.isArray(player.unlockedCities) ? player.unlockedCities : ['haven-perimeter'],
+    towers: player.towers || {},
     updatedAt: new Date().toISOString()
   };
   hooks.emit('persist', player, record);
@@ -247,8 +288,9 @@ function awardNearbyParty(player) {
 }
 
 // ---- Zone membership -------------------------------------------------------
-// Moving between zones: leave the old room, join the new one, respawn fresh.
-function movePlayerToZone(player, socket, nextZone) {
+// Moving between zones: leave the old room, join the new one, enter from the
+// side the player used. Cities unlock their spawn point on first arrival.
+function movePlayerToZone(player, socket, nextZone, entry = 'center') {
   const previous = playerZone(player);
   if (previous === nextZone) return;
   if (previous) {
@@ -258,20 +300,32 @@ function movePlayerToZone(player, socket, nextZone) {
     previous.broadcast();
   }
   player.zoneId = nextZone.id;
-  const spawn = nextZone.spawn || { x: 100 + Math.random() * (nextZone.world.width - 200), y: 100 + Math.random() * (nextZone.world.height - 200) };
+  if (nextZone.kind === 'arena') {
+    if (nextZone.alignment === 'pvp') {
+      const counts = { blue: 0, red: 0 };
+      for (const other of Object.values(nextZone.players)) {
+        if (other.id !== player.id && counts[other.arenaTeam] !== undefined) counts[other.arenaTeam] += 1;
+      }
+      player.arenaTeam = counts.blue <= counts.red ? 'blue' : 'red';
+    } else {
+      player.arenaTeam = 'co-op';
+    }
+  } else {
+    player.arenaTeam = null;
+  }
+  const spawn = entrySpawn(nextZone, entry);
   player.x = spawn.x;
   player.y = spawn.y;
   player.respawnAt = 0;
+  player.lastZoneTravelAt = Date.now();
   nextZone.players[player.id] = player;
   nextZone.memberCount += 1;
   socket.join('zone:' + nextZone.id);
+  unlockHaven(player, nextZone, socket);
   socket.emit('player:position', { x: player.x, y: player.y });
   socket.emit('archive:echoes', nextZone.echoes);
   socket.emit('zone:changed', {
-    zone: {
-      id: nextZone.id, name: nextZone.name, book: nextZone.book, spirit: nextZone.spirit, tint: nextZone.tint,
-      mode: nextZone.mode, arena: !!nextZone.arena, friendlyFire: nextZone.friendlyFire !== false
-    },
+    zone: zoneMeta(nextZone),
     mode: nextZone.mode,
     arena: !!nextZone.arena,
     friendlyFire: nextZone.friendlyFire !== false,
@@ -282,9 +336,15 @@ function movePlayerToZone(player, socket, nextZone) {
 }
 
 function buildPlayer(socket, requestedName, profile, zone) {
-  const storedDomain = Object.hasOwn(SLEEVE_COLORS, profile.energyColor)
-    ? (LEGACY_DOMAINS[profile.energyColor] || profile.energyColor)
-    : 'cipher';
+  const requestedDomain = LEGACY_DOMAINS[profile.energyColor] || profile.energyColor;
+  const storedDomain = ACTIVE_DOMAINS.has(requestedDomain) ? requestedDomain : 'cipher';
+  const storedCities = Array.isArray(profile.unlockedCities) ? profile.unlockedCities.filter((id) => HAVEN_IDS.has(id)) : [];
+  if (!storedCities.includes('haven-perimeter')) storedCities.unshift('haven-perimeter');
+  const storedTowers = {};
+  for (let i = 1; i <= 5; i += 1) storedTowers[i] = !!profile.towers?.[i];
+  const homeCity = HAVEN_IDS.has(profile.homeCity) && storedCities.includes(profile.homeCity)
+    ? profile.homeCity
+    : 'haven-perimeter';
   const player = {
     id: socket.id,
     name: requestedName,
@@ -304,6 +364,12 @@ function buildPlayer(socket, requestedName, profile, zone) {
     shieldUntil: 0,
     coreCharge: Number.isFinite(profile.coreCharge) ? clamp(profile.coreCharge, 0, 99.99) : 0,
     corePoints: Number.isFinite(profile.corePoints) ? Math.max(0, profile.corePoints) : 0,
+    credits: Number.isFinite(profile.credits) ? Math.max(0, Math.round(profile.credits)) : 35,
+    gearAtk: 0,
+    homeCity,
+    unlockedCities: storedCities,
+    towers: storedTowers,
+    arenaTeam: null,
     inCore: false,
     slowUntil: 0,
     speedUntil: 0,
@@ -330,9 +396,51 @@ function buildPlayer(socket, requestedName, profile, zone) {
     lastDashAt: 0,
     lastShieldAt: 0,
     lastAbilityAt: 0,
-    lastInteractAt: 0
+    lastInteractAt: 0,
+    lastNpcInteractAt: 0,
+    lastGateNoticeAt: 0,
+    lastZoneTravelAt: 0,
+    edgeDirection: null,
+    edgeSince: 0
   };
   return player;
+}
+
+function tryEdgeTravel(player, socket, zone) {
+  if (!player || !zone || player.hp <= 0) return false;
+  const now = Date.now();
+  if (now - (player.lastZoneTravelAt || 0) < 900) return false;
+  const width = zone.world.width, height = zone.world.height, edge = 52;
+  let direction = null;
+  if (player.x >= width - edge && zone.exits.east) direction = 'east';
+  else if (player.x <= edge && zone.exits.west) direction = 'west';
+  else if (player.y <= edge && zone.exits.north) direction = 'north';
+  else if (player.y >= height - edge && zone.exits.south) direction = 'south';
+  if (!direction) {
+    player.edgeDirection = null;
+    player.edgeSince = 0;
+    return false;
+  }
+  // Require a deliberate hold at the gate. A single reposition packet (used by
+  // tests and teleport effects) should not fling an operative through a road.
+  if (player.edgeDirection !== direction) {
+    player.edgeDirection = direction;
+    player.edgeSince = now;
+    return false;
+  }
+  if (now - (player.edgeSince || now) < 320) return false;
+  const gate = canUseExit(player, zone, direction);
+  if (!gate.ok) {
+    if (now - (player.lastGateNoticeAt || 0) > 2500) {
+      player.lastGateNoticeAt = now;
+      socket.emit('hub:notice', gate.reason);
+    }
+    return true;
+  }
+  const target = zones[zone.exits[direction]];
+  if (!target) return false;
+  movePlayerToZone(player, socket, target, EDGE_ENTRY[direction]);
+  return true;
 }
 
 io.on('connection', (socket) => {
@@ -351,6 +459,7 @@ io.on('connection', (socket) => {
   }
   socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: DEFAULT_ZONE.world, core: DEFAULT_ZONE.core });
   socket.emit('zones:lobby', lobbyPayload());
+  socket.emit('world:map', worldMapPayload());
   socket.emit('party:state', null);
 
   socket.on('player:join', (payload) => {
@@ -386,9 +495,19 @@ io.on('connection', (socket) => {
     refreshLevelFields(player);
     socket.emit('join:accepted', {
       playerId: player.id, name: player.name,
-      zone: { id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint, mode: zone.mode, arena: !!zone.arena, friendlyFire: zone.friendlyFire !== false },
-      stats: { hp: player.hp, maxHp: player.maxHp, level: player.level, xp: player.xp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor }
+      zone: zoneMeta(zone),
+      stats: {
+        hp: player.hp, maxHp: player.maxHp, level: player.level, xp: player.xp,
+        coreCharge: player.coreCharge, corePoints: player.corePoints,
+        credits: player.credits, gearAtk: player.gearAtk,
+        homeCity: player.homeCity, unlockedCities: player.unlockedCities, towers: player.towers,
+        skillPoints: player.skillPoints, partyXp: player.partyXp,
+        atk: player.atk, plating: player.plating, overclock: player.overclock,
+        energyColor: player.energyColor
+      }
     });
+    unlockHaven(player, zone, socket);
+    socket.emit('world:map', worldMapPayload());
     socket.emit('archive:echoes', zone.echoes);
     zone.broadcast();
     socket.emit('zones:lobby', lobbyPayload());
@@ -396,18 +515,20 @@ io.on('connection', (socket) => {
     console.log('Operative joined: ' + player.name + ' in ' + zone.id + ' (' + socket.id + ')');
   });
 
-  // Post-join zone travel (used by the lobby UI and future fast-travel).
+  // Post-join zone travel (used by the lobby UI and map fast-travel module).
   socket.on('zone:switch', (zoneId) => {
     if (!player || typeof zoneId !== 'string' || !zones[zoneId]) return;
-    movePlayerToZone(player, socket, zones[zoneId]);
+    movePlayerToZone(player, socket, zones[zoneId], 'center');
     socket.emit('zones:lobby', lobbyPayload());
   });
 
   socket.on('player:move', (position) => {
     if (!player || !position || !Number.isFinite(position.x) || !Number.isFinite(position.y) || player.hp <= 0) return;
     const zone = playerZone(player);
+    if (!zone) return;
     player.x = clamp(position.x, 40, zone.world.width - 40);
     player.y = clamp(position.y, 40, zone.world.height - 40);
+    tryEdgeTravel(player, socket, zone);
   });
   socket.on('player:upgrade', (stat) => {
     if (!player || player.skillPoints <= 0) return;
@@ -559,9 +680,11 @@ io.on('connection', (socket) => {
     if (!aim || player.hp <= 0 || now - player.lastDashAt < Math.max(250, 1300 * Math.pow(0.9, player.overclock))) return;
     player.lastDashAt = now;
     const zone = playerZone(player);
+    if (!zone) return;
     player.x = clamp(player.x + aim.x * 120, 40, zone.world.width - 40);
     player.y = clamp(player.y + aim.y * 120, 40, zone.world.height - 40);
     socket.emit('player:position', { x: player.x, y: player.y });
+    tryEdgeTravel(player, socket, zone);
   });
   socket.on('player:shield', () => {
     if (!player) return;
@@ -686,11 +809,17 @@ const moduleContext = {
   },
   distance,
   sameParty,
-  travel: (player, zoneId) => {
+  travel: (player, zoneId, entry = 'center') => {
     const zone = zones[zoneId];
     const socket = playerSockets[player?.id];
-    if (player && zone && socket) movePlayerToZone(player, socket, zone);
+    if (player && zone && socket) movePlayerToZone(player, socket, zone, entry);
   },
+  worldMap: () => worldMapPayload(),
+  zoneMeta,
+  entrySpawn,
+  canUseExit,
+  havenIds: () => HAVEN_IDS,
+  gearAtkFor,
   applyXp,
   persistPlayer: (target) => persistPlayer(target),
   xpScale: () => XP_SCALE

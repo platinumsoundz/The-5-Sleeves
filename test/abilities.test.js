@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
+import { TEST_PROFILE_FILE } from '../tools/profile-scratch.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PORT = 3126;
@@ -11,7 +12,7 @@ const url = `http://127.0.0.1:${PORT}`;
 
 function startServer() {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PORT: String(PORT), MAX_WARDENS: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PROFILE_FILE: TEST_PROFILE_FILE, PORT: String(PORT), MAX_WARDENS: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('server boot timeout')); }, 15000);
     child.stdout.on('data', (chunk) => { if (String(chunk).includes('is running')) { clearTimeout(timer); resolve(child); } });
     child.stderr.on('data', (chunk) => process.stderr.write(chunk));
@@ -196,6 +197,7 @@ test('downed operatives respawn after the delay', async (t) => {
   await once(shooter.socket, 'players', (players) => players[target.id] && Math.abs(players[target.id].x - 340) < 24, 8000, 'target reposition');
 
   const downed = once(shooter.socket, 'combat:down', (payload) => payload.targetId === target.id, 15000);
+  const returned = once(target.socket, 'zone:changed', (payload) => payload.zone?.id === 'haven-perimeter', 20000, 'target returns home');
   // 5 blasts at 20 damage each, fired east into the stationary target.
   for (let i = 0; i < 6; i += 1) {
     shooter.socket.emit('player:attack', { x: 1, y: 0 });
@@ -206,7 +208,9 @@ test('downed operatives respawn after the delay', async (t) => {
 
   const respawn = await once(shooter.socket, 'combat:respawn', (payload) => payload.targetId === target.id, 12000);
   assert.equal(respawn.name, down.name);
-  await once(shooter.socket, 'players', (players) => players[target.id].hp > 0, 8000);
+  const home = await returned;
+  assert.equal(home.zone.kind, 'haven');
+  assert.equal(home.zone.id, 'haven-perimeter');
 });
 
 test('slow and haste reach the client as remaining durations', async (t) => {

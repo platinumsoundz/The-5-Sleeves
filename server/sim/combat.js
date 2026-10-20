@@ -1,7 +1,8 @@
 // Damage, deaths, respawns and status effects — shared by every zone sim.
 // All events go out through sim.send so only that zone's players see them.
 const { PERIMETER_MARGIN, CORE } = require('./state.js');
-const { RESPAWN_DELAY, AI_RESPAWN_DELAY, WARDEN, XP_PLAYER_KILL } = require('./spec.js');
+const { RESPAWN_DELAY, AI_RESPAWN_DELAY, WARDEN, XP_PLAYER_KILL, CREDITS_PLAYER_KILL } = require('./spec.js');
+const { lootForTier } = require('../shop-catalog.js');
 
 function clampToWorld(sim, entity) {
   entity.x = Math.max(PERIMETER_MARGIN, Math.min(sim.world.width - PERIMETER_MARGIN, entity.x));
@@ -10,10 +11,16 @@ function clampToWorld(sim, entity) {
 
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 
-// The safe hub blocks all damage to operatives standing inside it.
+// Safe zones are rectangles for cities (the entire cube) and can still be a
+// circle for small camps. Both shapes block damage to operatives inside.
 function inSafeZone(sim, entity) {
   if (!sim || !sim.safe || !entity) return false;
-  return distance(entity, sim.safe) <= sim.safe.radius;
+  const safe = sim.safe;
+  if (Number.isFinite(safe.width) && Number.isFinite(safe.height)) {
+    return entity.x >= safe.x && entity.x <= safe.x + safe.width
+      && entity.y >= safe.y && entity.y <= safe.y + safe.height;
+  }
+  return distance(entity, safe) <= safe.radius;
 }
 
 function spawnBurst(sim, burst) {
@@ -34,6 +41,9 @@ function isHostile(a, b, sim) {
   // Operatives never hurt squad mates, and co-op arenas disable PvP entirely.
   if (a.kind !== 'ai' && b.kind !== 'ai' && sim) {
     if (sim.friendlyFire === false) return false;
+    // PvP arenas split arrivals into red/blue teams; team mates cannot hit
+    // each other even though the room allows open combat.
+    if (sim.arena && sim.alignment === 'pvp' && a.arenaTeam && b.arenaTeam && a.arenaTeam === b.arenaTeam) return false;
     if (typeof sim.host?.sameParty === 'function' && sim.host.sameParty(a.id, b.id)) return false;
   }
   return true;
@@ -61,17 +71,33 @@ function damageTarget(sim, target, amount, source, kind = 'hit', options = {}) {
 function handleDown(sim, target, source) {
   const now = Date.now();
   if (target.kind === 'ai') {
-    // Wardens drop loot instead of respawning instantly.
+    // Wave rooms remove the body; open-world wardens respawn later.
     target.hp = 0;
-    target.respawnAt = now + AI_RESPAWN_DELAY;
     target.targetId = null;
+    if (sim.kind === 'tower') {
+      delete sim.ai[target.id];
+    } else {
+      target.respawnAt = now + AI_RESPAWN_DELAY;
+    }
     sim.send('combat:kill', { targetId: target.id, name: target.name, sourceId: source?.id || null, sourceName: source?.name || null, x: target.x, y: target.y, xp: target.xp || WARDEN.xp });
     const killer = source && sim.players[source.id];
     if (killer) {
-      killer.skillPoints += WARDEN.skillPoints;
-      killer.coreCharge = Math.min(99.99, killer.coreCharge + WARDEN.coreCharge);
+      killer.skillPoints += target.skillPoints || WARDEN.skillPoints;
+      killer.coreCharge = Math.min(99.99, killer.coreCharge + (target.coreCharge || WARDEN.coreCharge));
+      killer.credits = (killer.credits || 0) + (target.credits || 0);
       sim.host.applyXp(killer, target.xp || WARDEN.xp);
       sim.host.awardNearbyParty(killer);
+      const drop = lootForTier(target.tier || 1);
+      if (drop) {
+        killer.inventory = killer.inventory || [];
+        killer.inventory.push(drop.id);
+        sim.host.playerSockets[killer.id]?.emit('hub:notice', target.name + ' dropped ' + drop.name + '. Sell it at any merchant.');
+      }
+      if (target.credits) sim.host.playerSockets[killer.id]?.emit('hub:notice', '+' + target.credits + ' credits salvaged.');
+      sim.host.persistPlayer(killer);
+      if (sim.arena && sim.arenaMode === 'tdm' && sim.alignment === 'pve') {
+        sim.factionScores['co-op'] = (sim.factionScores['co-op'] || 0) + 1;
+      }
     }
     return;
   }
@@ -82,15 +108,29 @@ function handleDown(sim, target, source) {
   if (source && source.id && sim.players[source.id]) {
     const killer = sim.players[source.id];
     killer.kills = (killer.kills || 0) + 1;
-    if (killer.id !== target.id) sim.host.applyXp(killer, XP_PLAYER_KILL);
+    if (killer.id !== target.id) {
+      sim.host.applyXp(killer, XP_PLAYER_KILL);
+      killer.credits = (killer.credits || 0) + CREDITS_PLAYER_KILL;
+      sim.host.persistPlayer(killer);
+    }
+    if (sim.arena && sim.arenaMode === 'tdm') {
+      const faction = sim.alignment === 'pve' ? 'co-op' : (killer.arenaTeam || killer.energyColor);
+      sim.factionScores[faction] = (sim.factionScores[faction] || 0) + 1;
+    }
   }
   if (sim.players[target.id]) sim.players[target.id].deaths = (sim.players[target.id].deaths || 0) + 1;
 }
 
 function respawnPlayer(sim, player) {
   player.hp = Math.max(1, Math.round(player.maxHp * 0.6));
-  // Canon zones respawn operatives back in the safe hub; arenas use their own
-  // spawn pad so a respawn never drops a fighter onto a relay.
+  player.respawnAt = 0;
+  // Death sends an operative back to the last safe city they reached. That is
+  // also what makes arena and tower deaths a real return trip.
+  if (sim.kind !== 'haven' && player.homeCity && typeof sim.host.travel === 'function') {
+    sim.send('combat:respawn', { targetId: player.id, name: player.name });
+    sim.host.travel(player, player.homeCity, 'center');
+    return;
+  }
   if (sim.spawn) {
     player.x = sim.spawn.x;
     player.y = sim.spawn.y;
@@ -102,7 +142,6 @@ function respawnPlayer(sim, player) {
       player.x = x; player.y = y; break;
     }
   }
-  player.respawnAt = 0;
   sim.host.playerSockets[player.id]?.emit('player:position', { x: player.x, y: player.y });
   sim.send('combat:respawn', { targetId: player.id, name: player.name });
 }

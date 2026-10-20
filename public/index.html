@@ -179,6 +179,18 @@
       /* Physical NPC shop panel. */
       #shop-panel { position:fixed; z-index:8; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(2,8,17,.86); }
       #shop-panel.hidden { display:none; }
+      #arena-panel { position:fixed; z-index:8; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(2,8,17,.86); }
+      #arena-panel.hidden { display:none; }
+      .arena-panel-inner { width:min(520px,100%); max-height:90vh; overflow-y:auto; padding:20px; border:1px solid rgba(255,107,122,.65); border-radius:14px; background:linear-gradient(145deg,#2a1b28,#081118); box-shadow:0 0 40px rgba(255,90,120,.14); }
+      .arena-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+      .arena-heading h2 { margin:0; color:#ffd2dc; font-size:19px; letter-spacing:.06em; }
+      #arena-close { border:1px solid #8a4b5a; border-radius:7px; background:#331820; color:#ffdbe3; padding:7px 11px; font-size:11px; }
+      #arena-note { color:#d8a9b3; font-size:11px; line-height:1.4; margin:0 0 12px; }
+      .arena-group { margin:10px 0; }
+      .arena-group h3 { margin:0 0 6px; color:#ffb3c1; font:800 10px system-ui,sans-serif; letter-spacing:.14em; }
+      .arena-option { display:block; width:100%; margin:4px 0; padding:10px 12px; border:1px solid #633846; border-radius:8px; background:#1d1520; color:#ffe4e9; font:700 11px system-ui,sans-serif; text-align:left; cursor:pointer; }
+      .arena-option:hover { border-color:#ff8fa3; background:#2a1b28; }
+      .arena-option small { display:block; margin-top:2px; color:#b58b96; font-weight:500; }
       .shop-panel-inner { width:min(580px,100%); max-height:90vh; overflow-y:auto; padding:20px; border:1px solid rgba(255,212,121,.6); border-radius:14px; background:linear-gradient(145deg,#1b2630,#081118); box-shadow:0 0 40px rgba(255,196,90,.12); }
       .shop-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
       .shop-heading h2 { margin:0; color:#ffeab0; font-size:19px; letter-spacing:.06em; }
@@ -191,6 +203,8 @@
       .shop-item small { color:#b99e72; font-size:9px; letter-spacing:.04em; }
       .shop-item p { margin:2px 0 0; color:#a9b6b2; font-size:10px; line-height:1.35; }
       .shop-item.owned { opacity:.75; }
+      .shop-actions { display:flex; flex-direction:column; gap:4px; min-width:76px; }
+      .shop-actions .menu-action { padding:5px 8px; font-size:9px; white-space:nowrap; }
       /* Chat name context menu. */
       #chat-actions { position:fixed; z-index:9; width:210px; padding:9px; border:1px solid #6fe0cb; border-radius:9px; background:rgba(4,18,28,.98); box-shadow:0 0 20px rgba(50,230,200,.22); }
       #chat-actions.hidden { display:none; }
@@ -291,7 +305,7 @@
         <div class="menu-page hidden" data-menu-content="inbox"></div>
         <div class="menu-page hidden" data-menu-content="map"></div>
         <div class="menu-page hidden" data-menu-content="settings"></div>
-        <div id="menu-hint">Safe hub: no combat or damage. Step through a portal to enter Domination, or leave the ring to push the wasteland fogline back.</div>
+        <div id="menu-hint">Cities are safe: no combat or damage. Walk north to a tower, east along the road to the next city, or talk to the Arena Master. Death returns you to your last unlocked city.</div>
       </div>
     </section>
     <section id="chat-actions" class="hidden" role="dialog" aria-label="Chat player actions">
@@ -304,6 +318,13 @@
         <div id="shop-balance">CORE POINTS: 0</div>
         <div id="shop-items"></div>
         <div id="shop-status" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+    <section id="arena-panel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="arena-title">
+      <div class="arena-panel-inner">
+        <div class="arena-heading"><h2 id="arena-title">ARENA MASTER</h2><button id="arena-close" type="button">CLOSE</button></div>
+        <p id="arena-note">Choose a PvP or PvE minigame. Death returns you to your last city.</p>
+        <div id="arena-options"></div>
       </div>
     </section>
     <div id="joystick" aria-label="Movement joystick">

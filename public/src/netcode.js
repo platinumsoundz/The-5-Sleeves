@@ -29,6 +29,13 @@ export function createNetcode(state, callbacks = {}, audio = null) {
       friendlyFire: payload?.friendlyFire !== false
     };
     state.zoneMode = payload?.mode || next.mode || state.zoneMode;
+    if (next.kind !== 'tower') state.towerRun = null;
+    // Clear city-only overlays immediately when leaving a safe city; waiting
+    // for hub:state would leave a one-frame stale safe cube in the wilds.
+    const safe = next.kind === 'haven' ? (next.safe || null) : null;
+    state.hub = safe;
+    state.safeZone = safe;
+    if (next.kind !== 'haven') state.npcs = [];
     callbacks.zoneChanged?.(payload);
   });
   socket.on('hub:state', (payload) => {
@@ -38,8 +45,27 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     state.towers = payload?.towers || [];
     state.zoneMode = payload?.mode || state.zoneMode;
     state.friendlyFire = payload?.friendlyFire !== false;
+    state.towerRun = payload?.towerRun || null;
+    state.zone = { ...(state.zone || {}), ...(payload?.kind ? {
+      kind: payload.kind, arena: !!payload.arena, arenaMode: payload.arenaMode,
+      alignment: payload.alignment, danger: payload.danger, levelBand: payload.levelBand,
+      towerIndex: payload.towerIndex, towerName: payload.towerName, havenId: payload.havenId,
+      exits: payload.exits, safe: payload.safe || null
+    } : {}) };
     callbacks.hubState?.(payload);
   });
+  socket.on('world:map', (map) => {
+    state.worldMap = map || [];
+    callbacks.worldMap?.(state.worldMap);
+  });
+  socket.on('arena:menu', (payload) => callbacks.arenaMenu?.(payload));
+  socket.on('tower:state', (payload) => {
+    state.towerRun = payload || null;
+    callbacks.towerState?.(payload);
+  });
+  socket.on('tower:cleared', (payload) => callbacks.towerCleared?.(payload));
+  socket.on('city:unlocked', (payload) => callbacks.cityUnlocked?.(payload));
+  socket.on('travel:error', (message) => callbacks.notice?.(message));
   socket.on('hub:notice', (message) => callbacks.notice?.(message));
   socket.on('towers', (towers) => { state.towers = towers || []; });
   socket.on('tower:unlocked', (payload) => callbacks.towerUnlocked?.(payload));
@@ -154,7 +180,10 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     leaveParty: () => socket.emit('party:leave'),
     sendChat: (channel, text) => socket.emit('chat:send', { channel, text }),
     buyItem: (itemId) => socket.emit('shop:buy', { itemId }),
+    sellItem: (itemId) => socket.emit('shop:sell', { itemId }),
     equipItem: (itemId) => socket.emit('player:equip', { itemId }),
+    enterArena: (zoneId) => socket.emit('arena:enter', { zoneId }),
+    fastTravel: (zoneId) => socket.emit('city:travel', { zoneId }),
     addFriend: (targetId, name) => socket.emit('friends:add', { targetId, name }),
     removeFriend: (targetId) => socket.emit('friends:remove', { targetId }),
     sendGift: (targetId, itemId) => socket.emit('gift:send', { targetId, itemId }),

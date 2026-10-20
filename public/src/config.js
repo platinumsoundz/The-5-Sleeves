@@ -15,33 +15,30 @@ export const DOMAINS = Object.freeze({
   dark: { label: 'Dark Spirit', primary: '#9900ff', accent: '#ff29d6' }
 });
 
-// The safe starting hub around the Cipher Core. Mirrors server/sim/spec.js;
-// keep the numbers in step so the physical NPCs and the damage bubble agree.
+// Fallback safe cube for the title screen. Live cities supply the real safe
+// rectangle through hub:state; wilderness and arena rooms supply null.
 export const HUB = Object.freeze({
-  x: 500, y: 350, radius: 112,
-  spawn: Object.freeze({ x: 500, y: 455 })
+  x: 0, y: 0, width: 1000, height: 700,
+  spawn: Object.freeze({ x: 500, y: 460 })
 });
-export const HUB_NPCS = Object.freeze([
-  { id: 'npc-shop', kind: 'shop', name: 'Quartermaster Vale', role: 'SHOP VENDOR', x: 395, y: 350, radius: 62, color: '#ffd479' },
-  { id: 'npc-pvp', kind: 'portal', targetZone: 'arena-pvp', name: 'Arena Gate · PvP', role: 'DOMINATION · FULL PVP', x: 605, y: 350, radius: 62, color: '#ff6b7a' },
-  { id: 'npc-pve', kind: 'portal', targetZone: 'arena-pve', name: 'Arena Gate · Co-op', role: 'DOMINATION · NO FRIENDLY FIRE', x: 500, y: 245, radius: 62, color: '#5fd0ff' }
-]);
-export const TOWERS = Object.freeze([
-  { id: 'tower-pylon', name: 'Tower 1 · Fallen Pylon', x: 500, y: 118, radius: 64 },
-  { id: 'tower-parapet', name: 'Tower 2 · East Parapet', x: 872, y: 118, radius: 64 },
-  { id: 'tower-transit', name: 'Tower 3 · Transit Terminus', x: 124, y: 612, radius: 64 }
-]);
+export const HUB_NPCS = Object.freeze([]);
+export const TOWERS = Object.freeze([]);
 
-// Starter stock at Quartermaster Vale. Mirrors server/shop-catalog.js.
+// Mirrors server/shop-catalog.js so inventory/menu pages can render without a
+// second round trip. Keep ids and sell values in step with the server.
 export const SHOP_ITEMS = Object.freeze([
-  { id: 'blade-standard', name: 'Standard Cipher Blade', slot: 'weapon', price: 0, tier: 'Starter', desc: 'Balanced conduit blade issued to every new operative.' },
-  { id: 'armor-body-basic', name: 'Perimeter Field Coat', slot: 'chest', price: 0, tier: 'Starter', desc: 'Weathered coat with a stitched Cipher Core patch.' },
-  { id: 'helm-scout', name: 'Scout Visor', slot: 'head', price: 3, tier: 'Basic', desc: 'Cracked visor optics, still good enough to read the fogline.' },
-  { id: 'legs-runner', name: 'Runner Greaves', slot: 'legs', price: 4, tier: 'Basic', desc: 'Light greaves for operatives who cross the wasteland fast.' },
-  { id: 'feet-transit', name: 'Transit Boots', slot: 'feet', price: 4, tier: 'Basic', desc: 'Salvaged platform boots with reinforced soles.' },
-  { id: 'chest-warden', name: 'Warden Plate', slot: 'chest', price: 8, tier: 'Field', desc: 'Plating cut from a dormant Rust Warden shell.' },
-  { id: 'blade-ember', name: 'Ember Edge', slot: 'weapon', price: 9, tier: 'Field', desc: 'A hot-running blade that leaves an orange afterimage.' },
-  { id: 'repair-kit', name: 'Conduit Repair Kit', slot: 'supply', price: 2, tier: 'Supply', desc: 'A giftable kit of conduit seals and copper tape.' }
+  { id: 'blade-standard', name: 'Standard Cipher Blade', slot: 'weapon', price: 0, sell: 2, tier: 'Starter', atkBonus: 0, desc: 'Balanced conduit blade issued to every new operative.' },
+  { id: 'armor-body-basic', name: 'Perimeter Field Coat', slot: 'chest', price: 0, sell: 2, tier: 'Starter', atkBonus: 0, desc: 'Weathered coat with a stitched Cipher Core patch.' },
+  { id: 'helm-scout', name: 'Scout Visor', slot: 'head', price: 40, sell: 20, tier: 'Basic', atkBonus: 1, desc: 'Cracked visor optics, still good enough to read the fogline.' },
+  { id: 'legs-runner', name: 'Runner Greaves', slot: 'legs', price: 55, sell: 27, tier: 'Basic', atkBonus: 1, desc: 'Light greaves for operatives who cross the wasteland fast.' },
+  { id: 'feet-transit', name: 'Transit Boots', slot: 'feet', price: 55, sell: 27, tier: 'Basic', atkBonus: 1, desc: 'Salvaged platform boots with reinforced soles.' },
+  { id: 'chest-warden', name: 'Warden Plate', slot: 'chest', price: 120, sell: 60, tier: 'Field', atkBonus: 0, desc: 'Plating cut from a dormant Rust Warden shell.' },
+  { id: 'blade-ember', name: 'Ember Edge', slot: 'weapon', price: 180, sell: 90, tier: 'Field', atkBonus: 4, desc: 'A hot-running blade that leaves an orange afterimage.' },
+  { id: 'blade-frost', name: 'White Kiln Edge', slot: 'weapon', price: 320, sell: 160, tier: 'Rare', atkBonus: 7, desc: 'A frozen blade that rings like a struck rail.' },
+  { id: 'chest-bastion', name: 'Rebind Bastion Plate', slot: 'chest', price: 400, sell: 200, tier: 'Rare', atkBonus: 0, desc: 'Citadel plate etched with a counter-conduit schematic.' },
+  { id: 'blade-void', name: 'Void Reaver', slot: 'weapon', price: 520, sell: 260, tier: 'Epic', atkBonus: 11, desc: 'A dark blade that cuts a half-second after it passes.' },
+  { id: 'weapon-apex', name: 'Apex Conduit Blade', slot: 'weapon', price: 900, sell: 450, tier: 'Apex', atkBonus: 16, desc: 'The last pattern the Citadel forge produced.' },
+  { id: 'repair-kit', name: 'Conduit Repair Kit', slot: 'supply', price: 25, sell: 12, tier: 'Supply', atkBonus: 0, desc: 'A giftable kit of conduit seals and copper tape.' }
 ]);
 export const ITEM_CATALOG = Object.freeze(Object.fromEntries(SHOP_ITEMS.map((item) => [item.id, item])));
 

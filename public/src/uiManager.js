@@ -13,6 +13,7 @@ export function createUIManager(actions) {
   const abilityButton = $('#ability-button');
   const chatActions = $('#chat-actions'), chatActionsName = $('#chat-actions-name'), chatActionsList = $('#chat-actions-list');
   const shopPanel = $('#shop-panel'), shopItems = $('#shop-items'), shopBalance = $('#shop-balance'), shopStatus = $('#shop-status');
+  const arenaPanel = $('#arena-panel'), arenaOptions = $('#arena-options'), arenaNote = $('#arena-note'), arenaTitle = $('#arena-title');
   let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, inviteTimer = null;
   let chatOpen = false, unreadChat = 0, chatTarget = null, shopPayload = null;
   let profile = {};
@@ -30,7 +31,8 @@ export function createUIManager(actions) {
   function updateMenu(player) {
     if (!player) return;
     const points = $('#skill-points');
-    if (points) points.textContent = 'Level ' + (player.level || 1) + ' · Skill Points: ' + (player.skillPoints || 0) + ' · ' + (actions.getState?.()?.zone?.name || 'The Perimeter');
+    const zoneName = actions.getState?.()?.zone?.name || 'The Perimeter';
+    if (points) points.textContent = 'Level ' + (player.level || 1) + ' · ' + (player.credits || 0) + 'c · Skill Points: ' + (player.skillPoints || 0) + ' · ' + zoneName;
   }
   function showToast(message, duration = 4500) {
     archiveToast.textContent = message;
@@ -171,7 +173,8 @@ export function createUIManager(actions) {
   function renderShop(payload) {
     shopPayload = payload;
     if (!shopItems) return;
-    shopBalance.textContent = 'CORE POINTS: ' + (payload?.corePoints || 0) + ' · STARTER WEAPONS & ARMOR';
+    const credits = payload?.credits || 0;
+    shopBalance.textContent = 'CREDITS: ' + credits + ' · BUY GEAR · SELL LOOT';
     shopItems.replaceChildren();
     const inventory = payload?.inventory || [];
     for (const item of payload?.items || []) {
@@ -180,20 +183,69 @@ export function createUIManager(actions) {
       const card = document.createElement('div'); card.className = 'shop-item' + (owned ? ' owned' : '');
       const copy = document.createElement('div');
       const title = document.createElement('strong'); title.textContent = item.name;
-      const meta = document.createElement('small'); meta.textContent = item.tier + ' · ' + item.slot.toUpperCase() + ' · ' + (item.price ? item.price + ' CORE PTS' : 'FREE');
+      const meta = document.createElement('small');
+      meta.textContent = item.tier + ' · ' + item.slot.toUpperCase() + ' · ' + (item.atkBonus ? '+' + item.atkBonus + ' ATK · ' : '') + (item.price ? item.price + 'c' : 'FREE');
       const desc = document.createElement('p'); desc.textContent = item.desc;
       copy.append(title, meta, desc);
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'menu-action';
-      button.textContent = equipped ? 'EQUIPPED' : owned ? 'OWNED' : item.price > (payload?.corePoints || 0) ? 'NEED ' + item.price : 'BUY';
-      button.disabled = owned || item.price > (payload?.corePoints || 0);
-      button.addEventListener('click', () => actions.buyItem?.(item.id));
-      card.append(copy, button);
+      const action = document.createElement('div');
+      action.className = 'shop-actions';
+      if (owned) {
+        if (item.slot !== 'supply') {
+          const equip = document.createElement('button'); equip.type = 'button'; equip.className = 'menu-action';
+          equip.textContent = equipped ? 'EQUIPPED' : 'EQUIP';
+          equip.disabled = equipped;
+          equip.addEventListener('click', () => actions.equipItem?.(item.id));
+          action.append(equip);
+        }
+        const sell = document.createElement('button'); sell.type = 'button'; sell.className = 'menu-action ghost';
+        sell.textContent = 'SELL ' + (item.sell || 0) + 'c';
+        sell.addEventListener('click', () => actions.sellItem?.(item.id));
+        action.append(sell);
+      } else {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'menu-action';
+        button.textContent = item.price > credits ? 'NEED ' + item.price : 'BUY';
+        button.disabled = item.price > credits;
+        button.addEventListener('click', () => actions.buyItem?.(item.id));
+        action.append(button);
+      }
+      card.append(copy, action);
       shopItems.append(card);
     }
     if (shopStatus) shopStatus.textContent = '';
   }
   function showShop(payload) { renderShop(payload); shopPanel?.classList.remove('hidden'); }
   function hideShop() { shopPanel?.classList.add('hidden'); }
+
+  function showArenaMenu(payload) {
+    if (!arenaOptions) return;
+    if (arenaTitle && payload?.name) arenaTitle.textContent = String(payload.name).toUpperCase();
+    if (arenaNote && payload?.note) arenaNote.textContent = payload.note;
+    arenaOptions.replaceChildren();
+    for (const alignment of ['pvp', 'pve']) {
+      const options = (payload?.options || []).filter((option) => option.alignment === alignment);
+      if (!options.length) continue;
+      const group = document.createElement('div'); group.className = 'arena-group';
+      const heading = document.createElement('h3');
+      heading.textContent = alignment === 'pvp' ? 'PLAYER VS PLAYER' : 'CO-OP / PLAYER VS ENEMY';
+      group.append(heading);
+      for (const option of options) {
+        const button = document.createElement('button');
+        button.type = 'button'; button.className = 'arena-option';
+        button.textContent = option.name;
+        const note = document.createElement('small');
+        note.textContent = alignment === 'pvp' ? 'Open teams · friendly squad damage disabled' : 'No friendly fire · wardens join the match';
+        button.append(note);
+        button.addEventListener('click', () => {
+          actions.enterArena?.(option.id);
+          arenaPanel?.classList.add('hidden');
+        });
+        group.append(button);
+      }
+      arenaOptions.append(group);
+    }
+    arenaPanel?.classList.remove('hidden');
+  }
+  function hideArena() { arenaPanel?.classList.add('hidden'); }
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -221,6 +273,8 @@ export function createUIManager(actions) {
   $('#chat-actions-close')?.addEventListener('click', closeChatActions);
   $('#shop-close')?.addEventListener('click', hideShop);
   shopPanel?.addEventListener('click', (event) => { if (event.target === shopPanel) hideShop(); });
+  $('#arena-close')?.addEventListener('click', hideArena);
+  arenaPanel?.addEventListener('click', (event) => { if (event.target === arenaPanel) hideArena(); });
   chatForm.addEventListener('submit', (event) => {
     event.preventDefault();
     let text = chatInput.value.trim(), channel = activeChannel;
@@ -246,7 +300,7 @@ export function createUIManager(actions) {
       title.classList.add('hidden'); enterButton.disabled = false; nameError.textContent = '';
       status.textContent = 'CONNECTED';
       status.classList.remove('offline');
-      showToast('Welcome, ' + name + ' — the safe hub is yours.', 3000);
+      showToast('Welcome to the First Village, ' + name + '. The road east is waiting.', 3000);
       unreadChat = 0; setChatOpen(false); renderBadge();
     },
     joinError(message) { nameError.textContent = message; enterButton.disabled = false; },
@@ -254,7 +308,9 @@ export function createUIManager(actions) {
     updatePlayer(player) {
       profile = {
         name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge,
-        corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp,
+        corePoints: player.corePoints, credits: player.credits, gearAtk: player.gearAtk,
+        homeCity: player.homeCity, unlockedCities: player.unlockedCities, towers: player.towers,
+        skillPoints: player.skillPoints, partyXp: player.partyXp,
         atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor,
         inventory: player.inventory, equipped: player.equipped, skills: player.skills, friends: player.friends
       };
@@ -264,6 +320,7 @@ export function createUIManager(actions) {
         abilityButton.setAttribute('aria-label', 'Cast ' + (player.abilityName || 'sleeve ability'));
       }
       abilityButton.dataset.ready = player.abilityCooldown > 0 ? 'false' : 'true';
+      if (menuController.isOpen() && shopPayload) renderShop({ ...shopPayload, credits: player.credits || 0, inventory: player.inventory || [], equipped: player.equipped || {}, gearAtk: player.gearAtk || 0 });
     },
     setInputMode(mode) {
       document.body.dataset.inputMode = mode;
@@ -288,14 +345,22 @@ export function createUIManager(actions) {
     chatError: (message) => appendChat(message, true),
     setBootStatus(text) { $('#boot-status').textContent = text; },
     zoneChanged(payload) {
-      const name = payload?.zone?.name || 'the next zone';
-      showToast('Entering ' + name + (payload?.arena ? ' — combat live.' : ' — safe hub online.'), 3200);
+      const zone = payload?.zone || {};
+      const kind = zone.kind || (payload?.arena ? 'arena' : 'wild');
+      let message;
+      if (kind === 'arena') message = 'Entering ' + (zone.name || 'the arena') + ' — combat live.';
+      else if (kind === 'haven') message = 'Entering ' + (zone.name || 'a safe city') + ' — no combat.';
+      else if (kind === 'tower') message = 'Entering ' + (zone.name || 'the tower') + ' — waves incoming.';
+      else message = 'Entering ' + (zone.name || 'the wilderness') + (zone.levelBand ? ' — enemies LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '') + '.';
+      showToast(message, 3200);
       if (menuController.isOpen()) menuController.refresh();
     },
     hubState() { if (menuController.isOpen()) menuController.refresh(); },
+    worldMapChanged() { if (menuController.isOpen()) menuController.refresh(); },
     towersChanged() {},
-    towerUnlocked(tower) { showToast('Tower online: ' + (tower?.name || 'regional tower') + ' — fogline pushed back.', 4200); },
+    towerUnlocked(tower) { showToast('Tower online: ' + (tower?.name || 'regional tower') + '.', 4200); },
     showShop,
+    showArenaMenu,
     shopUpdate: renderShop,
     shopError(message) { if (shopStatus) shopStatus.textContent = message; showToast(message, 3200); },
     friendsChanged() { if (menuController.isOpen()) menuController.refresh(); },

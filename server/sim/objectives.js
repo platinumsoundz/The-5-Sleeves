@@ -11,12 +11,17 @@ const OBJECTIVE_SCORE_RATE = 1;
 function updateObjectives(sim, now, deltaSeconds) {
   const present = {};
   for (const node of Object.values(sim.objectives)) { present[node.id] = {}; node.occupants = 0; }
+  const factionFor = (player) => sim.arena && sim.alignment === 'pve'
+    ? 'co-op'
+    : sim.arena && sim.alignment === 'pvp'
+      ? (player.arenaTeam || player.energyColor)
+      : player.energyColor;
 
   for (const player of Object.values(sim.players)) {
     if (player.hp <= 0) continue;
     for (const node of Object.values(sim.objectives)) {
       if (distance(player, node) > node.radius) continue;
-      const faction = player.energyColor;
+      const faction = factionFor(player);
       present[node.id][faction] = (present[node.id][faction] || 0) + 1;
       node.occupants += 1;
     }
@@ -37,7 +42,7 @@ function updateObjectives(sim, now, deltaSeconds) {
           node.ownerId = faction;
           node.ownerColor = SLEEVE_COLORS[faction] || '#8ce0ff';
           for (const player of Object.values(sim.players)) {
-            if (player.energyColor !== faction || player.hp <= 0) continue;
+            if (factionFor(player) !== faction || player.hp <= 0) continue;
             player.coreCharge = Math.min(99.99, player.coreCharge + 6);
             sim.host.applyXp(player, XP_CAPTURE);
           }

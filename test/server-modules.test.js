@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
+import { TEST_PROFILE_FILE } from '../tools/profile-scratch.js';
 import { loadModules } from '../server/module-loader.js';
 import { createHookBus } from '../server/hook-bus.js';
 
@@ -48,7 +49,7 @@ test('a broken module is skipped instead of crashing the master', (t) => {
 
 function startServer() {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PORT: String(PORT), MAX_WARDENS: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, PROFILE_FILE: TEST_PROFILE_FILE, PORT: String(PORT), MAX_WARDENS: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('server boot timeout')); }, 15000);
     child.stdout.on('data', (chunk) => { if (String(chunk).includes('is running')) { clearTimeout(timer); resolve(child); } });
     child.stderr.on('data', (chunk) => process.stderr.write(chunk));
@@ -70,7 +71,7 @@ function once(socket, event, predicate = () => true, timeout = 6000, label = eve
 async function connect(name) {
   const socket = io(url, { transports: ['websocket'], forceNew: true });
   await once(socket, 'server:welcome');
-  socket.emit('player:join', name);
+  socket.emit('player:join', { name, zone: 'haven-perimeter' });
   const accepted = await once(socket, 'join:accepted');
   return { socket, id: accepted.playerId };
 }
