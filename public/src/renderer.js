@@ -390,7 +390,7 @@ export function notificationLayout(state, width, time) {
   const scoreboardHeight = scores.length ? 34 + Math.min(5, scores.length) * 15 : 49;
   const feedCount = (state.killFeed || []).filter((entry) => time - entry.at < 6000).length;
   const y = radar.y + mapHeight + 6 + scoreboardHeight + 10 + feedCount * 16;
-  return { x: radar.x, y, width: Math.max(120, Math.min(300, width - radar.x - 16)) };
+  return { x: radar.x, y, width: Math.max(80, Math.min(300, width - radar.x - 16)) };
 }
 
 function factionColor(faction) {
@@ -433,7 +433,7 @@ function drawObjectives(ctx, state, time) {
   }
 }
 
-function drawBanner(ctx, state, width, height, time) {
+function drawBanner(ctx, state, width, time) {
   const banner = state.banner;
   if (!banner) return;
   const age = time - banner.at;
@@ -444,7 +444,7 @@ function drawBanner(ctx, state, width, height, time) {
   // Fit long banner text inside the viewport instead of clipping on phones.
   let size = 26;
   const layout = notificationLayout(state, width, time);
-  const maxTextWidth = Math.max(100, layout.width - 20);
+  const maxTextWidth = Math.max(64, layout.width - 20);
   ctx.textAlign = 'left'; ctx.font = 'bold ' + size + 'px system-ui';
   let textWidth = ctx.measureText(banner.text).width;
   while (textWidth > maxTextWidth && size > 12) {
@@ -456,7 +456,7 @@ function drawBanner(ctx, state, width, height, time) {
   ctx.fillStyle = 'rgba(4,10,14,.86)';
   ctx.fillRect(x, y, Math.min(layout.width, textWidth + 20), size + 18);
   ctx.fillStyle = banner.color || '#8ce0ff';
-  ctx.fillText(banner.text, x + 10, y + size + 6);
+  ctx.fillText(banner.text, x + 10, y + size + 6, maxTextWidth);
   ctx.globalAlpha = 1;
   ctx.restore();
 }
@@ -598,7 +598,7 @@ export function renderFrame(canvas, ctx, state, time) {
   drawMinimap(ctx, state, width);
   drawScoreboard(ctx, state, width);
   drawKillFeed(ctx, state, width, time);
-  drawBanner(ctx, state, width, height, time);
+  drawBanner(ctx, state, width, time);
   drawHud(ctx, state, width);
   // Module hook: screen-space overlay, drawn last so it sits above the HUD.
   bus.emit('render:overlay', { ctx, state, time, width, height });
