@@ -1,5 +1,5 @@
-// The six signature sleeve abilities, resolved server-side. One ability per
-// domain; `kind` decides how the cast resolves, everything else is tuning.
+// Five playable signature abilities resolve server-side. Cipher's legacy
+// pulse is retained only for migrated data; new operatives use a true faction.
 const { distance, damageTarget, damageableTargets, isHostile, inSafeZone, applySlow, applyHaste, applyBurn, knockback, spawnBurst } = require('./combat.js');
 const { skillBonuses } = require('../skill-tree.js');
 
@@ -12,10 +12,9 @@ const DOMAIN_ABILITIES = {
   dark: { id: 'void-siphon', name: 'Void Siphon', short: 'SIPHON', cooldown: 8000, kind: 'siphon', radius: 155, damage: 12, drain: 0.6 }
 };
 
-// Skill nodes nudge the base ability rather than replacing it, so the six
-// domains keep their identity while progression feels tangible.
+// Skill nodes nudge the base ability rather than replacing it.
 function abilityFor(player) {
-  const base = DOMAIN_ABILITIES[player?.energyColor] || DOMAIN_ABILITIES.cipher;
+  const base = DOMAIN_ABILITIES[player?.energyColor] || DOMAIN_ABILITIES.wind;
   const bonuses = skillBonuses(player);
   const ability = {
     ...base,
