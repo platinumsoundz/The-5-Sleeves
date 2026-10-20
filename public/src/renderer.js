@@ -273,7 +273,8 @@ function drawHud(ctx, state, width) {
   ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y, w, 45);
   ctx.fillStyle = '#421e2a'; ctx.fillRect(x + 8, y + 8, w - 16, 10);
   ctx.fillStyle = '#f25d75'; ctx.fillRect(x + 8, y + 8, (w - 16) * Math.max(0, player.hp / player.maxHp), 10);
-  ctx.fillStyle = '#fff'; ctx.font = '11px system-ui'; ctx.textAlign = 'left'; ctx.fillText('HP ' + Math.ceil(player.hp) + '/' + player.maxHp, x + 8, y + 32);
+  // Drop a pixel of type on narrow phones so HP and CORE never collide.
+  ctx.fillStyle = '#fff'; ctx.font = (w < 190 ? '10px' : '11px') + ' system-ui'; ctx.textAlign = 'left'; ctx.fillText('HP ' + Math.ceil(player.hp) + '/' + player.maxHp, x + 8, y + 32);
   ctx.fillStyle = '#61ffe0'; ctx.textAlign = 'right'; ctx.fillText('CORE ' + Math.floor(player.coreCharge) + '% · ' + player.corePoints + ' pts', x + w - 8, y + 32);
 
   // Sleeve ability readout with its cooldown sweep.
