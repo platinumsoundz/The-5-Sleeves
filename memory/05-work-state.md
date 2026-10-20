@@ -3,7 +3,20 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (Cipher Core healing implemented; tests not run).
+Last updated: 2026-10-20 (PWA service worker and icon added; tests not run).
+
+## Current session — Step 15: PWA service worker (IMPLEMENTED, UNVERIFIED)
+
+- Added root-scoped `public/sw.js` with install/activate lifecycle, shell cache,
+  network-first same-origin GET handling and offline fallback. `/api/`,
+  `/socket.io/`, non-GET and cross-origin requests bypass interception so live
+  multiplayer traffic remains on the network.
+- Registered `/sw.js` after window load with graceful registration failure;
+  added a scalable SVG app icon to the manifest.
+- Extended `test/pwa.test.js` for service-worker registration, lifecycle,
+  cache/fallback and multiplayer bypass. Tests and device checks were not run;
+  no browser or test runner was available. Installation remains platform and
+  browser dependent; HTTPS and on-device verification are still required.
 
 ## Current session — Safe-city Cipher Core healing (IMPLEMENTED, UNVERIFIED)
 
