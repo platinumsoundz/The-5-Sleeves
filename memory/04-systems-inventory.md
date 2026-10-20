@@ -254,8 +254,12 @@ it committed and tested after running the full suite.)
 - Visual coverage regression suite (`test/visuals.test.js`) checks zone
   biome propagation, named tower landmarks and required baked sprite files;
   **added but unrun**.
-- `test/pwa.test.js` covers standalone manifest metadata, Apple tags, and
-  fullscreen enter/exit/unsupported behavior; **added but unrun**.
+- PWA shell support: root `public/sw.js` registers on load, network-first
+  handles same-origin static GET requests, caches the app shell for offline
+  navigation, and bypasses `/api/`, `/socket.io/`, writes and cross-origin
+  requests. Manifest includes a scalable SVG app icon. `test/pwa.test.js`
+  covers metadata, registration, service-worker behavior and fullscreen;
+  **added but unrun**.
 - `test/shooting.test.js` adds six regressions for mode persistence, aim
   normalization/selection and repeat cadence. The suite was not run; recent
   auth, hazard, visual, balance and shooting changes also remain unverified.
@@ -263,8 +267,9 @@ it committed and tested after running the full suite.)
 
 ## Planned next (owner-directed)
 
-- Step 14 PWA/fullscreen and Step 13 HTTPS/controller/HUD changes are
-  implemented but unverified; see `memory/05-work-state.md`. Run `npm test`
-  and browser/device checks before marking the builds complete.
+- Step 15 service worker and Step 14 PWA/fullscreen and Step 13
+  HTTPS/controller/HUD changes are implemented but unverified; see
+  `memory/05-work-state.md`. Run `npm test` and browser/device checks before
+  marking the builds complete.
 - The roadmap remains complete; future work is playtest tuning, canon
   approval and the future roadmap brainstorm.
