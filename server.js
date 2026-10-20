@@ -218,7 +218,7 @@ function persistPlayer(player, save = true) {
     updatedAt: new Date().toISOString()
   };
   hooks.emit('persist', player, record);
-  profiles[player.name.toLowerCase()] = record;
+  profiles[player.profileKey || player.name.toLowerCase()] = record;
   if (save) saveProfiles();
 }
 
@@ -485,8 +485,17 @@ io.on('connection', (socket) => {
       return;
     }
     const zone = zones[requestedZone] || DEFAULT_ZONE;
-    const profile = profiles[nameKey] || {};
+    let profileKey = nameKey;
+    for (const guard of joinGuards) {
+      let result;
+      try { result = guard(socket, payload, name); }
+      catch (error) { console.error('[join guard] ' + error.message); socket.emit('auth:error', 'Could not validate account access.'); return; }
+      if (result?.ok === false) { socket.emit('auth:error', result.message || 'Account access denied.'); return; }
+      if (typeof result?.profileKey === 'string') profileKey = result.profileKey;
+    }
+    const profile = profiles[profileKey] || {};
     player = buildPlayer(socket, name, profile, zone);
+    player.profileKey = profileKey;
     // The customisation module resolves this into energyColor/color/accent.
     player.requestedFaction = requestedFaction;
     // Modules may add profile-backed fields before the player is registered.
@@ -797,6 +806,7 @@ const { createHookBus } = require('./server/hook-bus.js');
 const { loadModules } = require('./server/module-loader.js');
 const hooks = createHookBus();
 const moduleSocketHandlers = {};
+const joinGuards = [];
 const moduleContext = {
   io,
   app,
@@ -809,6 +819,8 @@ const moduleContext = {
     if (!moduleSocketHandlers[name]) moduleSocketHandlers[name] = [];
     moduleSocketHandlers[name].push(handler);
   },
+  registerJoinGuard: (handler) => { if (typeof handler === 'function') joinGuards.push(handler); },
+  legacyProfileExists: (name) => !!profiles[String(name).toLowerCase()],
   route: (method, routePath, handler) => {
     const register = typeof app[method] === 'function' ? app[method].bind(app) : app.get.bind(app);
     register(routePath, handler);
