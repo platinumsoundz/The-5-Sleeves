@@ -7,6 +7,7 @@ const IDLE_MS = 30000;
 const REWARD_INTERVAL_MS = 300000;
 const CREDITS_PER_REWARD = 5;
 const DAILY_CREDIT_CAP = 20;
+const CORE_HEAL_RATE = 0.03;
 
 function activityStamp(player) {
   return [player.lastAttackAt, player.lastDashAt, player.lastShieldAt, player.lastAbilityAt].join(':');
@@ -15,7 +16,7 @@ function today() { return new Date().toISOString().slice(0, 10); }
 
 module.exports = {
   name: 'core-meditation',
-  summary: 'Capped passive credits for resting at a safe-city Cipher Core.',
+  summary: 'Safe-city Cipher Cores heal operatives and grant capped idle credits.',
   priority: 60,
   setup(ctx) {
     const sessions = new Map();
@@ -30,7 +31,7 @@ module.exports = {
       record.meditationCredits = player.meditationCredits || 0;
     });
     ctx.on('left', (player) => sessions.delete(player.id));
-    ctx.on('tick', (zone, now) => {
+    ctx.on('tick', (zone, now, deltaSeconds = 0) => {
       for (const player of Object.values(zone.players)) {
         if (player.meditationDay !== today()) { player.meditationDay = today(); player.meditationCredits = 0; }
         let session = sessions.get(player.id);
@@ -39,6 +40,9 @@ module.exports = {
           sessions.set(player.id, session);
         }
         const inside = zone.kind === 'haven' && player.hp > 0 && distance(player, CORE) <= CORE.radius;
+        if (inside && player.hp < player.maxHp && deltaSeconds > 0) {
+          player.hp = Math.min(player.maxHp, player.hp + player.maxHp * CORE_HEAL_RATE * deltaSeconds);
+        }
         const moved = Math.hypot(player.x - session.x, player.y - session.y) > 2;
         const acted = activityStamp(player) !== session.activity;
         session.x = player.x;
