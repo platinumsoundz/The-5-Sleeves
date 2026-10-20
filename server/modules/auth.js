@@ -52,7 +52,8 @@ module.exports = {
       return { ok: true, profileKey: name.toLowerCase() };
     });
 
-    ctx.registerSocket('auth:register', async (_player, payload, socket) => {
+    ctx.registerSocket('auth:register', async (player, payload, socket) => {
+      if (player) { socket.emit('auth:error', 'Log out before registering a different account.'); return; }
       const username = typeof payload?.username === 'string' ? payload.username.trim() : '';
       const key = username.toLowerCase();
       const password = payload?.password;
@@ -75,7 +76,8 @@ module.exports = {
       } finally { pendingNames.delete(key); }
     });
 
-    ctx.registerSocket('auth:login', async (_player, payload, socket) => {
+    ctx.registerSocket('auth:login', async (player, payload, socket) => {
+      if (player) { socket.emit('auth:error', 'Log out before switching accounts.'); return; }
       const username = typeof payload?.username === 'string' ? payload.username.trim() : '';
       const password = typeof payload?.password === 'string' ? payload.password : '';
       if (!allowAttempt(socket)) { socket.emit('auth:error', 'Too many attempts. Wait a minute and try again.'); return; }
