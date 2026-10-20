@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SKILL_TREE, skillById, skillBonuses } from '../server/skill-tree.js';
 import { DOMAIN_ABILITIES, abilityFor } from '../server/sim/abilities.js';
+import { SKILL_TREE as CLIENT_SKILL_TREE } from '../public/src/config.js';
+
+test('the skill tree mirrors client costs and prices deeper tiers higher', () => {
+  assert.deepEqual(CLIENT_SKILL_TREE.map(({ id, cost }) => [id, cost]), SKILL_TREE.map(({ id, cost }) => [id, cost]));
+  assert.equal(skillById('conduit-root').cost, 1);
+  assert.equal(skillById('pulse-focus').cost, 2);
+  assert.equal(skillById('pulse-echo').cost, 3);
+  assert.equal(skillById('void-step').cost, 4);
+});
 
 test('the skill tree mirrors the client layout and every node is reachable', () => {
   assert.equal(SKILL_TREE.length, 8);
