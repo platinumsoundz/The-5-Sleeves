@@ -165,6 +165,11 @@ and tested.)
 
 ## Server modules (`server/modules/`, auto-discovered)
 
+- **zone-hazards** (priority 55) — five wilderness-only telegraphed hazard
+  fields with idle/warning/active cycles, server-authoritative damage and
+  per-cycle hit limits; safe-zone damage protection remains authoritative.
+  Matching client module draws world-space danger rings. **Implemented,
+  untested.**
 - **auth** (priority 5) — optional guest/register/login flow using username
   and password; rate-limited, HTTPS-required outside development, with
   server-side join guards, separate account profile keys and legacy-name
@@ -191,6 +196,8 @@ and tested.)
 
 ## Client modules (`public/src/modules/`, auto-discovered)
 
+- **zone-hazards** (priority 35) — draws the server-timed idle, warning and
+  active danger fields in world space.
 - **world-decor** (priority 20) — ruin props + landmark name labels.
 - **zone-atmosphere** (priority 30) — per-zone colour wash + arrival
   banner using the zone meta from `join:accepted`.
