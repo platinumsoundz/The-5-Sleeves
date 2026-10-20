@@ -3,7 +3,23 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (Step 13 HTTPS, controller navigation/bindings and HUD updates implemented; tests not run).
+Last updated: 2026-10-20 (PWA standalone metadata and fullscreen Settings control implemented; tests not run).
+
+## Current session — Step 14: PWA and in-game fullscreen (IMPLEMENTED, UNVERIFIED)
+
+- Added `public/manifest.json` with standalone display, landscape orientation,
+  app names, start URL and requested colors; `index.html` now links it and
+  includes Apple home-screen capability/status metadata.
+- Settings has an enter/exit fullscreen button using the standard
+  `documentElement.requestFullscreen()` / `document.exitFullscreen()` API,
+  tracks `fullscreenchange`, and handles unsupported/rejected requests.
+  Unsupported browsers are directed to Home Screen standalone mode.
+- Added `public/src/fullscreen.js` and `test/pwa.test.js` for manifest metadata,
+  API enter/exit and rejection behavior. Existing frame loop, canvas, touch
+  input and sockets were not changed.
+- **Tests/browser checks not run** because no shell/browser runner is available.
+  Fullscreen API support varies by mobile browser; verify iOS and Android on
+  device before claiming universal browser fullscreen behavior.
 
 ## Current session — Step 13: HTTPS, controller menus, controls and HUD (IMPLEMENTED, UNVERIFIED)
 
