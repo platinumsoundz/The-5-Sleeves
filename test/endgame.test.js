@@ -31,7 +31,7 @@ test('Tower 5 opens only the per-operative east gate into the large guardian fro
   assert.equal(canUseExit({ towers: { 5: true } }, citadel, 'east').ok, true);
   assert.deepEqual(expanse.world, { width: 3000, height: 2100 });
   assert.equal(expanse.bossSites.length, 5);
-  assert.equal(expanse.guardianSpawns.length, 4);
+  assert.equal(expanse.guardianSpawns.length, 5);
   assert.equal(expanse.exits.west, 'haven-citadel');
   const mapZone = worldMapPayload().find((zone) => zone.id === expanse.id);
   assert.deepEqual(mapZone.world, expanse.world);
@@ -41,7 +41,7 @@ test('Tower 5 opens only the per-operative east gate into the large guardian fro
   assert.deepEqual(simulation.world, expanse.world);
   assert.equal(simulation.bossSites.length, 5);
   for (const point of expanse.guardianSpawns) spawnWarden(simulation, { x: point.x, y: point.y, tier: expanse.danger });
-  assert.equal(Object.keys(simulation.ai).length, 4);
+  assert.equal(Object.keys(simulation.ai).length, 5);
   assert.ok(Object.values(simulation.ai).every((guardian) => guardian.name === 'Rust Warden'));
   assert.ok(Object.values(simulation.ai).every((guardian) => guardian.x >= 0 && guardian.x <= 3000 && guardian.y >= 0 && guardian.y <= 2100));
 });
