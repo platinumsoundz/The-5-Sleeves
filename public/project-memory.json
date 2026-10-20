@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.6.6",
+  "version": "2.6.7",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -76,6 +76,7 @@
     "Wasteland salvage economy: tiered Rust Warden drops of sell-only Shattered Circuitry and Corroded Relay Parts; server rejects buying salvage",
     "Balance tuning: explicit 120 XP base/+60 per level curve, named Rust Warden per-tier multipliers, and skill tree depth costs of 1–4 points mirrored client/server",
     "Safe-city Cipher Core meditation: 5 credits after 30 seconds idle, every 5 minutes, 20-credit UTC-day cap persisted in profiles; safe-haven Core does not grant active-zone skill points",
+    "Developer grant console: Settings panel only when explicitly enabled in non-production with a 32+ character server token; rate-limited socket authorization and server-side test grants",
     "Gear ATK bonuses from equipped weapons and armour",
     "Five tower wave rooms with completion rewards and east-road unlocks",
     "Six instanced arena modes: PvP/PvE domination, team deathmatch and tower capture",
@@ -103,8 +104,6 @@
     "Product direction (see memory/07-product-direction.md, owner sign-off needed): monetization (cosmetics-only, no pay-to-win per canon), email logins as a plug-and-play auth module, PWA/Android packaging, iOS and console later",
     "Faction-specific character animation and combat effects",
     "Formal progression/economy balance pass: XP/credit reward targets, skill point tier costs, and active-skill power curves",
-    "Safe-zone Cipher Core meditation rewards with AFK abuse limits",
-    "Developer-only test grant console with server-side access controls",
     "Persistent username/password accounts as a plug-and-play auth module; plan secure password hashing, rate limits and later email/2FA hooks",
     "Provider-neutral rewarded-ad integration hook only; no simulated ad playback or unverified grants",
     "Canon-aligned regional story milestones and coordinated Tower Guardian encounters"
