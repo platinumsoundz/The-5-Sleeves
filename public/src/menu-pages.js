@@ -4,6 +4,7 @@
 import { DEFAULT_PALETTE, DOMAINS, ITEM_CATALOG, PLAYER_PALETTES, SKILL_TREE, WORLD_DEFAULT } from './config.js';
 import { KEYBIND_ACTIONS, keyLabel, loadKeybinds, saveKeybinds } from './keybinds.js';
 import { getShootingMode, setShootingMode, SHOOTING_MODE } from './shooting.js';
+import { fullscreenActive, toggleFullscreen } from './fullscreen.js';
 
 const SLOTS = [
   ['head', 'HEAD'], ['chest', 'CHEST'], ['legs', 'LEGS'], ['feet', 'FEET'], ['weapon', 'WEAPON']
@@ -14,6 +15,7 @@ const SLOT_ORDER = Object.fromEntries(SLOTS.map(([slot], index) => [slot, index]
 // Inventory filter survives page refreshes (e.g. after equipping) while the
 // menu stays open. Clicking the same doll slot again clears it.
 let gearFilter = 'all';
+const fullscreenSyncHandlers = new WeakMap();
 
 function make(tag, className, text) {
   const element = document.createElement(tag);
@@ -528,6 +530,34 @@ export function renderSettingsPage(root, { actions, refresh }) {
   root.append(make('p', 'menu-empty', shootingMode === SHOOTING_MODE.AUTO
     ? 'Press or hold BLAST; shots seek the nearest hostile. Twin-stick adds a right aim stick / right gamepad stick.'
     : 'Aim with mouse or the right gamepad stick and hold BLAST. On touch, deflect the right aim stick to aim and fire.'));
+
+  section(root, 'DISPLAY');
+  const fullscreen = make('button', 'settings-toggle', fullscreenActive() ? 'EXIT FULLSCREEN' : 'ENTER FULLSCREEN');
+  fullscreen.type = 'button';
+  fullscreen.setAttribute('aria-pressed', String(fullscreenActive()));
+  const fullscreenSupported = typeof document.documentElement?.requestFullscreen === 'function';
+  fullscreen.disabled = !fullscreenSupported;
+  const fullscreenNote = make('p', 'menu-empty');
+  fullscreenNote.textContent = fullscreenSupported
+    ? 'Hide browser controls when supported. Press Escape or tap again to exit.'
+    : 'Fullscreen is unavailable in this browser. Add this page to your Home Screen to launch in standalone mode.';
+  const syncFullscreen = () => {
+    const active = fullscreenActive();
+    fullscreen.textContent = active ? 'EXIT FULLSCREEN' : 'ENTER FULLSCREEN';
+    fullscreen.setAttribute('aria-pressed', String(active));
+  };
+  const oldSync = fullscreenSyncHandlers.get(root);
+  if (oldSync) document.removeEventListener('fullscreenchange', oldSync);
+  document.addEventListener('fullscreenchange', syncFullscreen);
+  fullscreenSyncHandlers.set(root, syncFullscreen);
+  fullscreen.addEventListener('click', async () => {
+    if (!await toggleFullscreen()) {
+      fullscreenNote.textContent = 'The browser denied fullscreen. Try launching from the Home Screen if available.';
+      return;
+    }
+    syncFullscreen();
+  });
+  root.append(fullscreen, fullscreenNote);
 
   section(root, 'KEYBINDS');
   const binds = loadKeybinds();
