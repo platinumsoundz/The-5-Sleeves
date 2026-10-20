@@ -32,11 +32,11 @@ test('wilderness hazards damage once per cycle and send a warning state', () => 
   assert.equal(player.hp, 76, 'the field can damage again in its next cycle');
 });
 
-test('safe zones and unrelated rooms do not apply road hazards', () => {
+test('safe zones block damage even if a road hazard overlaps them', () => {
   const handlers = {};
   hazards.setup({ on: (event, handler) => { handlers[event] = handler; }, playerZone() {} });
   const player = { id: 'protected', x: 270, y: 500, hp: 100, maxHp: 100 };
-  const zone = { id: 'haven-coast', kind: 'haven', safe: { x: 0, y: 0, width: 1000, height: 700 }, players: { [player.id]: player }, send() {} };
+  const zone = { id: 'wild-coast', kind: 'wild', safe: { x: 0, y: 0, width: 1000, height: 700 }, players: { [player.id]: player }, send() {} };
   handlers.tick(zone, 8000);
   assert.equal(player.hp, 100);
 });
