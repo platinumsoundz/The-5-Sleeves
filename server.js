@@ -107,7 +107,12 @@ function hostServices() {
 for (const catalogZone of CATALOG) {
   const sim = createSimulation(catalogZone, hostServices());
   zones[sim.id] = sim;
-  if (sim.kind === 'wild') for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
+  if (sim.kind === 'wild') {
+    for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
+    for (const spot of catalogZone.guardianSpawns || []) {
+      spawnWarden(sim, { x: spot.x, y: spot.y, tier: catalogZone.danger || 10 });
+    }
+  }
   if (sim.kind === 'arena' && sim.alignment === 'pve') {
     for (let i = 0; i < Math.min(MAX_WARDENS, 3); i += 1) spawnWarden(sim, { tier: 2 });
   }
