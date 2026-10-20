@@ -5,10 +5,9 @@ import {
   setShootingMode, shouldRepeatFire, SHOOTING_MODE
 } from '../public/src/shooting.js';
 
-test('shooting mode accepts only the supported choices and defaults to auto-aim', () => {
+test('shooting mode accepts only the supported choices', () => {
   assert.equal(normalizeMode(SHOOTING_MODE.TWIN), SHOOTING_MODE.TWIN);
   assert.equal(normalizeMode('unknown'), SHOOTING_MODE.AUTO);
-  assert.equal(getShootingMode(), SHOOTING_MODE.AUTO);
 });
 
 test('shooting style persists and updates the twin-stick presentation', () => {
@@ -21,6 +20,7 @@ test('shooting style persists and updates the twin-stick presentation', () => {
   Object.defineProperty(globalThis, 'window', { configurable: true, value: { dispatchEvent: (event) => { eventMode = event.detail; } } });
   Object.defineProperty(globalThis, 'document', { configurable: true, value: { body: { classList: { toggle: (_name, visible) => { twinStickVisible = visible; } } } } });
   try {
+    assert.equal(getShootingMode(), SHOOTING_MODE.AUTO);
     setShootingMode(SHOOTING_MODE.TWIN);
     assert.equal(getShootingMode(), SHOOTING_MODE.TWIN);
     assert.equal(twinStickVisible, true);
