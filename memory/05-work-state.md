@@ -161,7 +161,10 @@ system still needs its own build, tests and memory update.
 - **Verification is blocked:** this session has no shell/command tool available;
   run `npm test` before considering this build complete or committing it.
 
-## Step 17 — Player palette and first-class factions (DONE)
+## Step 17 — Player palette and first-class factions (DONE THEN; SUPERSEDED)
+
+> Historical state: the earlier six-faction picker was superseded by the
+> current post-comic five-faction migration recorded at the top of this file.
 
 - **Factions are visible from the first screen** — the title panel now has a
   SLEEVE FACTION picker with all six domains (Cipher, Wind, Water, Fire,
