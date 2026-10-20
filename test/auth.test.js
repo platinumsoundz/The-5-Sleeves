@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const auth = require('../server/modules/auth.js');
+const secureTransport = require('../server/secure-transport.js');
 
 function buildAuth(filename, legacyName = '') {
   process.env.USERS_FILE = filename;
@@ -20,9 +21,28 @@ function buildAuth(filename, legacyName = '') {
   });
   return { handlers, guard: guards[0] };
 }
-function makeSocket(id) {
-  return { id, handshake: { address: 'test' }, events: [], emit(name, payload) { this.events.push([name, payload]); } };
+function makeSocket(id, headers = {}) {
+  return {
+    id, handshake: { address: 'test', headers }, request: { secure: true }, events: [],
+    emit(name, payload) { this.events.push([name, payload]); }
+  };
 }
+
+test('Render forwarded HTTPS and secure sockets pass while plaintext and untrusted proxy headers fail', (t) => {
+  const oldNodeEnv = process.env.NODE_ENV, oldProxy = process.env.TRUSTED_PROXY_TLS;
+  process.env.NODE_ENV = 'production'; delete process.env.TRUSTED_PROXY_TLS;
+  t.after(() => {
+    if (oldNodeEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = oldNodeEnv;
+    if (oldProxy === undefined) delete process.env.TRUSTED_PROXY_TLS; else process.env.TRUSTED_PROXY_TLS = oldProxy;
+  });
+  assert.equal(secureTransport({ request: { secure: true } }), true);
+  assert.equal(secureTransport({ request: { connection: { encrypted: true } } }), true);
+  assert.equal(secureTransport({ handshake: { headers: { host: 'the-5-sleeves.onrender.com', 'x-forwarded-proto': 'https' } } }), true);
+  assert.equal(secureTransport({ handshake: { headers: { host: 'the-5-sleeves.onrender.com', 'x-forwarded-proto': 'http' } } }), false);
+  assert.equal(secureTransport({ handshake: { headers: { host: 'untrusted.example', 'x-forwarded-proto': 'https' } } }), false);
+  process.env.TRUSTED_PROXY_TLS = 'true';
+  assert.equal(secureTransport({ handshake: { headers: { host: 'trusted.example', 'x-forwarded-proto': 'https' } } }), true);
+});
 
 test('accounts hash passwords, isolate profiles, and reserve their usernames', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'sleeves-auth-'));
