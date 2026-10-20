@@ -110,11 +110,11 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     const code = event.code;
     // The menu key always toggles, even while the menu is open. Everything
     // else belongs to the overlay (tabs, keybind capture, page buttons).
-    if (code === binds.menu) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) onMenu(); return; }
+    if (code === binds.menu) { setMode('keyboard'); fireSources.clear(); event.preventDefault(); if (!event.repeat) onMenu(); return; }
     if (document.body?.dataset?.menuOpen === 'true') return;
     const direction = directionButtons[event.key];
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, true); }
-    if (code === binds.attack) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('attack'); }
+    if (code === binds.attack) { setMode('keyboard'); event.preventDefault(); setFireSource('keyboard', true); }
     if (code === binds.dash || (binds.dash === 'ShiftLeft' && code === 'ShiftRight')) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('dash'); }
     if (code === binds.shield) { setMode('keyboard'); if (!event.repeat) triggerAction('shield'); }
     if (code === binds.ability) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('ability'); }
@@ -124,6 +124,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   window.addEventListener('keyup', (event) => {
     const direction = directionButtons[event.key];
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, false); }
+    if (event.code === binds.attack) setFireSource('keyboard', false);
   });
 
   const isPressed = (pad, index) => !!pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5);
