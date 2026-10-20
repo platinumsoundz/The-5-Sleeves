@@ -22,8 +22,9 @@ and tested.)
   uncontested capture (more bodies = faster), mixed factions freeze it, held
   relay scores 1 pt/s, capture XP, per-arena score limits and match reset.
   PvE counts co-op, PvP counts red/blue; team deathmatch scores kills instead.
-- **Progression** — single `applyXp` funnel; curve in
-  `server/progression.js` (`xpForLevel`, `levelFromXp`, cap 40); level-up =
+- **Progression** — single `applyXp` funnel; explicit curve in
+  `server/progression.js` (120 XP base, +60 per level; `xpForLevel`,
+  `levelFromXp`, cap 40); level-up =
   skill point + 10 max HP + broadcast; `XP_SCALE` env; persisted.
 - **Parties** — squads up to 4, click-to-invite (chat name menu works at any
   range), shared party XP for nearby members, squad chat channel, automatic
@@ -58,7 +59,8 @@ and tested.)
   matching wasteland tiers, remain sellable through city merchants, and are
   excluded from merchant purchases. Equipped gear contributes `gearAtk`.
 - **skill-tree.js** — server mirror of the eight-node branching skill tree;
-  node costs, parent requirements and descriptions.
+  node costs rise with depth (tiers 1–4 cost 1–4 points), with parent
+  requirements and descriptions. Client layout mirrors the costs.
 
 ## Server modules (`server/modules/`)
 
@@ -136,7 +138,8 @@ and tested.)
   objectives, faction scores, match, tower run) plus a zone-scoped `send()`
   and `broadcast()` (empty rooms skip broadcasts). Safe zones support both
   rectangles (cities) and circles.
-- **sim/spec.js** — every shared tuning number (warden stats, XP bounties,
+- **sim/spec.js** — every shared tuning number (warden stats and explicit
+  per-tier scaling multipliers, XP bounties,
   respawn delays, sleeve colours, archive log lines, env knobs).
 - **sim/combat.js** — damage/shield mitigation, deaths, respawns, status
   effects, knockback, swept-path collision maths.
