@@ -21,13 +21,12 @@ export function createUIManager(actions) {
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
   let profileSnapshot = JSON.stringify(profile);
   let menuSignature = '';
-  let selectedFaction = DOMAINS[profile.energyColor] ? profile.energyColor : 'cipher';
+  let selectedFaction = DOMAINS[profile.energyColor] ? profile.energyColor : 'wind';
   if (typeof profile.name === 'string') nameInput.value = profile.name;
 
   const menuController = createMenu({ actions, getState: actions.getState, getPlayer: actions.getPlayer });
 
-  // Six sleeve factions on the title screen. The picker is the player's first
-  // faction identity: it sets the aura, signature ability and /f chat channel.
+  // The five playable sleeve factions set aura, signature ability and /f channel.
   function renderFactions() {
     const options = $('#faction-options');
     if (!options) return;
