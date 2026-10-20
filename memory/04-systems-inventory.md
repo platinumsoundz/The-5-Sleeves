@@ -18,6 +18,8 @@ it committed and tested after running the full suite.)
   projectiles; Cipher is an allied AI, not a player faction.
 - **Rust Wardens (PvE)** — patrol/wander, aggro ring (330), chase, hostile
   fire; 9 s respawn; pay XP + skill point + core charge; `MAX_WARDENS` env.
+  Owner requested a tougher-but-fair rise in patrol density and tower wave
+  counts/stats by region; the difficulty pass is a separate pending build.
 - **Domination** — three relays (one central tower in tower-capture),
   uncontested capture (more bodies = faster), mixed factions freeze it, held
   relay scores 1 pt/s, capture XP, per-arena score limits and match reset.
@@ -67,9 +69,10 @@ it committed and tested after running the full suite.)
   Salvage-only Shattered Circuitry and Corroded Relay Parts drop in the
   matching wasteland tiers, remain sellable through city merchants, and are
   excluded from merchant purchases. Equipped gear contributes `gearAtk`.
-- **skill-tree.js** — server mirror of the six-node branching skill tree;
-  node costs rise with depth (tiers 1–4 cost 1–4 points), with parent
-  requirements and descriptions. Client layout mirrors the costs.
+- **skill-tree.js** — server mirror of the current six-node branching skill
+  tree; node costs rise with depth (tiers 1–4 cost 1–4 points), with parent
+  requirements and descriptions. Owner requested a substantial five-faction
+  passive/special-upgrade expansion; that separate balance build is pending.
 
 ## Server modules (`server/modules/`)
 
@@ -209,9 +212,10 @@ it committed and tested after running the full suite.)
   server-configured redeem codes; code attempts are rate-limited and grant
   types are allowlisted server-side. Grants credits, skill points, items,
   skills and terminal reads through server-owned state.
-- **core-meditation** — safe-haven Cipher Core awards 5 credits every 5
-  minutes after 30 seconds of inactivity, with a 20-credit UTC-day cap
-  persisted per operative; city Core no longer grants active-zone skill points.
+- **core-meditation** — safe-haven Cipher Cores heal nearby operatives at
+  3% max HP per second, capped at maximum health. The existing idle stipend
+  remains: 5 credits every 5 minutes after 30 seconds of inactivity, capped
+  at 20 credits per UTC day and persisted per operative.
 - **archive-terminals** (priority 50) — readable lore terminals per zone;
   first-read XP + core bounty, persisted per operative.
 - **hub-services** (priority 20) — city merchants, credits buy/sell, gear
