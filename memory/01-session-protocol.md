@@ -58,3 +58,12 @@ optional reading.
   unique name suffix (`Name + Date.now().toString(36)`).
 - **Commit after each system**, not in batches. A lost session loses at most
   one build.
+- **Canvas readouts must measure their DOM slot.** The old top-centre HUD
+  painted a fixed 70 px card no matter what CSS said, so shrinking the slot
+  clipped the artwork. `public/src/hud.js` now derives width/height from
+  `#hud-center` and switches to a compact layout for short slots; any future
+  canvas overlay should do the same instead of hard-coding pixels.
+- **Tune the interface from `:root` variables.** HUD/menu sizes live in
+  `--radar-*`, `--hud-*`, `--joy` and `--tap*` (plus `env()` safe areas) in
+  `public/index.html`. Change those few numbers rather than hunting dozens of
+  scattered rules.

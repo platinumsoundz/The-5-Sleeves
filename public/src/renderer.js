@@ -4,6 +4,7 @@ import { drawSpriteFrame, optionalImage } from './assetLoader.js';
 import { drawPlayer, drawWarden } from './characterRenderer.js';
 import { applyCamera, isVisible, updateCamera, visibleWorldBounds } from './camera.js';
 import { INTERPOLATION_DELAY, sampleTrack } from './interpolation.js';
+import { drawHud, slotRect } from './hud.js';
 
 // public/assets/ruins_tiles.png holds six 40px variants: 0-3 interior floor,
 // 4-5 the cracked perimeter ring.
@@ -323,66 +324,13 @@ function drawBursts(ctx, bursts, time) {
   }
 }
 
-// The HUD is anchored to DOM slots inside the top-left / top-right blocks so
-// the canvas readouts never sit underneath the SPECS button or the chat again.
-// Falls back to fixed coordinates when the DOM is unavailable (tests/SSR).
-function slotRect(id, fallback) {
-  const element = typeof document !== 'undefined' ? document.getElementById(id) : null;
-  if (!element || typeof element.getBoundingClientRect !== 'function') return fallback;
-  const rect = element.getBoundingClientRect();
-  if (!rect || rect.width <= 0 || rect.height <= 0) return fallback;
-  return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
-}
-
-// Compact top-centre readout: HP, level/XP and the Conduit Pulse quest line.
-// Kept small and translucent so it never blocks the viewport centre.
-function drawHud(ctx, state, width) {
-  const player = state.players[state.playerId] || state.localPlayer;
-  if (!player) return;
-  ctx.save(); ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  const slot = slotRect('hud-center', { x: width / 2 - 150, y: 10, width: 300, height: 72 });
-  const w = Math.max(220, Math.min(330, slot.width || 300));
-  const x = Math.max(8, Math.min(width - w - 8, slot.x + (slot.width - w) / 2)), y = slot.y;
-  const level = player.level || 1;
-  const into = player.xpIntoLevel || 0;
-  const needed = player.xpNeeded || 1;
-  ctx.fillStyle = 'rgba(6,17,26,.74)'; ctx.fillRect(x, y, w, 70);
-  ctx.strokeStyle = 'rgba(118,255,224,.28)'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, 69);
-  // HP line.
-  ctx.fillStyle = '#421e2a'; ctx.fillRect(x + 8, y + 9, w - 92, 8);
-  ctx.fillStyle = '#f25d75'; ctx.fillRect(x + 8, y + 9, (w - 92) * Math.max(0, player.hp / Math.max(1, player.maxHp)), 8);
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'left';
-  ctx.fillText('HP ' + Math.ceil(player.hp) + '/' + player.maxHp, x + 12, y + 15.5);
-  ctx.fillStyle = '#ffe9a0'; ctx.textAlign = 'right'; ctx.font = 'bold 11px system-ui';
-  ctx.fillText('LV ' + level, x + w - 9, y + 17);
-  // Credits + zone state replace the old persistent Conduit quest line.
-  const zoneLabel = state.zone?.kind === 'haven' ? 'SAFE CITY'
-    : state.zone?.kind === 'arena' ? 'ARENA'
-      : state.zone?.kind === 'tower' ? 'TOWER'
-        : 'WILDERNESS' + (state.zone?.levelBand ? ' LV ' + state.zone.levelBand[0] + '–' + state.zone.levelBand[1] : '');
-  ctx.fillStyle = '#ffd479'; ctx.textAlign = 'left'; ctx.font = 'bold 10px system-ui';
-  ctx.fillText('CR ' + Math.floor(player.credits || 0), x + 8, y + 32);
-  ctx.fillStyle = '#61ffe0';
-  ctx.fillText('· ' + zoneLabel, x + 52, y + 32);
-  ctx.fillStyle = '#8faeb0'; ctx.textAlign = 'right'; ctx.font = '9px system-ui';
-  ctx.fillText(String(player.abilityName || 'SLEEVE').toUpperCase(), x + w - 8, y + 32);
-  // XP line.
-  ctx.fillStyle = 'rgba(64,52,24,.9)'; ctx.fillRect(x + 8, y + 41, w - 16, 5);
-  ctx.fillStyle = '#ffc857'; ctx.fillRect(x + 8, y + 41, (w - 16) * Math.min(1, into / Math.max(1, needed)), 5);
-  ctx.fillStyle = '#ffe9c0'; ctx.textAlign = 'left'; ctx.font = '9px system-ui';
-  ctx.fillText(into + '/' + needed + ' XP', x + 8, y + 57);
-  const cooldown = player.abilityCooldown || 0;
-  ctx.textAlign = 'right'; ctx.fillStyle = cooldown > 0 ? '#8faeb0' : '#7dffe4';
-  ctx.fillText(cooldown > 0 ? (cooldown / 1000).toFixed(1) + 's' : 'READY', x + w - 8, y + 57);
-  ctx.restore();
-}
-
 // Radar lives in the top-left block, directly beneath the connection status.
+// Its CSS slot is the single source of truth, so the map shrinks on phones and
+// the scoreboard underneath stays aligned to it.
 function minimapRect(width) {
-  const slot = slotRect('radar-slot', { x: 12, y: 52, width: 164, height: 115 });
-  const world = WORLD_DEFAULT;
-  const mapWidth = Math.min(164, slot.width || 164);
-  return { x: slot.x, y: slot.y, width: mapWidth, height: Math.max(48, Math.min(slot.height || 115, Math.round(mapWidth * world.height / world.width))) };
+  const slot = slotRect('radar-slot', { x: 10, y: 10, width: 156, height: 109 });
+  const mapWidth = Math.round(Math.max(64, Math.min(180, slot.width || 164)));
+  return { x: slot.x, y: slot.y, width: mapWidth, height: Math.round(mapWidth * WORLD_DEFAULT.height / WORLD_DEFAULT.width) };
 }
 
 // The world is no longer fully visible, so the minimap doubles as orientation.
@@ -439,7 +387,7 @@ function drawMinimap(ctx, state, width) {
     }
   }
   ctx.fillStyle = 'rgba(160,200,190,.75)'; ctx.font = '9px system-ui'; ctx.textAlign = 'left';
-  ctx.fillText((state.zone?.kind || 'zone').toUpperCase() + ' · TACTICAL', x + 5, y + 11);
+  ctx.fillText((state.zone?.kind || 'zone').toUpperCase() + (mapWidth < 128 ? '' : ' · TACTICAL'), x + 5, y + 11);
   ctx.restore();
 }
 
@@ -450,11 +398,12 @@ function drawKillFeed(ctx, state, width, time) {
   if (!feed.length) return;
   ctx.save();
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  const slot = slotRect('hud-slot', { x: width - 222, y: 56, width: 210, height: 115 });
+  const slot = slotRect('top-right', { x: width - 222, y: 10, width: 210, height: 36 });
+  const top = slot.y + (slot.height || 36) + 16;
   ctx.textAlign = 'right'; ctx.font = 'bold 11px system-ui';
   feed.forEach((entry, index) => {
     const fade = Math.min(1, Math.max(0, (6000 - (time - entry.at)) / 900));
-    const y = slot.y + (slot.height || 115) + 14 + index * 16;
+    const y = top + index * 16;
     ctx.globalAlpha = fade;
     ctx.fillStyle = entry.color || '#ffd9a0';
     ctx.fillText(entry.text + (entry.xp ? '  +' + entry.xp + ' XP' : ''), width - 12, y);
@@ -511,10 +460,17 @@ function drawBanner(ctx, state, width, height, time) {
   ctx.save();
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   ctx.globalAlpha = Math.min(1, Math.max(0, Math.min(age / 220, (banner.ttl - age) / 500)));
-  ctx.textAlign = 'center'; ctx.font = 'bold 26px system-ui';
-  const textWidth = ctx.measureText(banner.text).width;
+  // Fit long banner text inside the viewport instead of clipping on phones.
+  let size = 26;
+  ctx.textAlign = 'center'; ctx.font = 'bold ' + size + 'px system-ui';
+  let textWidth = ctx.measureText(banner.text).width;
+  while (textWidth > width - 32 && size > 12) {
+    size -= 2;
+    ctx.font = 'bold ' + size + 'px system-ui';
+    textWidth = ctx.measureText(banner.text).width;
+  }
   ctx.fillStyle = 'rgba(4,10,14,.72)';
-  ctx.fillRect(width / 2 - textWidth / 2 - 20, height * 0.16 - 26, textWidth + 40, 40);
+  ctx.fillRect(width / 2 - textWidth / 2 - 16, height * 0.16 - size * 0.9, textWidth + 32, size + 16);
   ctx.fillStyle = banner.color || '#8ce0ff';
   ctx.fillText(banner.text, width / 2, height * 0.16);
   ctx.globalAlpha = 1;
@@ -535,26 +491,35 @@ function drawScoreboard(ctx, state, width) {
   const arena = !!zone.arena || String(zone.mode || '').startsWith('arena');
   const me = state.localPlayer || state.players?.[state.playerId] || {};
   const doneTowers = Object.values(me.towers || {}).filter(Boolean).length;
+  // On phones the radar is under 130 px wide, so the strip uses short labels
+  // instead of letting long mode names spill over the game.
+  const compact = mapWidth < 128;
   let modeLabel;
   if (arena) {
     const team = zone.alignment === 'pve' ? 'CO-OP' : 'PVP';
-    const mode = zone.arenaMode === 'tdm' ? 'TEAM DEATHMATCH' : zone.arenaMode === 'tower' ? 'CAPTURE THE TOWER' : 'DOMINATION';
+    const mode = zone.arenaMode === 'tdm' ? 'TDM' : zone.arenaMode === 'tower' ? 'TOWER' : 'DOMINATION';
+    const longMode = zone.arenaMode === 'tdm' ? 'TEAM DEATHMATCH' : zone.arenaMode === 'tower' ? 'CAPTURE THE TOWER' : 'DOMINATION';
     const squad = zone.alignment === 'pvp' && me.arenaTeam ? ' · ' + me.arenaTeam.toUpperCase() : '';
-    modeLabel = team + ' ' + mode + squad;
+    modeLabel = team + ' ' + (compact ? mode : longMode) + squad;
   } else if (zone.kind === 'tower') {
     const run = state.towerRun || {};
-    modeLabel = 'TOWER RUN · WAVE ' + Math.max(1, run.wave || 1) + '/' + (run.waves || 3);
+    modeLabel = (compact ? 'TOWER WAVE ' : 'TOWER RUN · WAVE ') + Math.max(1, run.wave || 1) + '/' + (run.waves || 3);
   } else if (zone.kind === 'haven') {
-    modeLabel = 'SAFE CITY · NO COMBAT';
+    modeLabel = compact ? 'SAFE CITY' : 'SAFE CITY · NO COMBAT';
   } else {
-    modeLabel = 'WILDERNESS' + (zone.levelBand ? ' · ENEMIES LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '');
+    modeLabel = compact
+      ? 'WILD' + (zone.levelBand ? ' LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '')
+      : 'WILDERNESS' + (zone.levelBand ? ' · ENEMIES LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '');
   }
   const rows = Math.max(0, scores.length);
   const panelHeight = 34 + rows * 15;
+  // A phone radar is very narrow; the strip below it gets a readable minimum
+  // width instead of forcing every label to abbreviate.
+  const panelWidth = compact ? Math.max(mapWidth, 112) : mapWidth;
   ctx.save();
-  ctx.fillStyle = 'rgba(6,17,26,.82)'; ctx.fillRect(x, y, mapWidth, panelHeight);
+  ctx.fillStyle = 'rgba(6,17,26,.82)'; ctx.fillRect(x, y, panelWidth, panelHeight);
   ctx.strokeStyle = 'rgba(118,255,224,.4)'; ctx.lineWidth = 1;
-  ctx.strokeRect(x + .5, y + .5, mapWidth - 1, panelHeight - 1);
+  ctx.strokeRect(x + .5, y + .5, panelWidth - 1, panelHeight - 1);
   ctx.textAlign = 'left'; ctx.font = 'bold 9px system-ui';
   ctx.fillStyle = arena ? (zone.alignment === 'pve' ? '#8ce0ff' : '#ff9bad') : zone.kind === 'haven' ? '#8effc6' : '#ffd479';
   ctx.fillText(modeLabel, x + 8, y + 13);
@@ -565,7 +530,9 @@ function drawScoreboard(ctx, state, width) {
   ctx.fillText(towerText, x + 8, y + 26);
   if (!scores.length) {
     ctx.fillStyle = 'rgba(150,180,180,.55)'; ctx.font = '9px system-ui';
-    ctx.fillText(zone.kind === 'haven' ? 'merchants · arena master · tower gate' : arena ? 'no score yet' : 'travel east to the next city', x + 8, y + 40);
+    ctx.fillText(zone.kind === 'haven'
+      ? (compact ? 'merchant · tower' : 'merchants · arena master · tower gate')
+      : arena ? 'no score yet' : (compact ? 'east → city' : 'travel east to the next city'), x + 8, y + 40);
   }
   scores.forEach(([faction, score], index) => {
     const rowY = y + 40 + index * 15;
@@ -574,7 +541,7 @@ function drawScoreboard(ctx, state, width) {
     ctx.fillStyle = '#dff3f5'; ctx.font = '10px system-ui'; ctx.textAlign = 'left';
     ctx.fillText(factionLabel(faction), x + 20, rowY);
     ctx.fillStyle = factionColor(faction); ctx.textAlign = 'right';
-    ctx.fillText(String(Math.floor(score)), x + mapWidth - 8, rowY);
+    ctx.fillText(String(Math.floor(score)), x + panelWidth - 8, rowY);
   });
   ctx.restore();
 }

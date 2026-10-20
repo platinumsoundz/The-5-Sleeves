@@ -118,7 +118,7 @@ export function renderSkillsPage(root, { player, actions }) {
     const available = !unlocked && node.requires.every((required) => skills[required]);
     const button = make('button', 'skill-node' + (unlocked ? ' unlocked' : available ? ' available' : ' locked'));
     button.type = 'button';
-    button.style.left = node.x + '%';
+    button.style.left = 'clamp(var(--node-half), ' + node.x + '%, calc(100% - var(--node-half)))';
     button.style.top = (100 - node.y) + '%';
     button.disabled = !available || (player.skillPoints || 0) < node.cost;
     button.append(make('strong', '', node.name));

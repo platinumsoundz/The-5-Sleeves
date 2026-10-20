@@ -3,7 +3,31 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
+Last updated: 2026-10-20 (step 14 mobile-first HUD and menu polish).
+
+## Step 14 — Mobile-first HUD and menu (DONE)
+
+- **One scale** — `:root` now defines every HUD measurement (`--radar-w/-h`,
+  `--hud-w/-h`, `--joy`, `--tap`, `--tap-main`) plus safe-area variables
+  derived from `env()`. Joystick, action buttons, radar, chat/party panels
+  and both top corners all read those numbers, so the interface shrinks as
+  one piece on phones.
+- **Compact HUD** — the top-centre canvas readout moved out of `renderer.js`
+  into `public/src/hud.js` (DOM-slot driven, no fixed pixel assumptions).
+  Desktop gets the full 330×64 card; when the slot is under 220 px wide or
+  58 px tall it switches to a compact 48 px card (LV + HP bar, credits + XP,
+  thin XP strip). Radar / HUD / MENU-CHAT chips no longer overlap from
+  320 px upward.
+- **Menus use the screen** — under 620 px wide (or under 520 px tall) the
+  MENU, shop and arena panels become full-bleed `100dvh` sheets with
+  safe-area padding; heading, skill-points bar and tabs stay put while only
+  the page body scrolls. Tabs wrap to two rows instead of hiding in a
+  scroller, and the skill tree clamps its nodes to the panel edges.
+- **Small fixes** — `#menu-button` is styled (it was an unstyled browser
+  button), the unread chat badge floats over CHAT instead of widening it,
+  banners shrink to fit narrow screens, the kill feed anchors under the
+  MENU/CHAT block, and the mode strip has a 112 px minimum width on phones.
+- 5 new tests in `test/hud.test.js`; suite green (65/65).
 
 ## Step 13b — Test isolation and stable gate tests (DONE)
 
@@ -101,13 +125,15 @@ Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
   intact worktree as commit `2d976f5` ("Restore full game after local git
   object-store loss"). **All content is present, but the granular history of
   roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
-- Local history has the restored baseline plus Steps 12–13 and they are
-  **pushed**: `origin/main` = `578c529` ("Build the village-scale world…"),
-  verified with `git ls-remote`. (The earlier attempt from this environment
-  failed with "could not read Username for 'https://github.com'" — the owner
-  pushed from their side. If a push is ever needed from here again, a PAT or
-  `gh auth login` must exist first.) `git status` should show `## main...origin/main`
-  with no divergence.
+- Local history has the restored baseline plus Steps 12–13 pushed:
+  `origin/main` = `578c529` ("Build the village-scale world…"), verified
+  with `git ls-remote`. Step 14 (mobile UI polish) is committed on top and
+  is the next push. (The earlier push attempt from this environment failed
+  with "could not read Username for 'https://github.com'" — the owner pushed
+  from their side. If a push is ever needed from here again, a PAT or
+  `gh auth login` must exist first.) `git status` should show
+  `## main...origin/main` with no divergence once the current build is
+  pushed.
 - Commit style: imperative summary line + bullet body explaining the system.
 - `npm test` runs test files serially (`--test-concurrency=1`). Parallel
   servers oversubscribe this device and make warden/respawn tests flake;
@@ -127,20 +153,22 @@ Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
 
 ## In progress
 
-- None. Step 13 (village-scale world rebuild) is COMPLETE and green; it is
-  committed in the same build as the test-isolation fix. Only the push to
-  origin is outstanding (owner confirmation).
+- None. Step 14 (mobile-first HUD and menu polish) is COMPLETE and green
+  (65/65), committed as this build.
 
 ## What is left / next session
 
-- **Push to origin** is DONE — `origin/main` matches the local village-scale
-  world commit (`578c529`). Keep committing after each build so a lost session
-  loses at most one build.
-- Next work is owner-directed: playtest the new city → tower → road loop,
-  tune enemy scaling/credit prices, approve or rewrite proposed terminal lore,
-  then pick the next system (suggested: private rooms → auth → PWA → store).
+- **Polish continues (owner-directed).** Step 14 covered HUD/menu sizing and
+  phone layout. Remaining polish candidates, in rough priority order:
+  MENU page content density (map canvas text, inventory cards), title-screen
+  zone picker, chat/party panel visuals, world/landmark draw polish.
+- Playtest the city → tower → road loop; tune enemy scaling/credit prices.
+- Approve or rewrite the PROPOSED terminal lore.
+- Next system after polish (suggested): private rooms → auth → PWA → store.
 - The title screen intentionally offers only the First Village; every other
   city is unlocked by walking the chain or fast-travelling from the MENU map.
+- Push after committing: the last pushed commit is `578c529`, so Step 14 is
+  waiting on credentials or an owner push from their side.
 
 ## Session build queue (this session, in order)
 
@@ -162,14 +190,12 @@ Last updated: 2026-10-20 (step 13 village-scale world rebuild + test isolation).
 
 ## What is left / next session
 
-- Step 12 (Adventure Hub) and Step 13 (village-scale world) are COMPLETE;
-  no build is in flight.
-- Roadmap items 1–14 are COMPLETE; steps 12–13 were owner-directed extensions.
+- Steps 12–14 (hub, village-scale world, mobile UI polish) are COMPLETE; no
+  build is in flight.
+- Roadmap items 1–14 are COMPLETE; steps 12–14 were owner-directed extensions.
 - **Recovery note:** the commit history for earlier builds was reconstructed
   as one commit (`2d976f5`) after the object-store incident. Future builds
   start clean from there.
-- **Push to origin** is still pending owner confirmation — do this first
-  next session; the local repo has lost history once.
 
 ## How to resume after an interruption
 
