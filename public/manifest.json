@@ -1,0 +1,9 @@
+{
+  "short_name": "5 Sleeves",
+  "name": "The 5 Sleeves Online",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0d1117",
+  "theme_color": "#00ffff"
+}
