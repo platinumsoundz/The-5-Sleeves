@@ -1,8 +1,8 @@
 # Memory — Chapter 04: Systems Inventory
 
 What exists TODAY. Check here before building anything new.
-(Updated after every build — if a system is listed here, it is committed
-and tested.)
+(Updated after every build — unverified work is marked explicitly; only call
+it committed and tested after running the full suite.)
 
 ## Server core (`server.js`, ~1130 lines, global state)
 
@@ -12,10 +12,10 @@ and tested.)
   (no tunneling), shield mitigation (40% while shielded), burn/slow/haste
   statuses, downed + timed respawn (5 s) with kill credit,
   `combat:hit/down/respawn/kill` events.
-- **Six signature abilities** (`Q`): Conduit Pulse (cipher), Gale Push
-  (wind), Tide Snare (water), Ember Lance (fire), Bulwark wall (earth),
-  Void Siphon (dark). Server-resolved, per-ability cooldowns, destructible
-  walls that block projectiles.
+- **Five playable signature abilities** (`Q`): Gale Push (wind), Tide Snare
+  (water), Ember Lance (fire), Bulwark wall (earth), Void Siphon (dark).
+  Server-resolved, per-ability cooldowns, destructible walls that block
+  projectiles; Cipher is an allied AI, not a player faction.
 - **Rust Wardens (PvE)** — patrol/wander, aggro ring (330), chase, hostile
   fire; 9 s respawn; pay XP + skill point + core charge; `MAX_WARDENS` env.
 - **Domination** — three relays (one central tower in tower-capture),
@@ -62,7 +62,7 @@ and tested.)
   Salvage-only Shattered Circuitry and Corroded Relay Parts drop in the
   matching wasteland tiers, remain sellable through city merchants, and are
   excluded from merchant purchases. Equipped gear contributes `gearAtk`.
-- **skill-tree.js** — server mirror of the eight-node branching skill tree;
+- **skill-tree.js** — server mirror of the six-node branching skill tree;
   node costs rise with depth (tiers 1–4 cost 1–4 points), with parent
   requirements and descriptions. Client layout mirrors the costs.
 
@@ -77,11 +77,13 @@ and tested.)
   payloads.
 - **world-services** — unlocked-city fast travel (`city:travel`) and world
   map broadcast.
-- **player-customisation** — title-screen sleeve faction choice (six domains)
-  and the eight-colour suit palette (`player:palette`), both validated and
-  persisted; faction sets the aura/ability/channel, palette is cosmetic.
+- **player-customisation** — title-screen choice among five playable
+  factions and the eight-colour suit palette (`player:palette`), validated
+  and persisted; old Cipher profiles migrate to Wind.
 - **tower-services** — three-wave tower runs, completion rewards and
-  east-road unlocks.
+  east-road unlocks; first clear sets the Cipher AI intro milestone.
+- **cipher-companion-memory** — persists whether an operative has met the
+  allied Cipher AI; the first tower clear triggers her introduction.
 - **social-services** — friends list (mutual add/remove), persistent inbox
   with claimable attachments, and inventory gifting to online operatives.
 - **sleeve-skills** — server-validated skill-node unlocks; spends skill
@@ -128,8 +130,9 @@ and tested.)
 - **world.js** — deterministic ruin props, named landmarks, terminal
   helpers (pure, Node-testable).
 - **assetLoader.js / characterRenderer.js** — baked PNG sheets with
-  procedural fallback; all six domains have idle + 4-frame walk art, Rust
-  Wardens have baked art + fallback, plus cosmetic palette overlay and aura.
+  procedural fallback; the five playable factions have idle + 4-frame walk
+  art, Rust Wardens have baked art + fallback, plus cosmetic palette overlay
+  and aura.
   Tower rooms use named, region-biome-tinted procedural landmarks.
 - **audioManager.js** — Web Audio SFX, mute toggle.
 - **config.js** — world/core/colour constants.
@@ -152,7 +155,7 @@ and tested.)
   respawn delays, sleeve colours, archive log lines, env knobs).
 - **sim/combat.js** — damage/shield mitigation, deaths, respawns, status
   effects, knockback, swept-path collision maths.
-- **sim/abilities.js** — the six domain abilities and Ember Lance blasts.
+- **sim/abilities.js** — five playable domain abilities and Ember Lance blasts.
 - **sim/wardens.js** — tier-scaled warden spawning, patrol/chase AI, shots,
   respawn; tower rooms spawn controlled waves through options.
 - **sim/objectives.js** — domination relays, co-op/PvP team factions,
@@ -215,6 +218,8 @@ and tested.)
   `?replay=1&zone=<zone>`.
 - **hub-world** (priority 25) — draws city merchants, Arena Masters, road
   gates, tower rooms and the nearby `F · ...` interaction prompt.
+- **cipher-companion** (priority 45) — accessible hologram introduction after
+  the operative's first tower clear; thanks them and offers future help.
 
 ## Tooling & tests
 
