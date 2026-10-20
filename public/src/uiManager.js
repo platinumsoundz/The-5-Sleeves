@@ -176,7 +176,7 @@ export function createUIManager(actions) {
     ctx.strokeStyle = 'rgba(133,176,155,.18)'; ctx.lineWidth = 1;
     for (let x = 0; x <= partyMap.width; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, partyMap.height); ctx.stroke(); }
     for (let y = 0; y <= partyMap.height; y += 21) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(partyMap.width, y); ctx.stroke(); }
-    const colors = { cipher: '#00ffff', wind: '#00ff88', water: '#0088ff', fire: '#ff4400', earth: '#cc7722', dark: '#bd38f5' };
+    const colors = { wind: '#00ff88', water: '#0088ff', fire: '#ff4400', earth: '#cc7722', dark: '#bd38f5' };
     party.members.forEach((member) => {
       const x = Math.max(4, Math.min(partyMap.width - 4, member.x / world.width * partyMap.width));
       const y = Math.max(4, Math.min(partyMap.height - 4, member.y / world.height * partyMap.height));
