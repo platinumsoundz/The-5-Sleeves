@@ -314,7 +314,7 @@ export function renderInventoryPage(root, { player, actions, refresh }) {
     card.append(make('strong', '', item.name));
     card.append(make('small', 'inventory-slot', item.tier + ' · ' + item.slot.toUpperCase() + (item.atkBonus ? ' · ATK +' + item.atkBonus : '')));
     card.append(make('p', '', item.desc || ''));
-    if (item.slot !== 'supply') {
+    if (SLOT_ORDER[item.slot] !== undefined) {
       const controls = make('div', 'inventory-actions');
       if (equipped) {
         controls.append(make('span', 'equipped-tag', 'EQUIPPED'));
