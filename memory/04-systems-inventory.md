@@ -69,6 +69,9 @@ and tested.)
   payloads.
 - **world-services** — unlocked-city fast travel (`city:travel`) and world
   map broadcast.
+- **player-customisation** — title-screen sleeve faction choice (six domains)
+  and the eight-colour suit palette (`player:palette`), both validated and
+  persisted; faction sets the aura/ability/channel, palette is cosmetic.
 - **tower-services** — three-wave tower runs, completion rewards and
   east-road unlocks.
 - **social-services** — friends list (mutual add/remove), persistent inbox
@@ -113,7 +116,8 @@ and tested.)
 - **world.js** — deterministic ruin props, named landmarks, terminal
   helpers (pure, Node-testable).
 - **assetLoader.js / characterRenderer.js** — baked PNG sheets with
-  procedural fallback; per-domain idle + 4-frame walk.
+  procedural fallback; per-domain idle + 4-frame walk, plus the cosmetic
+  palette overlay (scarf/strap/belt) and palette aura sparks.
 - **audioManager.js** — Web Audio SFX, mute toggle.
 - **config.js** — world/core/colour constants.
 

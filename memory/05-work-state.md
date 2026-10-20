@@ -3,7 +3,32 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 16 per-region biome backgrounds).
+Last updated: 2026-10-20 (step 17 player palette + faction identity).
+
+## Step 17 — Player palette and first-class factions (DONE)
+
+- **Factions are visible from the first screen** — the title panel now has a
+  SLEEVE FACTION picker with all six domains (Cipher, Wind, Water, Fire,
+  Earth, Dark), each showing its signature ability. The choice travels in the
+  join payload, is validated server-side by the new
+  `player-customisation` module, and sets `energyColor`/`color`/accent before
+  the operative enters. It is persisted with the profile.
+- **Faction meaning stays simple** — the six sleeve domains *are* the
+  factions (there is still no separate `player.faction`): the choice drives
+  the aura, signature ability, nameplate/objective colours and `/f` chat.
+  Canon zone spirits were not touched.
+- **Suit colour** — eight cosmetic palettes (Ice, Acid, Ember, Rose, Violet,
+  Gold, Jade, Bone) on the CHARACTER page. `player:palette` is
+  server-validated and persisted; the client draws a scarf/chest strap, belt
+  and every third aura spark in the chosen colour, so it works on top of the
+  baked sprite sheets and the procedural fallback.
+- **Menu consistency** — changing faction or palette updates the title
+  picker, menu header and open pages from the next snapshot (palette added to
+  the refresh signature); the CHARACTER page labels the chooser
+  `SLEEVE DOMAIN · FACTION` and explains that switching is free.
+- 7 new tests in `test/customisation.test.js` (client/server palette parity,
+  id/hex parsing, join faction, fallback, persist/broadcast, invalid input);
+  suite green **82/82** (~62 s).
 
 ## Step 16 — Per-region biome backgrounds (DONE)
 
@@ -174,11 +199,11 @@ Last updated: 2026-10-20 (step 16 per-region biome backgrounds).
   intact worktree as commit `2d976f5` ("Restore full game after local git
   object-store loss"). **All content is present, but the granular history of
   roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
-- Local history has the restored baseline plus Steps 12–16 pushed.
-  `origin/main` tracks Steps 15–16 ("Clean up the menu pages and make the
-  skill tree functional", "Give every region its own biome background") on
-  top of `3594f89` ("Record the mobile UI polish push"). Verified with
-  `git ls-remote` after pushing. (An earlier push attempt from this
+- Local history has the restored baseline plus Steps 12–17 pushed.
+  `origin/main` tracks Steps 15–17 ("Clean up the menu pages and make the
+  skill tree functional", "Give every region its own biome background",
+  "Add player colours and faction identity") on top of `3594f89` ("Record
+  the mobile UI polish push"). Verified with `git ls-remote` after pushing. (An earlier push attempt from this
   environment failed with "could not read Username for
   'https://github.com'" — the owner pushed from their side that time. The
   credential cache works now; if it fails again, a PAT or
@@ -203,22 +228,24 @@ Last updated: 2026-10-20 (step 16 per-region biome backgrounds).
 
 ## In progress
 
-- None. Step 16 (per-region biome backgrounds) is COMPLETE and green
-  (75/75), committed as this build.
+- None. Step 17 (player palette + faction identity) is COMPLETE and green
+  (82/82), committed as this build. The three owner asks in this polish pass
+  (menu cleanup, per-region biomes, colour/faction identity) are now done.
 
 ## What is left / next session
 
-- **Polish continues (owner-directed).** Steps 15–16 restructured the MENU
-  pages and gave every region its own ground art. Remaining owner asks in
-  this polish pass: player colour customisation and making the six factions
-  visible/working as first-class identities. Then: title-screen zone picker,
-  chat/party panel visuals, map canvas text.
+- **Owner device check.** Verify portrait + landscape on a real phone: title
+  faction picker, paperdoll slot filtering, skill-node taps, suit swatches,
+  and the six region backgrounds (spawn grass, coast water, scorched earth,
+  frozen frost-and-ember, citadel cipher, shared wilds wasteland).
+- Then continue general polish: title-screen zone picker, chat/party panel
+  visuals, map canvas text, and any balance feedback from playtesting.
 - Playtest the city → tower → road loop; tune enemy scaling/credit prices.
 - Approve or rewrite the PROPOSED terminal lore.
 - Next system after polish (suggested): private rooms → auth → PWA → store.
 - The title screen intentionally offers only the First Village; every other
   city is unlocked by walking the chain or fast-travelling from the MENU map.
-- Steps 15–16 are pushed; keep committing and pushing each build.
+- Steps 15–17 are pushed; keep committing and pushing each build.
 
 ## Session build queue (this session, in order)
 

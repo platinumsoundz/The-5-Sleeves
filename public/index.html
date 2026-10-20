@@ -72,6 +72,10 @@
       .zone-option { padding: 5px 8px; border: 1px solid #2c5a55; border-radius: 7px; background: rgba(10,26,30,.85); color: #8fc7bd; font: 700 10px system-ui,sans-serif; cursor: pointer; letter-spacing: .05em; }
       .zone-option small { display: block; font-weight: 400; font-size: 8px; color: #5b8a83; margin-top: 1px; }
       .zone-option.selected { border-color: #43f5c5; color: #d9fff5; box-shadow: 0 0 10px rgba(67,245,197,.25); }
+      #faction-picker { margin-top: 10px; text-align: left; }
+      #faction-options { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 5px; }
+      .faction-option { border-left: 3px solid var(--swatch, #2c5a55); text-align: left; }
+      .faction-option.selected { border-color: var(--swatch, #43f5c5); box-shadow: 0 0 12px rgba(67,245,197,.22); color: #f1fffb; }
       #character-menu { position: fixed; z-index: 8; inset: 0; height: 100vh; height: 100dvh; overflow-y: auto; display: flex; justify-content: center; align-items: center; padding: clamp(10px, 2.5vw, 20px); background: rgba(2,8,17,.88); }
       #character-menu.hidden { display: none; }
       .menu-panel { width: min(520px,100%); max-height: 100%; min-height: 0; overflow-y: auto; padding: clamp(16px, 3vw, 24px); border: 1px solid rgba(105,255,222,.6); border-radius: 14px; background: linear-gradient(145deg,#102534,#07111d); box-shadow: 0 0 42px rgba(51,232,202,.15); }
@@ -176,6 +180,12 @@
       .gear-filter-row { display:flex; flex-wrap:wrap; gap:4px; margin:2px 0 8px; }
       .gear-filter { padding:5px 8px; border:1px solid #2f5560; border-radius:999px; background:#0d2230; color:#8fb9b7; font:700 9px system-ui,sans-serif; letter-spacing:.06em; cursor:pointer; }
       .gear-filter.selected { border-color:#8ffff0; color:#d9fff5; background:#12474a; }
+      .palette-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+      .palette-swatch { display:grid; justify-items:center; gap:3px; padding:7px 4px; border:1px solid #2f5560; border-radius:8px; background:rgba(10,24,32,.85); color:#9bb8b8; cursor:pointer; }
+      .palette-swatch:hover { border-color:#6fe0cb; }
+      .palette-swatch.selected { border-color:#8ffff0; color:#eafffa; box-shadow:0 0 10px rgba(90,255,221,.22); }
+      .palette-chip { width:22px; height:22px; border-radius:50%; background:var(--swatch,#7fe8ff); border:2px solid rgba(255,255,255,.25); box-shadow:0 0 10px var(--swatch,#7fe8ff); }
+      .palette-swatch small { font-size:8px; letter-spacing:.08em; }
       .skill-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin:2px 0 0; }
       .skill-summary-cell { display:grid; gap:1px; padding:9px; border:1px solid #3d6e70; border-radius:8px; background:rgba(12,30,38,.8); text-align:center; }
       .skill-summary-cell strong { color:#ffe9a0; font-size:20px; }
@@ -305,6 +315,7 @@
         #hud-controls { flex-direction: column; align-items: stretch; }
         #hud-controls button { padding: 5px 8px; }
         .skill-tree { --node-half: 40px; }
+        #faction-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
       /* Paperdoll slots keep readable item names on small phones. */
       @media (max-width: 420px) {
@@ -363,6 +374,10 @@
         <div id="zone-picker" role="radiogroup" aria-label="Choose a zone">
           <div class="zone-kicker">DEPLOYMENT ZONE</div>
           <div id="zone-options"></div>
+        </div>
+        <div id="faction-picker" role="radiogroup" aria-label="Choose a sleeve faction">
+          <div class="zone-kicker">SLEEVE FACTION</div>
+          <div id="faction-options"></div>
         </div>
         <input id="username-input" name="username" type="text" maxlength="18" minlength="2" autocomplete="nickname" placeholder="Character name" aria-label="Character name" required />
         <button id="enter-button" type="submit">[ ENTER CONDUIT ]</button>

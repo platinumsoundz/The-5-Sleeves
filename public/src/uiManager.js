@@ -1,4 +1,4 @@
-import { ITEM_CATALOG, PROFILE_KEY, WORLD_DEFAULT } from './config.js';
+import { DOMAINS, ITEM_CATALOG, PROFILE_KEY, WORLD_DEFAULT } from './config.js';
 import { createMenu } from './menu.js';
 
 export function createUIManager(actions) {
@@ -20,9 +20,34 @@ export function createUIManager(actions) {
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
   let profileSnapshot = JSON.stringify(profile);
   let menuSignature = '';
+  let selectedFaction = DOMAINS[profile.energyColor] ? profile.energyColor : 'cipher';
   if (typeof profile.name === 'string') nameInput.value = profile.name;
 
   const menuController = createMenu({ actions, getState: actions.getState, getPlayer: actions.getPlayer });
+
+  // Six sleeve factions on the title screen. The picker is the player's first
+  // faction identity: it sets the aura, signature ability and /f chat channel.
+  function renderFactions() {
+    const options = $('#faction-options');
+    if (!options) return;
+    options.replaceChildren();
+    for (const [key, info] of Object.entries(DOMAINS)) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'zone-option faction-option' + (key === selectedFaction ? ' selected' : '');
+      button.dataset.faction = key;
+      button.style.setProperty('--swatch', info.primary);
+      button.setAttribute('role', 'radio');
+      button.setAttribute('aria-checked', String(key === selectedFaction));
+      button.append(info.label.replace(/ (Sleeve|Domain|Spirit)$/, ''));
+      const meta = document.createElement('small');
+      meta.textContent = info.short + ' · ' + key.toUpperCase();
+      button.append(meta);
+      button.addEventListener('click', () => { selectedFaction = key; renderFactions(); });
+      options.append(button);
+    }
+  }
+  renderFactions();
 
   function saveProfile() {
     const serialized = JSON.stringify(profile);
@@ -252,7 +277,7 @@ export function createUIManager(actions) {
     event.preventDefault();
     const name = nameInput.value.trim();
     if (!name) { nameError.textContent = 'Enter a character name.'; return; }
-    nameError.textContent = ''; enterButton.disabled = true; actions.join(name);
+    nameError.textContent = ''; enterButton.disabled = true; actions.join(name, selectedFaction);
   });
   $('#menu-button')?.addEventListener('click', () => actions.toggleMenu());
   if (chatToggle) chatToggle.addEventListener('click', () => toggleChat());
@@ -298,6 +323,7 @@ export function createUIManager(actions) {
     setStatus(message, connected) { status.textContent = message; status.classList.toggle('offline', !connected); },
     joinAccepted({ name, stats }) {
       joined = true; profile = { ...profile, name, ...stats }; saveProfile();
+      if (DOMAINS[stats?.energyColor]) { selectedFaction = stats.energyColor; renderFactions(); }
       title.classList.add('hidden'); enterButton.disabled = false; nameError.textContent = '';
       status.textContent = 'CONNECTED';
       status.classList.remove('offline');
@@ -313,13 +339,18 @@ export function createUIManager(actions) {
         homeCity: player.homeCity, unlockedCities: player.unlockedCities, towers: player.towers,
         skillPoints: player.skillPoints, partyXp: player.partyXp,
         atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor,
+        palette: player.palette,
         inventory: player.inventory, equipped: player.equipped, skills: player.skills, friends: player.friends
       };
+      if (player.energyColor && DOMAINS[player.energyColor] && player.energyColor !== selectedFaction) {
+        selectedFaction = player.energyColor;
+        renderFactions();
+      }
       saveProfile(); updateMenu(player);
       // Menu pages read the live snapshot. Rebuild them only when skills,
       // gear, points or resources actually change — not on every tick — so a
       // tap on a skill node is not swallowed by a constant re-render.
-      const signature = [player.level, player.skillPoints, player.xp, player.credits, player.gearAtk, player.atk, player.plating, player.overclock, player.energyColor, Math.ceil(player.hp || 0), (player.inventory || []).length, JSON.stringify(player.equipped || {}), JSON.stringify(player.skills || {})].join('|');
+      const signature = [player.level, player.skillPoints, player.xp, player.credits, player.gearAtk, player.atk, player.plating, player.overclock, player.energyColor, player.palette, Math.ceil(player.hp || 0), (player.inventory || []).length, JSON.stringify(player.equipped || {}), JSON.stringify(player.skills || {})].join('|');
       if (signature !== menuSignature) {
         menuSignature = signature;
         if (menuController.isOpen()) menuController.refresh();

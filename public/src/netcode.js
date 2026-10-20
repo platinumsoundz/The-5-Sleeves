@@ -162,7 +162,7 @@ export function createNetcode(state, callbacks = {}, audio = null) {
   socket.on('disconnect', () => callbacks.status?.('Connection lost', false));
 
   return {
-    join: (name, zoneId) => socket.emit('player:join', zoneId ? { name, zone: zoneId } : name),
+    join: (name, zoneId, faction) => socket.emit('player:join', zoneId || faction ? { name, zone: zoneId || undefined, faction: faction || undefined } : name),
     switchZone: (zoneId) => socket.emit('zone:switch', zoneId),
     spectate: (zoneId) => socket.emit('spectate:join', { zone: zoneId }),
     move: (x, y) => socket.emit('player:move', { x, y }),
@@ -183,6 +183,7 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     sellItem: (itemId) => socket.emit('shop:sell', { itemId }),
     equipItem: (itemId) => socket.emit('player:equip', { itemId }),
     unequipItem: (slot) => socket.emit('player:unequip', { slot }),
+    setPalette: (palette) => socket.emit('player:palette', { palette }),
     enterArena: (zoneId) => socket.emit('arena:enter', { zoneId }),
     fastTravel: (zoneId) => socket.emit('city:travel', { zoneId }),
     addFriend: (targetId, name) => socket.emit('friends:add', { targetId, name }),

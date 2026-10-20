@@ -468,6 +468,7 @@ io.on('connection', (socket) => {
     // Accepts a bare name (legacy/tests) or { name, zone }.
     const requestedName = typeof payload === 'string' ? payload : payload?.name;
     const requestedZone = typeof payload === 'string' ? null : payload?.zone;
+    const requestedFaction = typeof payload === 'string' ? null : payload?.faction;
     if (typeof requestedName !== 'string') {
       socket.emit('name_error', { message: 'Enter a character name.' });
       return;
@@ -486,6 +487,8 @@ io.on('connection', (socket) => {
     const zone = zones[requestedZone] || DEFAULT_ZONE;
     const profile = profiles[nameKey] || {};
     player = buildPlayer(socket, name, profile, zone);
+    // The customisation module resolves this into energyColor/color/accent.
+    player.requestedFaction = requestedFaction;
     // Modules may add profile-backed fields before the player is registered.
     hooks.emit('joining', player, profile);
     playersById[socket.id] = player;
@@ -504,7 +507,7 @@ io.on('connection', (socket) => {
         homeCity: player.homeCity, unlockedCities: player.unlockedCities, towers: player.towers,
         skillPoints: player.skillPoints, partyXp: player.partyXp,
         atk: player.atk, plating: player.plating, overclock: player.overclock,
-        energyColor: player.energyColor
+        energyColor: player.energyColor, palette: player.palette
       }
     });
     unlockHaven(player, zone, socket);

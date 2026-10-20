@@ -49,10 +49,27 @@ function drawAura(ctx, player, time, color, accent) {
     const angle = time * (player.energyColor === 'wind' ? .004 : .0018) + i * Math.PI * .4;
     const glitch = player.energyColor === 'dark' ? Math.sin(time * .045 + i * 17) * 5 : 0;
     const radius = 22 + glitch;
-    ctx.fillStyle = i % 2 ? accent : color;
+    // Every third spark wears the player's suit colour; the rest stay faction.
+    ctx.fillStyle = player.palette && i % 3 === 0 ? player.palette : (i % 2 ? accent : color);
     if (player.energyColor === 'dark' && i % 2 === 0) ctx.fillRect(player.x + Math.cos(angle) * radius - 2, player.y + Math.sin(angle) * radius - 2, 5, 5);
     else { ctx.beginPath(); ctx.arc(player.x + Math.cos(angle) * radius, player.y + Math.sin(angle) * radius, 2.4, 0, Math.PI * 2); ctx.fill(); }
   }
+}
+
+// The personal palette is an overlay rather than a recolour, so it works the
+// same on baked sprite sheets and on the procedural fallback: a scarf/chest
+// strap, a belt line and a shoulder stud.
+function drawSuitAccent(ctx, player) {
+  if (!player.palette) return;
+  ctx.save();
+  ctx.globalAlpha = .95;
+  ctx.fillStyle = player.palette;
+  ctx.fillRect(player.x - 9, player.y - 12, 18, 3);
+  ctx.globalAlpha = .8;
+  ctx.fillRect(player.x - 5, player.y + 6, 10, 2);
+  ctx.globalAlpha = .55;
+  ctx.fillRect(player.x - 12, player.y - 20, 3, 3);
+  ctx.restore();
 }
 
 function drawStatusEffects(ctx, player, time) {
@@ -119,6 +136,7 @@ export function drawPlayer(ctx, player, localId, time) {
     : (drawSpriteFrame(ctx, idleImage, 0, 1, x, y, SPRITE.width, SPRITE.height)
       || drawSpriteFrame(ctx, walkImage, 0, WALK_FRAMES, x, y, SPRITE.width, SPRITE.height));
   if (!drawn) drawAjaye(ctx, player.x, player.y, player, time);
+  drawSuitAccent(ctx, player);
   drawStatusEffects(ctx, player, time);
   if (Date.now() < player.shieldUntil) {
     ctx.beginPath(); ctx.arc(player.x, player.y, 25, 0, Math.PI * 2); ctx.strokeStyle = '#7bd8ff'; ctx.lineWidth = 3; ctx.stroke();

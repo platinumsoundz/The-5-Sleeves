@@ -7,13 +7,26 @@ export const TILE_SIZE = 40;
 export const PERIMETER_MARGIN = 40;
 export const MAX_ARCHIVE_ECHOES = 5;
 export const DOMAINS = Object.freeze({
-  cipher: { label: 'Cipher Sleeve', primary: '#00ffff', accent: '#78ff5f' },
-  wind: { label: 'Wind Domain', primary: '#00ff88', accent: '#a7ffd0' },
-  water: { label: 'Water Domain', primary: '#0088ff', accent: '#71d5ff' },
-  fire: { label: 'Fire Domain', primary: '#ff4400', accent: '#ffb347' },
-  earth: { label: 'Earth Domain', primary: '#cc7722', accent: '#f0b768' },
-  dark: { label: 'Dark Spirit', primary: '#9900ff', accent: '#ff29d6' }
+  cipher: { label: 'Cipher Sleeve', short: 'PULSE', primary: '#00ffff', accent: '#78ff5f' },
+  wind: { label: 'Wind Domain', short: 'GALE', primary: '#00ff88', accent: '#a7ffd0' },
+  water: { label: 'Water Domain', short: 'SNARE', primary: '#0088ff', accent: '#71d5ff' },
+  fire: { label: 'Fire Domain', short: 'LANCE', primary: '#ff4400', accent: '#ffb347' },
+  earth: { label: 'Earth Domain', short: 'WALL', primary: '#cc7722', accent: '#f0b768' },
+  dark: { label: 'Dark Spirit', short: 'SIPHON', primary: '#9900ff', accent: '#ff29d6' }
 });
+
+// Personal suit colours (server mirror: server/player-palettes.js).
+export const PLAYER_PALETTES = Object.freeze([
+  { id: 'ice', name: 'Ice', hex: '#7fe8ff' },
+  { id: 'acid', name: 'Acid', hex: '#b6ff4d' },
+  { id: 'ember', name: 'Ember', hex: '#ff9a4d' },
+  { id: 'rose', name: 'Rose', hex: '#ff6f9c' },
+  { id: 'violet', name: 'Violet', hex: '#c58bff' },
+  { id: 'gold', name: 'Gold', hex: '#ffd86b' },
+  { id: 'jade', name: 'Jade', hex: '#5effc1' },
+  { id: 'bone', name: 'Bone', hex: '#e8e2cf' }
+]);
+export const DEFAULT_PALETTE = 'ice';
 
 // Fallback safe cube for the title screen. Live cities supply the real safe
 // rectangle through hub:state; wilderness and arena rooms supply null.

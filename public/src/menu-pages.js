@@ -1,7 +1,7 @@
 // Renderers for the expanded MENU pages. Pure DOM builders: they read the
 // live player/state and call back into the UI actions, so uiManager.js stays a
 // thin coordinator. No top-level DOM access (safe to import in tests).
-import { DOMAINS, ITEM_CATALOG, SKILL_TREE, WORLD_DEFAULT } from './config.js';
+import { DEFAULT_PALETTE, DOMAINS, ITEM_CATALOG, PLAYER_PALETTES, SKILL_TREE, WORLD_DEFAULT } from './config.js';
 import { KEYBIND_ACTIONS, keyLabel, loadKeybinds, saveKeybinds } from './keybinds.js';
 
 const SLOTS = [
@@ -146,6 +146,23 @@ export function renderCharacterPage(root, { player, actions }) {
     colors.append(button);
   }
   root.append(colors);
+
+  section(root, 'SUIT COLOUR');
+  root.append(make('p', 'menu-empty', 'Cosmetic only: recolours your scarf, chest strap and aura sparks. Your sleeve faction keeps its own ability colour.'));
+  const palette = make('div', 'palette-options');
+  const current = player.palette || PLAYER_PALETTES.find((swatch) => swatch.id === DEFAULT_PALETTE)?.hex || PLAYER_PALETTES[0].hex;
+  for (const swatch of PLAYER_PALETTES) {
+    const selected = current.toLowerCase() === swatch.hex.toLowerCase();
+    const button = make('button', 'palette-swatch' + (selected ? ' selected' : ''));
+    button.type = 'button';
+    button.style.setProperty('--swatch', swatch.hex);
+    button.setAttribute('aria-label', swatch.name + ' suit colour');
+    button.setAttribute('aria-pressed', String(selected));
+    button.append(make('span', 'palette-chip'), make('small', '', swatch.name.toUpperCase()));
+    button.addEventListener('click', () => actions.setPalette(swatch.id));
+    palette.append(button);
+  }
+  root.append(palette);
 }
 
 export function renderSkillsPage(root, { player, actions }) {

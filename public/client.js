@@ -121,13 +121,14 @@ const network = createNetcode(state, {
 }, audio);
 let selectedZone = 'haven-perimeter';
 ui = createUIManager({
-  join: (name) => network.join(name, selectedZone),
+  join: (name, faction) => network.join(name, selectedZone, faction),
   selectZone: (zoneId) => {
     selectedZone = zoneId;
     ui.renderZones(state.zones || [], selectedZone);
   },
   upgrade: (stat) => network.upgrade(stat),
   selectDomain: (domain) => network.selectDomain(domain),
+  setPalette: (palette) => network.setPalette(palette),
   toggleMenu: (open) => ui.toggleMenu(open),
   switchZone: (zoneId) => network.switchZone(zoneId),
   enterArena: (zoneId) => network.enterArena(zoneId),
