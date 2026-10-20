@@ -28,8 +28,12 @@ self.addEventListener('fetch', (event) => {
     try {
       const response = await fetch(request);
       if (response.ok && response.type === 'basic') {
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put(request, response.clone());
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+        } catch (cacheError) {
+          // A cache quota/storage failure must never break the live response.
+        }
       }
       return response;
     } catch (error) {
