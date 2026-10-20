@@ -19,6 +19,7 @@
   "canon_rules": [
     "Setting: circa 2036, ~5 years after the modern collapse; recognisably contemporary, scarcity-driven, not generic cyberpunk",
     "Canon identities include Cipher, Wind, Water, Fire, Earth and Dark; the post-comic game has five playable factions (Wind, Water, Fire, Earth, Dark), with Cipher as a non-playable allied AI",
+    "Game chronology: the operative’s continuation begins after the comic; Cipher first appears after the player clears any tower, and the milestone persists per operative.",
     "25 original ability modules, 5 per elemental domain; modules can be stolen, recovered, transferred or shared",
     "Spirits are intelligent agents with their own consent; they are never obedient buttons",
     "The ancient catastrophe and the modern collapse (~2031) are distinct events; towers regulate environmental systems and their restoration is never a planetary reset",
@@ -35,7 +36,7 @@
   ],
   "active_features": [
     "Title Overlay & Onboarding",
-    "JSON Persistence (player-profiles.json): name, domain, stats, credits, home/unlocked cities, towers, core points, skill points, XP, level, terminalsRead",
+    "JSON Persistence (player-profiles.json): name, domain, stats, credits, home/unlocked cities, towers, core points, skill points, XP, level, terminalsRead, cipherIntroSeen",
     "Realtime Movement & 360° Analog Touch Joystick",
     "5 Playable Sleeve Factions & Skill Upgrades; Cipher is a non-playable ally",
     "Gamepad / Keyboard Dynamic HUD Hints",
@@ -85,8 +86,8 @@
     "Expanded Menu (Inventory, Party, Inbox, Map, Skill Tree)",
     "Interactive Chat Context Actions",
     "Mobile-first HUD and menu (compact canvas HUD in public/src/hud.js, full-bleed menu/shop/arena sheets, safe-area + dvh layout, touch-sized joystick/buttons, CSS-variable UI scale)",
-    "Menu cleanup: Character page is stats/identity only; Inventory owns equipped gear with a domain-tinted stick-figure paperdoll, slot filters and UNEQUIP; Skills page holds core upgrades plus a functional tree whose 8 nodes tune abilities, dash and Bulwark walls",
-    "Skill tree effects (server-validated): Conduit Attunement cooldown, Pulse Focus/Echo, Gale Thread/Crown, Void Step dash distance, Ward Plating/Bastion Seal wall HP, duration and ally repair",
+    "Menu cleanup: Character page is stats/identity only; Inventory owns equipped gear with a domain-tinted stick-figure paperdoll, slot filters and UNEQUIP; Skills page holds core upgrades plus a functional six-node tree whose nodes tune abilities, dash and Bulwark walls",
+    "Skill tree effects (server-validated): Conduit Attunement root, Gale Thread/Crown, Void Step, Ward Plating/Bastion Seal; Cipher pulse-only nodes removed",
     "Server-validated unequip (player:unequip) and snapshot-aware menu refresh that only rebuilds pages when player data changes",
     "Per-region biome backgrounds (public/src/biomes.js): grassy Wind spawn, water coast, scorched earth, frost-and-ember Fire city, cipher Citadel, one shared wasteland for every wild road and a neutral arena floor; cached per biome + world size, with biome-tinted perimeter edges and arrival banners",
     "Five-faction identity from the title screen: picker validates Wind, Water, Fire, Earth and Dark; faction drives aura, ability, nameplates, objectives and /f chat; CHARACTER page repeats the chooser",
