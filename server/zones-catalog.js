@@ -15,6 +15,7 @@
 const { HUB } = require('./sim/spec.js');
 
 const WORLD = Object.freeze({ width: 1000, height: 700 });
+const EASTERN_EXPANSE_WORLD = Object.freeze({ width: 3000, height: 2100 });
 const SAFE_CUBE = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.height });
 
 const TERMINALS = {
@@ -271,8 +272,30 @@ const ZONES = [
     towerIndex: 5,
     towerName: 'Tower 5 · Apex Spire',
     terminals: TERMINALS.citadel,
-    exits: { west: 'wild-apex', north: 'tower-5' },
+    exits: { west: 'wild-apex', east: 'wild-eastern-expanse', north: 'tower-5' },
     desc: 'The last safe floor before the final tower.'
+  }),
+
+  wild({
+    id: 'wild-eastern-expanse',
+    name: 'Eastern Expanse',
+    book: 'Beyond the Citadel',
+    tint: 'rgba(105, 205, 180, 0.05)',
+    biome: 'wasteland',
+    order: 11,
+    danger: 10,
+    levelBand: [30, 40],
+    world: EASTERN_EXPANSE_WORLD,
+    spawn: { x: 92, y: 1050 },
+    exits: { west: 'haven-citadel' },
+    bossSites: [
+      { id: 'site-1', x: 650, y: 430 },
+      { id: 'site-2', x: 1500, y: 350 },
+      { id: 'site-3', x: 2350, y: 520 },
+      { id: 'site-4', x: 2250, y: 1600 },
+      { id: 'site-5', x: 1250, y: 1710 }
+    ],
+    desc: 'A broad frontier beyond the Citadel, marked for future threats.'
   }),
 
   tower({
@@ -339,6 +362,8 @@ function zoneCatalog() {
     ...zone,
     terminals: (zone.terminals || []).map((terminal) => ({ ...terminal })),
     npcs: (zone.npcs || []).map((npc) => ({ ...npc })),
+    bossSites: (zone.bossSites || []).map((site) => ({ ...site })),
+    world: { ...(zone.world || WORLD) },
     exits: { ...(zone.exits || {}) },
     safe: zone.safe ? { ...zone.safe } : null,
     spawn: zone.spawn ? { ...zone.spawn } : { ...HUB.spawn },
@@ -357,6 +382,7 @@ function worldMapPayload() {
     towerIndex: zone.towerIndex || null, havenId: zone.havenId || null,
     danger: zone.danger || 0, levelBand: zone.levelBand || null,
     biome: zone.biome || 'wasteland',
+    world: { ...(zone.world || WORLD) },
     exits: { ...(zone.exits || {}) }
   })).sort((a, b) => a.order - b.order || (a.kind === 'tower' ? 1 : -1));
 }
