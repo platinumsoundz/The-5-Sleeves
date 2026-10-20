@@ -125,15 +125,15 @@ Last updated: 2026-10-20 (step 14 mobile-first HUD and menu polish).
   intact worktree as commit `2d976f5` ("Restore full game after local git
   object-store loss"). **All content is present, but the granular history of
   roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
-- Local history has the restored baseline plus Steps 12–13 pushed:
-  `origin/main` = `578c529` ("Build the village-scale world…"), verified
-  with `git ls-remote`. Step 14 (mobile UI polish) is committed on top and
-  is the next push. (The earlier push attempt from this environment failed
-  with "could not read Username for 'https://github.com'" — the owner pushed
-  from their side. If a push is ever needed from here again, a PAT or
+- Local history has the restored baseline plus Steps 12–14 pushed.
+  `origin/main` = `adda620` ("Fit the HUD and menus to phone screens"),
+  on top of `578c529` ("Build the village-scale world…"), verified with
+  `git ls-remote` after pushing. (An earlier push attempt from this
+  environment failed with "could not read Username for
+  'https://github.com'" — the owner pushed from their side that time. The
+  credential cache works now; if it fails again, a PAT or
   `gh auth login` must exist first.) `git status` should show
-  `## main...origin/main` with no divergence once the current build is
-  pushed.
+  `## main...origin/main` with no divergence.
 - Commit style: imperative summary line + bullet body explaining the system.
 - `npm test` runs test files serially (`--test-concurrency=1`). Parallel
   servers oversubscribe this device and make warden/respawn tests flake;
@@ -167,8 +167,7 @@ Last updated: 2026-10-20 (step 14 mobile-first HUD and menu polish).
 - Next system after polish (suggested): private rooms → auth → PWA → store.
 - The title screen intentionally offers only the First Village; every other
   city is unlocked by walking the chain or fast-travelling from the MENU map.
-- Push after committing: the last pushed commit is `578c529`, so Step 14 is
-  waiting on credentials or an owner push from their side.
+- Step 14 is pushed (`adda620`); keep committing and pushing each build.
 
 ## Session build queue (this session, in order)
 
