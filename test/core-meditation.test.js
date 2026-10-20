@@ -14,7 +14,7 @@ const ctx = {
 module.setup(ctx);
 
 function makePlayer() {
-  return { id: 'meditator', x: 500, y: 350, hp: 100, credits: 0, lastAttackAt: 0, lastDashAt: 0, lastShieldAt: 0, lastAbilityAt: 0 };
+  return { id: 'meditator', x: 500, y: 350, hp: 100, maxHp: 100, credits: 0, lastAttackAt: 0, lastDashAt: 0, lastShieldAt: 0, lastAbilityAt: 0 };
 }
 function makeZone(player) {
   return { kind: 'haven', players: { [player.id]: player }, broadcasts: 0, broadcast() { this.broadcasts += 1; } };
