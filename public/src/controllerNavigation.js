@@ -15,7 +15,7 @@ export const GAMEPAD_ACTION_BUTTONS = Object.freeze({
   menu: Object.freeze([GAMEPAD_BUTTONS.start, GAMEPAD_BUTTONS.select])
 });
 
-const OVERLAYS = '#title-screen, #character-menu, #shop-panel, #arena-panel, #party-invite-toast, #chat-actions, #chat-panel';
+const OVERLAYS = '#title-screen, #character-menu, #shop-panel, #arena-panel, #party-invite-toast, #chat-actions, #chat-panel, [role="dialog"][aria-modal="true"]';
 const FOCUSABLE = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])';
 
 function pressed(pad, index) {
@@ -52,8 +52,7 @@ export function activeUiOverlay() {
   const overlays = Array.from(document.querySelectorAll(OVERLAYS)).filter(visible);
   return overlays.reduce((top, element) => {
     if (!top) return element;
-    const z = Number.parseInt(getComputedStyle(element).zIndex, 10) || 0;
-    const topZ = Number.parseInt(getComputedStyle(top).zIndex, 10) || 0;
+    const z = effectiveZIndex(element), topZ = effectiveZIndex(top);
     return z >= topZ ? element : top;
   }, null);
 }
