@@ -24,6 +24,11 @@ function socketSpy() {
   return { events, emit: (name, payload) => events.push({ name, payload }) };
 }
 
+test('the picker exposes exactly five playable factions', () => {
+  assert.deepEqual(Object.keys(DOMAINS).sort(), ['dark', 'earth', 'fire', 'water', 'wind']);
+  assert.equal('cipher' in DOMAINS, false);
+});
+
 test('client and server palette tables stay in sync', () => {
   assert.deepEqual(
     CLIENT_PALETTES.map((palette) => [palette.id, palette.hex]),
