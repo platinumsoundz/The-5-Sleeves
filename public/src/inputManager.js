@@ -1,6 +1,7 @@
 // Pure analog-stick maths: turn a drag offset into a unit-scaled vector in any
 // direction. Exported so Node tests can prove 360-degree movement without a DOM.
 import { loadKeybinds } from './keybinds.js';
+import { getShootingMode, normalizeAim, SHOOTING_MODE, shouldRepeatFire, FIRE_REPEAT_MS } from './shooting.js';
 
 export function stickVector(dx, dy, max = 52, deadZone = 5) {
   const length = Math.hypot(dx, dy);
@@ -9,20 +10,25 @@ export function stickVector(dx, dy, max = 52, deadZone = 5) {
   return { x: (dx / length) * magnitude, y: (dy / length) * magnitude };
 }
 
-export function createInputManager({ onAction, onMenu, onMode, audio }) {
-  const held = new Set();
+export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAim }) {
+  const held = new Set(), fireSources = new Set();
   const binds = loadKeybinds();
   window.addEventListener('keybinds:changed', () => Object.assign(binds, loadKeybinds()));
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let mode = hasTouch ? 'touch' : 'keyboard';
-  let padVector = { x: 0, y: 0 };
-  let previousButtons = [];
-  // Analog stick state. The vector is recomputed from the drag angle on every
-  // pointer move, so movement is smooth in all 360 degrees.
-  const stick = { vector: { x: 0, y: 0 } };
+  let padVector = { x: 0, y: 0 }, gamepadAim = null, lastShotAt = 0;
+  let previousButtons = [], shootingMode = getShootingMode(), lastManualAim = null;
+  const stick = { vector: { x: 0, y: 0 } }, aimStick = { vector: null };
   const setMode = (next) => { mode = next; onMode(next); };
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
   const triggerAction = (name) => { audio?.unlock(); audio?.play(name); onAction(name); };
+  function setFireSource(source, active) {
+    const wasHeld = fireSources.size > 0;
+    if (active) fireSources.add(source); else fireSources.delete(source);
+    if (!wasHeld && fireSources.size) { lastShotAt = performance.now(); triggerAction('attack'); }
+  }
+  window.addEventListener('shooting-mode:changed', (event) => { shootingMode = event.detail || getShootingMode(); });
+  window.addEventListener('pointermove', (event) => { if (event.pointerType === 'mouse' && getMouseAim?.()) setMode('keyboard'); });
   const directionButtons = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
 
   // On-screen analog joystick: any drag direction becomes a vector, so the
