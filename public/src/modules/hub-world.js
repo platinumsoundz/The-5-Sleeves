@@ -43,22 +43,23 @@ function drawGate(draw, state, time, label, x, y, angle) {
   draw.restore();
 }
 
-function drawTower(draw, tower, time, run) {
+function drawTower(draw, tower, time, run, biome) {
+  const colors = { water: '#58c8ff', earth: '#d28b4d', fire: '#d7edff', cipher: '#bb8cff' };
+  const accent = colors[biome] || '#7dffd8';
   const pulse = 0.6 + Math.sin(time * 0.0025) * 0.3;
   draw.save();
   draw.translate(tower.x, tower.y);
   const glow = draw.createRadialGradient(0, 0, 8, 0, 0, 170);
-  glow.addColorStop(0, 'rgba(125,255,216,.16)');
-  glow.addColorStop(1, 'rgba(125,255,216,0)');
+  glow.addColorStop(0, accent + '29');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
   draw.fillStyle = glow; draw.beginPath(); draw.arc(0, 0, 170, 0, Math.PI * 2); draw.fill();
   draw.fillStyle = '#1b2b31'; draw.fillRect(-26, -46, 52, 116);
-  draw.strokeStyle = '#7dffd8'; draw.lineWidth = 2; draw.strokeRect(-26, -46, 52, 116);
-  draw.fillStyle = '#7dffd8';
-  draw.fillRect(-34, -58, 68, 12);
+  draw.strokeStyle = accent; draw.lineWidth = 2; draw.strokeRect(-26, -46, 52, 116);
+  draw.fillStyle = accent; draw.fillRect(-34, -58, 68, 12);
   draw.globalAlpha = 0.4 + pulse * 0.4;
   draw.beginPath(); draw.arc(0, -72, 8 + pulse * 3, 0, Math.PI * 2); draw.fill();
   draw.globalAlpha = 1;
-  draw.fillStyle = 'rgba(186,255,238,.92)'; draw.font = 'bold 11px system-ui'; draw.textAlign = 'center';
+  draw.fillStyle = accent; draw.font = 'bold 11px system-ui'; draw.textAlign = 'center';
   draw.fillText(String(tower.name || 'TOWER').toUpperCase(), 0, -88);
   if (run && run.state !== 'idle') {
     draw.fillStyle = '#ffe9a0'; draw.font = 'bold 10px system-ui';
