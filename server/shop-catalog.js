@@ -24,7 +24,13 @@ function sellPrice(item) {
   return Math.max(2, Math.floor(item.price * SELL_RATE));
 }
 
-const ITEM_CATALOG = Object.freeze(Object.fromEntries(SHOP_ITEMS.map((item) => [item.id, item])));
+// Salvage pays for exploration without adding combat power or merchant stock.
+const SALVAGE_ITEMS = Object.freeze([
+  { id: 'shattered-circuitry', name: 'Shattered Circuitry', slot: 'salvage', price: 0, sell: 8, tier: 'Junk', atkBonus: 0, desc: 'Bent contacts and cracked boards. A city merchant will buy it.' },
+  { id: 'corroded-relay-parts', name: 'Corroded Relay Parts', slot: 'salvage', price: 0, sell: 15, tier: 'Junk', atkBonus: 0, desc: 'Oxidised relay scrap recovered from a Rust Warden.' }
+].map((item) => Object.freeze(item)));
+const ITEM_CATALOG = Object.freeze(Object.fromEntries([...SHOP_ITEMS, ...SALVAGE_ITEMS].map((item) => [item.id, item])));
+const SHOP_ITEM_IDS = new Set(SHOP_ITEMS.map((item) => item.id));
 const DEFAULT_INVENTORY = Object.freeze(['blade-standard', 'armor-body-basic']);
 const DEFAULT_EQUIPPED = Object.freeze({
   head: null,
@@ -36,11 +42,11 @@ const DEFAULT_EQUIPPED = Object.freeze({
 });
 
 const LOOT_BY_TIER = {
-  1: ['helm-scout', 'legs-runner', 'feet-transit', 'repair-kit'],
-  2: ['chest-warden', 'blade-ember', 'repair-kit'],
-  3: ['blade-frost', 'chest-bastion', 'blade-ember'],
-  4: ['blade-void', 'chest-bastion', 'blade-frost'],
-  5: ['weapon-apex', 'blade-void', 'chest-bastion']
+  1: ['helm-scout', 'legs-runner', 'feet-transit', 'repair-kit', 'shattered-circuitry'],
+  2: ['chest-warden', 'blade-ember', 'repair-kit', 'shattered-circuitry'],
+  3: ['blade-frost', 'chest-bastion', 'blade-ember', 'corroded-relay-parts'],
+  4: ['blade-void', 'chest-bastion', 'blade-frost', 'corroded-relay-parts'],
+  5: ['weapon-apex', 'blade-void', 'chest-bastion', 'corroded-relay-parts']
 };
 
 function itemById(id) {
@@ -62,4 +68,4 @@ function lootForTier(tier) {
   return itemById(table[Math.floor(Math.random() * table.length)]) || null;
 }
 
-module.exports = { SHOP_ITEMS, ITEM_CATALOG, DEFAULT_INVENTORY, DEFAULT_EQUIPPED, itemById, sellPrice, gearAtkFor, lootForTier, SELL_RATE };
+module.exports = { SHOP_ITEMS, SALVAGE_ITEMS, SHOP_ITEM_IDS, ITEM_CATALOG, DEFAULT_INVENTORY, DEFAULT_EQUIPPED, itemById, sellPrice, gearAtkFor, lootForTier, SELL_RATE };
