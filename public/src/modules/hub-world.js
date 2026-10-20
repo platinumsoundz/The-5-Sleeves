@@ -27,19 +27,39 @@ function drawNpc(draw, npc, time) {
   draw.restore();
 }
 
-function drawGate(draw, state, time, label, x, y, angle) {
+function drawGate(draw, state, time, label, x, y, angle, open = true) {
   const pulse = 0.55 + 0.45 * Math.sin(time * 0.003);
+  const color = open ? '#7dffd8' : '#ffb36b';
   draw.save();
   draw.translate(x, y); draw.rotate(angle);
   draw.globalAlpha = 0.25 + pulse * 0.2;
-  draw.fillStyle = '#7dffd8';
+  draw.fillStyle = color;
   draw.beginPath(); draw.moveTo(0, -26); draw.lineTo(22, 0); draw.lineTo(0, 26); draw.closePath(); draw.fill();
-  draw.globalAlpha = 0.95; draw.strokeStyle = '#baffee'; draw.lineWidth = 2;
+  draw.globalAlpha = 0.95; draw.strokeStyle = open ? '#baffee' : '#ffd4a8'; draw.lineWidth = 2;
   draw.beginPath(); draw.moveTo(0, -26); draw.lineTo(22, 0); draw.lineTo(0, 26); draw.stroke();
   draw.restore();
   draw.save();
-  draw.fillStyle = 'rgba(186,255,238,.9)'; draw.font = 'bold 10px system-ui'; draw.textAlign = 'center';
+  draw.fillStyle = open ? 'rgba(186,255,238,.9)' : 'rgba(255,211,168,.95)'; draw.font = 'bold 10px system-ui'; draw.textAlign = 'center';
   draw.fillText(label, x, y + (y < 100 ? 34 : -18));
+  draw.restore();
+}
+
+function drawBossSite(draw, site, index, time) {
+  const pulse = 0.65 + 0.2 * Math.sin(time * 0.002 + index);
+  draw.save();
+  draw.translate(site.x, site.y);
+  draw.strokeStyle = 'rgba(125,255,216,' + pulse + ')';
+  draw.lineWidth = 3;
+  draw.setLineDash([14, 10]);
+  draw.beginPath(); draw.arc(0, 0, 125, 0, Math.PI * 2); draw.stroke();
+  draw.setLineDash([]);
+  draw.globalAlpha = pulse;
+  draw.strokeRect(-78, -78, 156, 156);
+  draw.globalAlpha = 1;
+  draw.fillStyle = '#c8fff0'; draw.font = 'bold 13px system-ui'; draw.textAlign = 'center';
+  draw.fillText('BOSS SITE ' + index, 0, -5);
+  draw.fillStyle = '#8faeaa'; draw.font = 'bold 10px system-ui';
+  draw.fillText('VACANT', 0, 15);
   draw.restore();
 }
 
@@ -74,11 +94,17 @@ export default {
   priority: 25,
   setup(ctx) {
     const prompt = ctx.dom(PROMPT_CSS);
+    const clearedTowers = new Set();
+    ctx.on('net:tower-cleared', (payload) => { if (payload?.index) clearedTowers.add(Number(payload.index)); });
 
     ctx.on('render:world', ({ ctx: draw, state, time }) => {
       const zone = state.zone || {};
       const exits = zone.exits || {};
-      if (exits.east) drawGate(draw, state, time, 'EAST ROAD', 966, 350, 0);
+      if (exits.east) {
+        const locked = zone.id === 'haven-citadel' && !state.localPlayer?.towers?.[5] && !clearedTowers.has(5);
+        drawGate(draw, state, time, locked ? 'SEALED · TOWER 5' : zone.id === 'haven-citadel' ? 'EASTERN EXPANSE' : 'EAST ROAD', 966, 350, 0, !locked);
+      }
+      for (const [index, site] of (zone.bossSites || []).entries()) drawBossSite(draw, site, index + 1, time);
       if (exits.west) drawGate(draw, state, time, 'WEST', 34, 350, Math.PI);
       if (exits.north) drawGate(draw, state, time, zone.kind === 'haven' ? 'TOWER GATE' : 'NORTH', 500, 34, -Math.PI / 2);
       if (exits.south) drawGate(draw, state, time, 'CITY', 500, 666, Math.PI / 2);
