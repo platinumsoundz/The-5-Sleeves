@@ -18,8 +18,9 @@ const SLEEVE_COLORS = {
   blue: '#5fb8ff'
 };
 const SLEEVE_ACCENTS = { cipher: '#78ff5f', wind: '#a7ffd0', water: '#71d5ff', fire: '#ffb347', earth: '#f0b768', dark: '#ff29d6', azure: '#8ce0ff', emerald: '#a7ffd0', crimson: '#ffb347', violet: '#ff29d6' };
-const LEGACY_DOMAINS = { azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
-const ACTIVE_DOMAINS = new Set(['cipher', 'wind', 'water', 'fire', 'earth', 'dark']);
+const LEGACY_DOMAINS = { cipher: 'wind', azure: 'water', emerald: 'wind', crimson: 'fire', violet: 'dark' };
+// Cipher is an allied AI, not a playable faction. Legacy profiles migrate to Wind.
+const ACTIVE_DOMAINS = new Set(['wind', 'water', 'fire', 'earth', 'dark']);
 
 const RESPAWN_DELAY = 5000;
 const AI_RESPAWN_DELAY = 9000;
@@ -84,7 +85,7 @@ const TOWERS = Object.freeze([
 // Archive Echo lore lines (Tower log fragments).
 const ARCHIVE_LOGS = [
   'Archive Log #04: Tower 1 atmospheric filters operating at 42% capacity...',
-  'Archive Log #11: Ashley reports a repeating signal beneath the eastern transit line.',
+  'Archive Log #11: A field report notes a repeating signal beneath the eastern transit line.',
   'Archive Log #17: Perimeter fog readings exceed safe exposure limits.',
   'Archive Log #23: The Cipher Conduit responds to Sleeve resonance.',
   'Archive Log #31: Evacuation records end before the final Tower 1 lockdown.'
