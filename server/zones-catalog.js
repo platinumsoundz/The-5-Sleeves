@@ -386,6 +386,7 @@ function worldMapPayload() {
     danger: zone.danger || 0, levelBand: zone.levelBand || null,
     biome: zone.biome || 'wasteland',
     world: { ...(zone.world || WORLD) },
+    bossSites: (zone.bossSites || []).map((site) => ({ ...site })),
     exits: { ...(zone.exits || {}) }
   })).sort((a, b) => a.order - b.order || (a.kind === 'tower' ? 1 : -1));
 }
