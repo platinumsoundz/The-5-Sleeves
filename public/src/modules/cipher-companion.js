@@ -44,13 +44,17 @@ export default {
       element('div', 'ALLIED AI COMPANION', 'cipher-role'),
       element('p', 'Thank you for bringing the tower back online. I’m Cipher. I’m here to help you find and restore the remaining towers, if you’ll accept my guidance.')
     );
+    const closeIntro = () => { layer.style.display = 'none'; };
     const close = element('button', 'CONTINUE');
     close.type = 'button';
-    close.addEventListener('click', () => { layer.style.display = 'none'; });
+    close.addEventListener('click', closeIntro);
     copy.append(close);
     panel.append(portrait, copy);
     layer.append(style, panel);
-    layer.addEventListener('click', (event) => { if (event.target === layer) layer.style.display = 'none'; });
+    layer.addEventListener('click', (event) => { if (event.target === layer) closeIntro(); });
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && layer.style.display === 'flex') closeIntro();
+    });
     ctx.on('net:tower-cleared', (payload) => {
       if (shouldShowCipherIntro(payload)) {
         layer.style.display = 'flex';
