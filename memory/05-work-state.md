@@ -15,8 +15,27 @@ Last updated: 2026-10-20 (zone hazards implemented with regression tests, but te
 - Added `test/zone-hazards.test.js` for phase timing, damage cadence, warning
   delivery and safe-zone protection. **Tests were not run:** the user
   authorized proceeding unverified because no shell runner is available.
-- This is the first gameplay slice only. Do not start another feature build
-  until a test-capable session runs `npm test` and fixes any failures.
+- This is the first gameplay slice only. The owner approved proceeding
+  unverified because no shell runner is available. Do not start another
+  feature build until a test-capable session runs `npm test` and fixes any
+  failures.
+
+## Owner-approved future build queue (one system per build)
+
+After hazards are tested and stable, continue one slice at a time:
+
+1. Warden variants.
+2. Repeatable bounties.
+3. Canon-aligned story events.
+4. Replay controls / clip improvements.
+5. Database-backed storage.
+6. Observability.
+7. Load testing.
+8. Security hardening.
+9. Accessibility.
+
+Email verification and recovery remain deferred by owner choice. Each queued
+system still needs its own build, tests and memory update.
 
 ## Current session — Optional account registration and login (IMPLEMENTED, UNVERIFIED)
 
