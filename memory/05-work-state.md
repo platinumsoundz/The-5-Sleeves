@@ -3,7 +3,23 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 17 player palette + faction identity; subsequent salvage, balance, and meditation changes are untested).
+Last updated: 2026-10-20 (step 17 player palette + faction identity; subsequent salvage, balance, meditation, and dev-console changes are untested).
+
+## Current session — Developer grant console (IMPLEMENTED, UNVERIFIED)
+
+- Added `server/modules/dev-console.js` and a client module that injects a
+  token panel into Settings only when the server reports the feature enabled.
+- The server fails closed by default: `DEV_CONSOLE_ENABLED=true`,
+  `NODE_ENV` must not be `production`, and `DEV_CONSOLE_TOKEN` must be at
+  least 32 characters. The secret stays server-side; token comparisons use
+  `timingSafeEqual`; socket attempts are rate-limited; grants require an
+  authorized live socket.
+- The fixed grant gives 999,999 credits, 9,999 skill points/core points, all
+  catalog items, all tree nodes, and all archive terminal reads. It persists
+  through the existing profile system.
+- Added `test/dev-console.test.js`. **No tests were run, as requested.**
+  This and all earlier pending slices remain unverified and must be tested
+  before commit/deploy.
 
 ## Current session — Safe-city Core meditation (IMPLEMENTED, UNVERIFIED)
 
