@@ -21,6 +21,7 @@ module.exports = {
     const pendingNames = new Set();
     const rate = new Map();
     const dummyHash = hashPassword('not-a-real-account-password');
+    const isSecureTransport = typeof ctx.secureTransport === 'function' ? ctx.secureTransport : secureTransport;
 
     function allowAttempt(socket) {
       const key = socket.handshake?.address || socket.id;
@@ -54,7 +55,7 @@ module.exports = {
     });
 
     ctx.registerSocket('auth:register', async (player, payload, socket) => {
-      if (!secureTransport(socket)) { socket.emit('auth:error', 'Accounts require HTTPS in production.'); return; }
+      if (!isSecureTransport(socket)) { socket.emit('auth:error', 'Accounts require HTTPS in production.'); return; }
       if (player) { socket.emit('auth:error', 'Log out before registering a different account.'); return; }
       const username = typeof payload?.username === 'string' ? payload.username.trim() : '';
       const key = username.toLowerCase();
@@ -79,7 +80,7 @@ module.exports = {
     });
 
     ctx.registerSocket('auth:login', async (player, payload, socket) => {
-      if (!secureTransport(socket)) { socket.emit('auth:error', 'Accounts require HTTPS in production.'); return; }
+      if (!isSecureTransport(socket)) { socket.emit('auth:error', 'Accounts require HTTPS in production.'); return; }
       if (player) { socket.emit('auth:error', 'Log out before switching accounts.'); return; }
       const username = typeof payload?.username === 'string' ? payload.username.trim() : '';
       const password = typeof payload?.password === 'string' ? payload.password : '';
