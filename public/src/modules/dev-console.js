@@ -7,6 +7,18 @@ export default {
     const socket = ctx.state.socket;
     if (!socket || typeof fetch !== 'function' || typeof MutationObserver !== 'function') return;
 
+    let statusElement = null, tokenElement = null, unlockButton = null, grantButton = null;
+    socket.on('dev:authorized', (message) => {
+      if (tokenElement) { tokenElement.value = ''; tokenElement.disabled = true; }
+      if (unlockButton) unlockButton.hidden = true;
+      if (grantButton) grantButton.hidden = false;
+      if (statusElement) statusElement.textContent = message;
+    });
+    socket.on('dev:error', (message) => { if (statusElement) statusElement.textContent = message; });
+    socket.on('dev:granted', (result) => {
+      if (statusElement) statusElement.textContent = 'Granted ' + result.credits + ' credits, ' + result.skillPoints + ' skill points, and ' + result.items + ' items.';
+    });
+
     fetch('/api/dev-console/status').then((response) => response.json()).then(({ enabled }) => {
       if (!enabled) return;
       const attach = () => {
@@ -40,18 +52,10 @@ export default {
         grant.addEventListener('click', () => socket.emit('dev:grant', { grant: 'all' }));
         panel.append(heading, note, token, unlock, grant, status);
         root.append(panel);
-
-        socket.on('dev:authorized', (message) => {
-          token.value = '';
-          token.disabled = true;
-          unlock.hidden = true;
-          grant.hidden = false;
-          status.textContent = message;
-        });
-        socket.on('dev:error', (message) => { status.textContent = message; });
-        socket.on('dev:granted', (result) => {
-          status.textContent = 'Granted ' + result.credits + ' credits, ' + result.skillPoints + ' skill points, and ' + result.items + ' items.';
-        });
+        tokenElement = token;
+        statusElement = status;
+        unlockButton = unlock;
+        grantButton = grant;
       };
       attach();
       new MutationObserver(attach).observe(document.body, { childList: true, subtree: true });
