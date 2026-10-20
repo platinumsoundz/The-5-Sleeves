@@ -1,6 +1,6 @@
 import { loadKeybinds } from './keybinds.js';
 import { normalizeAim, shouldRepeatFire } from './shooting.js';
-import { GAMEPAD_BUTTONS } from './controllerNavigation.js';
+import { GAMEPAD_ACTION_BUTTONS } from './controllerNavigation.js';
 
 // Owns held-fire sources and the manual aim devices; callers still resolve the shot.
 export function createShootingControls({ onFire, getMouseAim, setMode, isUiBlocked = () => document.body?.dataset?.menuOpen === 'true' }) {
@@ -72,7 +72,7 @@ export function createShootingControls({ onFire, getMouseAim, setMode, isUiBlock
       const aim = normalizeAim(x, y);
       if (aim) lastManualAim = aim;
       if (pad && (aim || pressed.some(Boolean))) setMode('controller');
-      setFireSource('gamepad', !!pressed[GAMEPAD_BUTTONS.rightTrigger]);
+      setFireSource('gamepad', !!pressed[GAMEPAD_ACTION_BUTTONS.attack]);
     },
     aimVector(mode) {
       if (mode === 'keyboard') return getMouseAim?.() || lastManualAim;
