@@ -22,10 +22,10 @@ module.exports = {
     const dummyHash = hashPassword('not-a-real-account-password');
 
     function secureTransport(socket) {
-      if (process.env.NODE_ENV !== 'production' || socket.request?.connection?.encrypted) return true;
-      const proxyTls = process.env.TRUSTED_PROXY_TLS === 'true'
+      if (process.env.NODE_ENV === 'development') return true;
+      if (socket.request?.connection?.encrypted) return true;
+      return process.env.TRUSTED_PROXY_TLS === 'true'
         && socket.handshake?.headers?.['x-forwarded-proto']?.split(',')[0].trim() === 'https';
-      return !!proxyTls;
     }
     function allowAttempt(socket) {
       const key = socket.handshake?.address || socket.id;
