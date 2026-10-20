@@ -36,7 +36,9 @@ function stepZone(sim, now, deltaSeconds) {
       damageTarget(sim, player, (player.burnPower || 0) * deltaSeconds, sim.players[player.burnSourceId], 'burn', { announce: false });
       if (player.hp <= 0) continue;
     }
-    if (player.inCore) {
+    // Safe-city Core rewards are handled by the capped meditation module;
+    // keep the old charge-to-skill-point loop in active combat zones only.
+    if (player.inCore && sim.kind !== 'haven') {
       player.coreCharge += deltaSeconds * 25;
       if (player.coreCharge >= 100) {
         player.coreCharge -= 100;
