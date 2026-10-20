@@ -13,7 +13,6 @@ const TILE = { size: 40 };
 const WALK_FRAMES = 4;
 
 const DOMAINS = {
-  cipher: { primary: '#00ffff', accent: '#78ff5f', dark: false },
   wind: { primary: '#00ff88', accent: '#a7ffd0', dark: false },
   water: { primary: '#0088ff', accent: '#71d5ff', dark: false },
   fire: { primary: '#ff4400', accent: '#ffb347', dark: false },
