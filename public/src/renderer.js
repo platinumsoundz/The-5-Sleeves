@@ -368,7 +368,6 @@ function drawKillFeed(ctx, state, width, time) {
   if (!feed.length) return;
   ctx.save();
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  const slot = slotRect('top-right', { x: width - 222, y: 10, width: 210, height: 36 });
   const layout = notificationLayout(state, width, time);
   const top = layout.y - feed.length * 16;
   ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui';
@@ -383,7 +382,7 @@ function drawKillFeed(ctx, state, width, time) {
   ctx.restore();
 }
 
-function notificationLayout(state, width, time) {
+export function notificationLayout(state, width, time) {
   const radar = minimapRect(width);
   const world = state.world || WORLD_DEFAULT;
   const mapHeight = Math.round(radar.width * world.height / world.width);
@@ -391,7 +390,7 @@ function notificationLayout(state, width, time) {
   const scoreboardHeight = scores.length ? 34 + Math.min(5, scores.length) * 15 : 49;
   const feedCount = (state.killFeed || []).filter((entry) => time - entry.at < 6000).length;
   const y = radar.y + mapHeight + 6 + scoreboardHeight + 10 + feedCount * 16;
-  return { x: radar.x, y, width: Math.max(120, Math.min(300, width - radar.x - 16)), feedCount };
+  return { x: radar.x, y, width: Math.max(120, Math.min(300, width - radar.x - 16)) };
 }
 
 function factionColor(faction) {
