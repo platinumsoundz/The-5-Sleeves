@@ -6,7 +6,7 @@ import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 const assets = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), 'public', 'assets');
-const DOMAINS = ['cipher', 'wind', 'water', 'fire', 'earth', 'dark'];
+const DOMAINS = ['wind', 'water', 'fire', 'earth', 'dark'];
 
 // Minimal reader for the generator's output (8-bit RGBA, no interlacing).
 function decode(file) {
@@ -41,7 +41,7 @@ test('every domain has an idle sprite and a walk sheet', () => {
 });
 
 test('idle sprites are not empty and keep the sleeve on the anatomical left arm', () => {
-  const idle = decode(path.join(assets, 'player_cipher.png'));
+  const idle = decode(path.join(assets, 'player_wind.png'));
   let opaque = 0, cyanLeft = 0, cyanRight = 0;
   for (let y = 0; y < idle.height; y += 1) {
     for (let x = 0; x < idle.width; x += 1) {
@@ -57,7 +57,7 @@ test('idle sprites are not empty and keep the sleeve on the anatomical left arm'
 });
 
 test('walk frames differ from the idle pose', () => {
-  const walk = decode(path.join(assets, 'player_cipher_walk.png'));
+  const walk = decode(path.join(assets, 'player_wind_walk.png'));
   const lowestRow = (frame) => {
     let lowest = -1;
     for (let y = 0; y < walk.height; y += 1) {
