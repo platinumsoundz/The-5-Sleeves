@@ -369,17 +369,29 @@ function drawKillFeed(ctx, state, width, time) {
   ctx.save();
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   const slot = slotRect('top-right', { x: width - 222, y: 10, width: 210, height: 36 });
-  const top = slot.y + (slot.height || 36) + 16;
-  ctx.textAlign = 'right'; ctx.font = 'bold 11px system-ui';
+  const layout = notificationLayout(state, width, time);
+  const top = layout.y - feed.length * 16;
+  ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui';
   feed.forEach((entry, index) => {
     const fade = Math.min(1, Math.max(0, (6000 - (time - entry.at)) / 900));
     const y = top + index * 16;
     ctx.globalAlpha = fade;
     ctx.fillStyle = entry.color || '#ffd9a0';
-    ctx.fillText(entry.text + (entry.xp ? '  +' + entry.xp + ' XP' : ''), width - 12, y);
+    ctx.fillText(entry.text + (entry.xp ? '  +' + entry.xp + ' XP' : ''), layout.x + 4, y, layout.width - 8);
   });
   ctx.globalAlpha = 1;
   ctx.restore();
+}
+
+function notificationLayout(state, width, time) {
+  const radar = minimapRect(width);
+  const world = state.world || WORLD_DEFAULT;
+  const mapHeight = Math.round(radar.width * world.height / world.width);
+  const scores = Object.values((state.objectives || {}).scores || {}).filter((score) => score > 0);
+  const scoreboardHeight = scores.length ? 34 + Math.min(5, scores.length) * 15 : 49;
+  const feedCount = (state.killFeed || []).filter((entry) => time - entry.at < 6000).length;
+  const y = radar.y + mapHeight + 6 + scoreboardHeight + 10 + feedCount * 16;
+  return { x: radar.x, y, width: Math.max(120, Math.min(300, width - radar.x - 16)), feedCount };
 }
 
 function factionColor(faction) {
@@ -432,17 +444,20 @@ function drawBanner(ctx, state, width, height, time) {
   ctx.globalAlpha = Math.min(1, Math.max(0, Math.min(age / 220, (banner.ttl - age) / 500)));
   // Fit long banner text inside the viewport instead of clipping on phones.
   let size = 26;
-  ctx.textAlign = 'center'; ctx.font = 'bold ' + size + 'px system-ui';
+  const layout = notificationLayout(state, width, time);
+  const maxTextWidth = Math.max(100, layout.width - 20);
+  ctx.textAlign = 'left'; ctx.font = 'bold ' + size + 'px system-ui';
   let textWidth = ctx.measureText(banner.text).width;
-  while (textWidth > width - 32 && size > 12) {
+  while (textWidth > maxTextWidth && size > 12) {
     size -= 2;
     ctx.font = 'bold ' + size + 'px system-ui';
     textWidth = ctx.measureText(banner.text).width;
   }
-  ctx.fillStyle = 'rgba(4,10,14,.72)';
-  ctx.fillRect(width / 2 - textWidth / 2 - 16, height * 0.16 - size * 0.9, textWidth + 32, size + 16);
+  const x = layout.x, y = layout.y;
+  ctx.fillStyle = 'rgba(4,10,14,.86)';
+  ctx.fillRect(x, y, Math.min(layout.width, textWidth + 20), size + 18);
   ctx.fillStyle = banner.color || '#8ce0ff';
-  ctx.fillText(banner.text, width / 2, height * 0.16);
+  ctx.fillText(banner.text, x + 10, y + size + 6);
   ctx.globalAlpha = 1;
   ctx.restore();
 }
@@ -482,7 +497,7 @@ function drawScoreboard(ctx, state, width) {
       : 'WILDERNESS' + (zone.levelBand ? ' · ENEMIES LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '');
   }
   const rows = Math.max(0, scores.length);
-  const panelHeight = 34 + rows * 15;
+  const panelHeight = rows ? 34 + rows * 15 : 49;
   // A phone radar is very narrow; the strip below it gets a readable minimum
   // width instead of forcing every label to abbreviate.
   const panelWidth = compact ? Math.max(mapWidth, 112) : mapWidth;
