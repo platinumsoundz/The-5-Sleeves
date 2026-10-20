@@ -7,7 +7,6 @@ export const TILE_SIZE = 40;
 export const PERIMETER_MARGIN = 40;
 export const MAX_ARCHIVE_ECHOES = 5;
 export const DOMAINS = Object.freeze({
-  cipher: { label: 'Cipher Sleeve', short: 'PULSE', primary: '#00ffff', accent: '#78ff5f' },
   wind: { label: 'Wind Domain', short: 'GALE', primary: '#00ff88', accent: '#a7ffd0' },
   water: { label: 'Water Domain', short: 'SNARE', primary: '#0088ff', accent: '#71d5ff' },
   fire: { label: 'Fire Domain', short: 'LANCE', primary: '#ff4400', accent: '#ffb347' },
