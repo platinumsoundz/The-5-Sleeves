@@ -38,7 +38,7 @@ and restores regional towers. Cipher is an allied AI; after the operative's
 first tower clear, she appears, thanks them, and offers to help. Each region
 still uses the comic's established places and history:
 
-| Book | Canon region | Zones | Spirit | Note |
+| Book | Zones | Associated spirit/AI | Note |
 |---|---|---|---|---|
 | 1 — The Perimeter and the First Tower | `haven-perimeter` → `wild-perimeter` | Wind (Korb) | Starter village; road east |
 | 2 — The Sunken Coast | `haven-coast` (Tower 1) → `wild-coast` | Water (Ella) | Drowned city, Drowned Pylon |
