@@ -17,10 +17,10 @@ content. This chapter is the game-dev digest.
 - **Sleeves** are devices bonding humans to spirits/modules. Finite internal
   energy; host fatigue and spirit agency are separate limits.
 - **Spirits are people**, not buttons. They can refuse. Consent matters.
-- **Domains**: Wind, Water, Earth, Fire (elemental) + Cipher (fifth identity,
-  a clone/derivative of the original AI, incomplete) + Darkness (forbidden
-  26th ability, the sixth Dark spirit, created by the Kael family's failed
-  extension project; it seeded the virus).
+- **Canon identities**: Wind, Water, Earth, Fire (elemental) + Cipher (a
+  distinct identity linked to the original AI) + Darkness (the Dark spirit).
+  **Game adaptation:** only Wind, Water, Earth, Fire and Dark are selectable
+  player factions; Cipher is the allied, non-playable AI.
 - **25 original modules** (5 per elemental domain; Cipher's allocation OPEN).
   Modules can be stolen, recovered, transferred, shared.
 - **The virus** spreads through connected machines/towers. Endgame: the
@@ -30,10 +30,13 @@ content. This chapter is the game-dev digest.
   mirrored.
 - Power has cost. Any mechanic granting power should have a cost or limit.
 
-## Five books = the game's five regions
+## Post-comic game continuity
 
-The game is a village-scale adventure side-story inside the canon. Each book
-has a safe city, a wilderness road and a regional tower:
+The game begins after the five-book comic's events; it is a continuation, not
+an adaptation of those chapters. A new operative explores the changed world
+and restores regional towers. Cipher is an allied AI; after the operative's
+first tower clear, she appears, thanks them, and offers to help. Each region
+still uses the comic's established places and history:
 
 | Book | Canon region | Zones | Spirit | Note |
 |---|---|---|---|---|
@@ -41,7 +44,7 @@ has a safe city, a wilderness road and a regional tower:
 | 2 — The Sunken Coast | `haven-coast` (Tower 1) → `wild-coast` | Water (Ella) | Drowned city, Drowned Pylon |
 | 3 — Shadows of Exile | `haven-scorched` (Tower 2) → `wild-scorched` | Earth (Oscar) | Emberhold, reservoir archive |
 | 4 — The Frozen Wastes | `haven-frozen` (Tower 3) → `wild-frozen` | Fire (Reegan) | Frosthold, vault of the 26th ability |
-| 5 — The Apex Citadel | `haven-apex` (Tower 4) → `wild-apex` → `haven-citadel` (Tower 5) | Cipher + Dark | Lower Ward, Spire; the Rebind |
+| 5 — The Apex Citadel | `haven-apex` (Tower 4) → `wild-apex` → `haven-citadel` (Tower 5) | Cipher AI + Dark | Lower Ward, Spire; historic Rebind sites |
 
 Cities gate their east road until their regional tower is cleared. Towers are
 private wave rooms; arenas (`arena-*`) are private PvP/PvE instances and are
