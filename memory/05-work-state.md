@@ -3,7 +3,18 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 17 player palette + faction identity).
+Last updated: 2026-10-20 (step 17 player palette + faction identity; current session salvage economy build pending test run).
+
+## Current session — sell-only wasteland salvage (IMPLEMENTED, TEST RUN REQUIRED)
+
+- Added Shattered Circuitry (8 credits) and Corroded Relay Parts (15 credits)
+  to the shared item catalog and mirrored the item display data to the client.
+- Both can enter tiered warden loot, persist in inventory, and be sold at
+  city merchants. The merchant purchase handler explicitly rejects salvage.
+  Salvage is non-equippable in the inventory UI.
+- Added `test/economy.test.js` for sell-only catalog behavior and tier loot.
+- **Verification is blocked:** this session has no shell/command tool available;
+  run `npm test` before considering this build complete or committing it.
 
 ## Step 17 — Player palette and first-class factions (DONE)
 
