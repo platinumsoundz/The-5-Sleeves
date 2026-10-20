@@ -23,10 +23,12 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   let padVector = { x: 0, y: 0 }, previousButtons = [];
   const stick = { vector: { x: 0, y: 0 } };
   const setMode = (next) => { mode = next; onMode(next); };
+  let uiBlocked = uiBlocksGameplay();
+  const isUiBlocked = () => uiBlocked;
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
   const triggerAction = (name) => { audio?.unlock(); audio?.play(name); onAction(name); };
   const shooting = createShootingControls({
-    onFire: () => triggerAction('attack'), getMouseAim, setMode, isUiBlocked: uiBlocksGameplay
+    onFire: () => triggerAction('attack'), getMouseAim, setMode, isUiBlocked
   });
   document.body?.classList.toggle('twin-stick', getShootingMode() === SHOOTING_MODE.TWIN);
   const directionButtons = {
@@ -70,7 +72,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
       setMode('keyboard'); shooting.clearFire(); event.preventDefault();
       if (!event.repeat) onMenu(); return;
     }
-    if (uiBlocksGameplay()) return;
+    if (uiBlocked) return;
     const direction = directionButtons[event.key];
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, true); }
     if (code === binds.dash || (binds.dash === 'ShiftLeft' && code === 'ShiftRight')) {
@@ -94,7 +96,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     }
     const pressed = Array.from({ length: pad.buttons.length }, (_, index) => !!pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5));
     const edge = (buttons) => buttons.some((index) => pressed[index] && !previousButtons[index]);
-    const menuOpen = uiBlocksGameplay();
+    const menuOpen = uiBlocked;
     if (Math.hypot(pad.axes[0] || 0, pad.axes[1] || 0) > 0.18 || pressed.some(Boolean)) setMode('controller');
     if (menuOpen) {
       padVector = { x: 0, y: 0 };
@@ -130,7 +132,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     if (edge(GAMEPAD_ACTION_BUTTONS.menu)) { shooting.clearFire(); onMenu(); }
     previousButtons = pressed;
   }
-  function update() { updateGamepad(); shooting.update(); }
+  function update() { uiBlocked = uiBlocksGameplay(); updateGamepad(); shooting.update(); }
   window.addEventListener('gamepadconnected', () => { previousButtons = []; setMode('controller'); });
   window.addEventListener('gamepaddisconnected', () => {
     previousButtons = []; padVector = { x: 0, y: 0 }; shooting.updateGamepad(null);
