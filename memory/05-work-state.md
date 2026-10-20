@@ -3,7 +3,20 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (Cipher join welcome/every-tower dialogue and Tower 5 Eastern Expanse implemented; tests not run).
+Last updated: 2026-10-20 (Cipher Core healing implemented; tests not run).
+
+## Current session — Safe-city Cipher Core healing (IMPLEMENTED, UNVERIFIED)
+
+- All haven Cipher Cores now restore 3% of maximum HP per second while the
+  operative is inside the core radius. Healing caps at max HP and never runs
+  in wilderness/tower/arena zones. Existing capped idle credit meditation is
+  unchanged.
+- Updated `test/core-meditation.test.js` with rate, cap, zone and exit checks.
+  **Tests and game playtesting were not run**; no shell/browser runner is
+  available. Healing remains server-side and visible through normal snapshots.
+- This is one build per the project protocol. Next, separately implement the
+  approved tough-but-fair wilderness/tower difficulty curve, then the approved
+  five-faction passive/special skill-tree expansion. Both remain unbuilt.
 
 ## Current session — Cipher welcome and post-Tower-5 Eastern Expanse (IMPLEMENTED, UNVERIFIED)
 
