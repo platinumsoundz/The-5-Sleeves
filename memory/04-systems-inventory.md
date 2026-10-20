@@ -86,9 +86,10 @@ it committed and tested after running the full suite.)
   factions and the eight-colour suit palette (`player:palette`), validated
   and persisted; old Cipher profiles migrate to Wind.
 - **tower-services** — three-wave tower runs, completion rewards and
-  east-road unlocks; first clear sets the Cipher AI intro milestone.
-- **cipher-companion-memory** — persists whether an operative has met the
-  allied Cipher AI; the first tower clear triggers her introduction.
+  east-road unlocks; preserves a first-contact Cipher milestone and emits a
+  Cipher dialogue marker after every tower clear.
+- **cipher-companion-memory** — persists first contact with the allied Cipher
+  AI; the client also shows a join welcome and a distinct line for every clear.
 - **social-services** — friends list (mutual add/remove), persistent inbox
   with claimable attachments, and inventory gifting to online operatives.
 - **sleeve-skills** — server-validated skill-node unlocks; spends skill
@@ -157,14 +158,16 @@ it committed and tested after running the full suite.)
 ## Zones (`server/zones-catalog.js` + `server/sim/`)
 
 - **zones-catalog.js** — six safe cities (`haven-perimeter` through
-  `haven-citadel`), five wilderness roads and five tower rooms, linked by
-  edge exits; each haven carries merchant/arena NPCs, map order, danger band
-  and its tower gate. Six private arena rooms cover PvP/PvE × domination /
-  TDM / tower capture. The real client starts at `haven-perimeter`; bare
-  legacy joins land in `wild-perimeter` for tests.
+  `haven-citadel`), six wilderness areas and five tower rooms, linked by
+  edge exits. Tower 5 unlocks a 3000×2100 Eastern Expanse, with five empty
+  boss-site markers and five existing Rust Warden guardians. This frontier is
+  proposed game content, not established comic canon. Six private arena rooms
+  cover PvP/PvE × domination / TDM / tower capture. The real client starts at
+  `haven-perimeter`; bare legacy joins land in `wild-perimeter` for tests.
 - **sim/state.js** — `createSimulation(catalogZone, host)`: all per-zone
   state (players, wardens, projectiles, effects, bursts, echoes,
-  objectives, faction scores, match, tower run, biome) plus a zone-scoped
+  objectives, faction scores, match, tower run, biome, custom world size and
+  future boss-site markers) plus a zone-scoped
   `send()` and `broadcast()` (empty rooms skip broadcasts). Safe zones support
   both rectangles (cities) and circles.
 - **sim/spec.js** — every shared tuning number (warden stats and explicit
