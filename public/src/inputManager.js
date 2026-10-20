@@ -4,8 +4,8 @@ import { loadKeybinds } from './keybinds.js';
 import { createShootingControls } from './shootingControls.js';
 import { getShootingMode, SHOOTING_MODE } from './shooting.js';
 import {
-  GAMEPAD_BUTTONS, gamepadMenuDirection, focusMenuItem, activateFocusedMenuItem,
-  dispatchUiBack, uiBlocksGameplay
+  GAMEPAD_BUTTONS, GAMEPAD_ACTION_BUTTONS, gamepadMenuDirection, focusMenuItem,
+  activateFocusedMenuItem, dispatchUiBack, uiBlocksGameplay
 } from './controllerNavigation.js';
 
 export function stickVector(dx, dy, max = 52, deadZone = 5) {
@@ -106,9 +106,9 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
         lastMenuMoveAt = now;
       }
       lastMenuDirection = direction;
-      if (edge([GAMEPAD_BUTTONS.a])) activateFocusedMenuItem();
-      if (edge([GAMEPAD_BUTTONS.b])) dispatchUiBack();
-      if (edge([GAMEPAD_BUTTONS.start, GAMEPAD_BUTTONS.select]) && document.activeElement !== document.querySelector('#title-screen')) dispatchUiBack();
+      if (edge([GAMEPAD_ACTION_BUTTONS.confirm])) activateFocusedMenuItem();
+      if (edge([GAMEPAD_ACTION_BUTTONS.back])) dispatchUiBack();
+      if (edge(GAMEPAD_ACTION_BUTTONS.menu) && !document.querySelector('#title-screen:not(.hidden)')) dispatchUiBack();
       previousButtons = pressed;
       return;
     }
@@ -123,11 +123,11 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     if (magnitude > 1) { x /= magnitude; y /= magnitude; }
     padVector = { x, y };
     shooting.updateGamepad(pad, pressed);
-    if (edge([GAMEPAD_BUTTONS.b])) triggerAction('dash');
-    if (edge([GAMEPAD_BUTTONS.y])) triggerAction('shield');
-    if (edge([GAMEPAD_BUTTONS.x, GAMEPAD_BUTTONS.rightBumper])) triggerAction('ability');
-    if (edge([GAMEPAD_BUTTONS.a])) triggerAction('interact');
-    if (edge([GAMEPAD_BUTTONS.start, GAMEPAD_BUTTONS.select])) { shooting.clearFire(); onMenu(); }
+    if (edge([GAMEPAD_ACTION_BUTTONS.dash])) triggerAction('dash');
+    if (edge([GAMEPAD_ACTION_BUTTONS.shield])) triggerAction('shield');
+    if (edge(GAMEPAD_ACTION_BUTTONS.ability)) triggerAction('ability');
+    if (edge([GAMEPAD_ACTION_BUTTONS.interact])) triggerAction('interact');
+    if (edge(GAMEPAD_ACTION_BUTTONS.menu)) { shooting.clearFire(); onMenu(); }
     previousButtons = pressed;
   }
   function update() { updateGamepad(); shooting.update(); }
