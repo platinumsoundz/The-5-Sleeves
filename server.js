@@ -338,7 +338,7 @@ function movePlayerToZone(player, socket, nextZone, entry = 'center') {
 
 function buildPlayer(socket, requestedName, profile, zone) {
   const requestedDomain = LEGACY_DOMAINS[profile.energyColor] || profile.energyColor;
-  const storedDomain = ACTIVE_DOMAINS.has(requestedDomain) ? requestedDomain : 'cipher';
+  const storedDomain = ACTIVE_DOMAINS.has(requestedDomain) ? requestedDomain : 'wind';
   const storedCities = Array.isArray(profile.unlockedCities) ? profile.unlockedCities.filter((id) => HAVEN_IDS.has(id)) : [];
   if (!storedCities.includes('haven-perimeter')) storedCities.unshift('haven-perimeter');
   const storedTowers = {};
