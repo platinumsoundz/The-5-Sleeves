@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SKILL_TREE, skillById, skillBonuses } from '../server/skill-tree.js';
 import { DOMAIN_ABILITIES, abilityFor } from '../server/sim/abilities.js';
+import { ACTIVE_DOMAINS, LEGACY_DOMAINS } from '../server/sim/spec.js';
 import { SKILL_TREE as CLIENT_SKILL_TREE } from '../public/src/config.js';
 
 test('the skill tree mirrors client costs and prices deeper tiers higher', () => {
@@ -41,8 +42,10 @@ test('each unlocked branch contributes its own tuning bonus', () => {
   assert.equal(bonuses.wallHeal, true);
 });
 
-test('Cipher cannot be selected as a playable ability and legacy profiles fall back to Wind', () => {
+test('Cipher has no selectable ability and legacy Cipher profiles migrate to Wind', () => {
   assert.deepEqual(Object.keys(DOMAIN_ABILITIES).sort(), ['dark', 'earth', 'fire', 'water', 'wind']);
+  assert.deepEqual([...ACTIVE_DOMAINS].sort(), ['dark', 'earth', 'fire', 'water', 'wind']);
+  assert.equal(LEGACY_DOMAINS.cipher, 'wind');
   assert.equal(abilityFor({ energyColor: 'cipher' }).id, DOMAIN_ABILITIES.wind.id);
 });
 
