@@ -159,10 +159,9 @@ test('domain abilities resolve server-side', async (t) => {
   assert.ok(gateStart > 0, 'the siphon went on cooldown');
   const ticking = await once(attacker.socket, 'players', (players) => players[attacker.id].abilityCooldown < gateStart, 3000);
   assert.ok(ticking[attacker.id].abilityCooldown < gateStart, 'cooldown ticks down and blocks recasting');
-  // Every sleeve resolves to its own signature skill (and the client is told the
-  // name/short label to render).
+  // Every playable faction resolves to its own signature skill (and the client
+  // is told the name/short label to render).
   const expectedAbilities = {
-    cipher: { name: 'Conduit Pulse', short: 'PULSE' },
     wind: { name: 'Gale Push', short: 'GALE' },
     water: { name: 'Tide Snare', short: 'SNARE' },
     fire: { name: 'Ember Lance', short: 'LANCE' },
@@ -179,7 +178,7 @@ test('domain abilities resolve server-side', async (t) => {
     assert.ok(state.abilityCooldownMax > 0, 'the client is told the cooldown length');
     abilities.add(state.abilityId);
   }
-  assert.equal(abilities.size, 6, 'each sleeve has its own ability');
+  assert.equal(abilities.size, 5, 'each playable faction has its own ability');
 });
 
 test('downed operatives respawn after the delay', async (t) => {
