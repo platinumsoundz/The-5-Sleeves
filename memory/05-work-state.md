@@ -3,7 +3,21 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 17 player palette + faction identity; current session salvage economy build pending test run).
+Last updated: 2026-10-20 (step 17 player palette + faction identity; current session has untested salvage + balance updates).
+
+## Current session — tuning transparency and tiered skill costs (IMPLEMENTED, UNVERIFIED)
+
+- XP progression now names and exports its 120-XP base and +60-per-level
+  increment; formulas are unchanged.
+- Rust Warden tier multipliers now live as named values in
+  `server/sim/spec.js`; `scaledStats()` uses them, preserving existing
+  behavior while making tier HP/damage/speed/range/XP/credit tuning explicit.
+- Skill-tree nodes now cost their depth in points (tier 1=1, tier 2=2,
+  tier 3=3, tier 4=4), mirrored in the client. Validation remains server-side.
+- Added regression assertions for client/server skill-cost parity and the
+  current tier-3 warden output. **As requested, tests were not run.**
+- This follows the salvage economy slice from the preceding assistant turn;
+  both changes are unverified and must be tested before commit/release.
 
 ## Current session — sell-only wasteland salvage (IMPLEMENTED, TEST RUN REQUIRED)
 
