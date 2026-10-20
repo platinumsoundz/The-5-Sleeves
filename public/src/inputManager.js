@@ -17,7 +17,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let mode = hasTouch ? 'touch' : 'keyboard';
   let padVector = { x: 0, y: 0 }, gamepadAim = null, lastShotAt = 0;
-  let previousButtons = [], shootingMode = getShootingMode(), lastManualAim = null;
+  let previousButtons = [], lastManualAim = null;
   const stick = { vector: { x: 0, y: 0 } }, aimStick = { vector: null };
   const setMode = (next) => { mode = next; onMode(next); };
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
@@ -27,8 +27,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     if (active) fireSources.add(source); else fireSources.delete(source);
     if (!wasHeld && fireSources.size) { lastShotAt = performance.now(); triggerAction('attack'); }
   }
-  document.body?.classList.toggle('twin-stick', shootingMode === SHOOTING_MODE.TWIN);
-  window.addEventListener('shooting-mode:changed', (event) => { shootingMode = event.detail || getShootingMode(); });
+  document.body?.classList.toggle('twin-stick', getShootingMode() === SHOOTING_MODE.TWIN);
   window.addEventListener('pointermove', (event) => { if (event.pointerType === 'mouse' && getMouseAim?.()) setMode('keyboard'); });
   const directionButtons = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down', ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
 
