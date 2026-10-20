@@ -60,18 +60,16 @@ test('domain abilities resolve server-side', async (t) => {
     return victimState && attackerState && Math.hypot(victimState.x - 214, victimState.y - 206) < 24 && Math.hypot(attackerState.x - 200, attackerState.y - 200) < 24;
   });
 
-  // Cipher: Conduit Pulse damages a nearby rival and charges the caster.
-  // All three arrive in the same tick as the cast, so listen before firing.
-  const burstWaiter = once(attacker.socket, 'bursts', (bursts) => Object.values(bursts).some((entry) => entry.kind === 'pulse'), 3000);
-  const hitWaiter = once(attacker.socket, 'combat:hit', (payload) => payload.targetId === victim.id && payload.kind === 'pulse');
-  const chargeWaiter = once(attacker.socket, 'players', (players) => players[attacker.id].coreCharge >= 19, 3000);
+  // Wind's Gale Push remains a playable signature ability after Cipher leaves
+  // the faction picker. Listen for its burst and hit before casting.
+  const burstWaiter = once(attacker.socket, 'bursts', (bursts) => Object.values(bursts).some((entry) => entry.kind === 'gale'), 3000);
+  const hitWaiter = once(attacker.socket, 'combat:hit', (payload) => payload.targetId === victim.id && payload.kind === 'gale');
   attacker.socket.emit('player:ability', { x: 1, y: 0 });
   const burst = await burstWaiter;
-  assert.ok(Object.values(burst).length > 0, 'pulse emits a burst for the client');
+  assert.ok(Object.values(burst).length > 0, 'Gale Push emits a burst for the client');
   const hit = await hitWaiter;
-  assert.equal(hit.amount, 14);
+  assert.equal(hit.amount, 8);
   assert.equal(hit.blocked, false);
-  await chargeWaiter;
 
   // From here on each ability is checked in isolation: park the actors at known
   // coordinates, then cast at a known aim point.
