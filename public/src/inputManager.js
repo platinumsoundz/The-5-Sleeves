@@ -67,10 +67,42 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   }
   setupJoystick();
 
+  function setupAimJoystick() {
+    const base = document.getElementById('aim-joystick');
+    const nub = document.getElementById('aim-joystick-nub');
+    if (!base || !nub) return;
+    const moveNub = (x, y) => { nub.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)'; };
+    const reset = () => { aimStick.vector = null; base.classList.remove('active'); moveNub(0, 0); };
+    base.addEventListener('pointerdown', (event) => {
+      event.preventDefault(); audio?.unlock(); setMode('touch');
+      base.setPointerCapture(event.pointerId); base.classList.add('active');
+    });
+    base.addEventListener('pointermove', (event) => {
+      if (!base.classList.contains('active')) return;
+      event.preventDefault();
+      const rect = base.getBoundingClientRect();
+      let dx = event.clientX - rect.left - rect.width / 2, dy = event.clientY - rect.top - rect.height / 2;
+      const max = Math.max(24, rect.width * 0.34), length = Math.hypot(dx, dy);
+      aimStick.vector = normalizeAim(dx, dy);
+      if (aimStick.vector) lastManualAim = aimStick.vector;
+      if (length > max) { dx *= max / length; dy *= max / length; }
+      moveNub(dx, dy);
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => base.addEventListener(type, reset));
+  }
+  setupAimJoystick();
+
   document.querySelectorAll('.action-button').forEach((button) => {
     button.addEventListener('pointerdown', (event) => {
-      event.preventDefault(); setMode('touch'); triggerAction(button.dataset.action);
+      event.preventDefault(); setMode('touch');
+      if (button.dataset.action === 'attack') {
+        button.setPointerCapture(event.pointerId);
+        setFireSource('touch-' + event.pointerId, true);
+      } else triggerAction(button.dataset.action);
     });
+    if (button.dataset.action === 'attack') {
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => button.addEventListener(type, (event) => setFireSource('touch-' + event.pointerId, false)));
+    }
   });
 
   window.addEventListener('keydown', (event) => {
