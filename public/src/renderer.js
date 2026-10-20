@@ -1,43 +1,19 @@
 import { CORE_DEFAULT, DOMAINS, HUB, PERIMETER_MARGIN, TILE_SIZE, WORLD_DEFAULT } from './config.js';
 import { bus } from './plugin-host.js';
-import { drawSpriteFrame, optionalImage } from './assetLoader.js';
+import { optionalImage } from './assetLoader.js';
 import { drawPlayer, drawWarden } from './characterRenderer.js';
 import { applyCamera, isVisible, updateCamera, visibleWorldBounds } from './camera.js';
 import { INTERPOLATION_DELAY, sampleTrack } from './interpolation.js';
 import { drawHud, slotRect } from './hud.js';
+import { biomeFor, drawBiomeBands, drawBiomeTile, tileVariantFrame } from './biomes.js';
 
-// public/assets/ruins_tiles.png holds six 40px variants: 0-3 interior floor,
-// 4-5 the cracked perimeter ring.
-const TILE_VARIANTS = 6;
+// Keep the helper exported for tests even though the painters live in biomes.js.
+export { tileVariantFrame };
 
-function drawRuinedTile(ctx, tx, ty, world, isWall) {
-  const x = tx * TILE_SIZE, y = ty * TILE_SIZE;
-  const tileSet = optionalImage('assets/ruins_tiles.png');
-  if (drawSpriteFrame(ctx, tileSet, tileVariantFrame(tx, ty, isWall), TILE_VARIANTS, x, y, TILE_SIZE, TILE_SIZE)) return;
-  const image = optionalImage('assets/ruins_tile.png');
-  if (image.loaded) { ctx.drawImage(image, x, y, TILE_SIZE, TILE_SIZE); return; }
-  const shade = (tx * 7 + ty * 11) % 4;
-  ctx.fillStyle = ['#1a1a1a', '#1c1c1b', '#191b1a', '#20201e'][shade];
-  ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-  ctx.strokeStyle = 'rgba(101,104,96,.22)'; ctx.strokeRect(x + .5, y + .5, TILE_SIZE - 1, TILE_SIZE - 1);
-  if ((tx * 3 + ty * 5) % 4 === 0) {
-    ctx.strokeStyle = 'rgba(6,8,8,.8)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x + 9, y + 2); ctx.lineTo(x + 17, y + 15); ctx.lineTo(x + 14, y + 23); ctx.lineTo(x + 29, y + 37); ctx.stroke();
-  }
-  if ((tx + ty * 2) % 5 === 0) { ctx.fillStyle = 'rgba(77,103,62,.32)'; ctx.fillRect(x + 5, y + 29, 9, 3); ctx.fillRect(x + 10, y + 26, 4, 3); }
-  if (isWall) {
-    ctx.fillStyle = (tx + ty) % 2 ? '#30302d' : '#393832';
-    ctx.fillRect(x + 2, y + 3, 7, 5); ctx.fillRect(x + 29, y + 26, 8, 7);
-    ctx.fillStyle = 'rgba(92,126,72,.8)'; ctx.fillRect(x + 3, y + 2, 5, 2); ctx.fillRect(x + 30, y + 25, 5, 2);
-  }
-}
-// The floor never changes, so it is rasterised once into an offscreen canvas and
-// blitted (clipped to the visible region) instead of redrawing every tile.
+// The floor never changes, so it is rasterised once per biome into an
+// offscreen canvas and blitted (clipped to the visible region) instead of
+// redrawing every tile.
 const backgroundCache = new Map();
-
-export function tileVariantFrame(tx, ty, isWall) {
-  return isWall ? 4 + ((tx + ty) % 2) : (tx * 7 + ty * 11) % 4;
-}
 
 export function buildBackground(canvas, world, drawTile, drawBands) {
   const context = canvas.getContext('2d');
@@ -64,22 +40,26 @@ function assetsReady() {
   return (tileSet.loaded && tileSet.naturalWidth > 0) || (singleTile.loaded && singleTile.naturalWidth > 0);
 }
 
-function getBackground(world) {
-  const key = world.width + 'x' + world.height;
+function getBackground(world, biome = 'wasteland') {
+  const key = biome + ':' + world.width + 'x' + world.height;
   const cached = backgroundCache.get(key);
-  const ready = assetsReady();
+  const ready = biome !== 'wasteland' || assetsReady();
   // Re-bake once when the optional tile art finishes loading, then keep it.
   if (cached && cached.assetsReady) return cached;
   if (cached && !ready) return cached;
   const canvas = createOffscreen(world.width, world.height);
-  buildBackground(canvas, world, drawRuinedTile, drawPerimeterBands);
+  buildBackground(
+    canvas, world,
+    (ctx, tx, ty, simWorld, isWall) => drawBiomeTile(ctx, tx, ty, simWorld, isWall, biome),
+    (ctx, simWorld) => drawBiomeBands(ctx, simWorld, biome)
+  );
   const entry = { canvas, assetsReady: ready };
   backgroundCache.set(key, entry);
   return entry;
 }
 
-function drawBackground(ctx, world, view) {
-  const { canvas } = getBackground(world);
+function drawBackground(ctx, world, view, biome = 'wasteland') {
+  const { canvas } = getBackground(world, biome);
   const source = sourceRectForView(view, world);
   if (source.width <= 0 || source.height <= 0) return;
   ctx.drawImage(canvas, source.x, source.y, source.width, source.height, source.x, source.y, source.width, source.height);
@@ -95,21 +75,11 @@ export function sourceRectForView(view, world) {
   return { x, y, width: Math.max(0, right - x), height: Math.max(0, bottom - y) };
 }
 
-// Static half of the perimeter wall; the pulsing dashed line stays live.
-function drawPerimeterBands(ctx, world) {
-  const m = PERIMETER_MARGIN;
-  ctx.save();
-  ctx.fillStyle = 'rgba(11,17,16,.62)';
-  ctx.fillRect(0, 0, world.width, m); ctx.fillRect(0, world.height - m, world.width, m);
-  ctx.fillRect(0, 0, m, world.height); ctx.fillRect(world.width - m, 0, m, world.height);
-  ctx.restore();
-}
-
 function drawPerimeterWall(ctx, world, time, state) {
   const m = PERIMETER_MARGIN;
   ctx.save();
   ctx.setLineDash([13, 8]); ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(143,170,117,' + (0.48 + Math.sin(time * .002) * .12) + ')';
+  ctx.strokeStyle = biomeFor(state?.zone?.biome).edge;
   ctx.strokeRect(m, m, world.width - m * 2, world.height - m * 2);
   ctx.setLineDash([]);
   ctx.fillStyle = 'rgba(126,148,102,.7)'; ctx.font = '10px system-ui'; ctx.textAlign = 'center';
@@ -593,7 +563,7 @@ export function renderFrame(canvas, ctx, state, time) {
 
   ctx.save();
   applyCamera(ctx, camera, width, height);
-  drawBackground(ctx, world, view); drawPerimeterWall(ctx, world, time, state);
+  drawBackground(ctx, world, view, state?.zone?.biome || 'wasteland'); drawPerimeterWall(ctx, world, time, state);
   drawSafeZone(ctx, state, time);
   drawTowers(ctx, state, time);
   // Module hook: ground-level decoration (props, landmarks, terminals) —

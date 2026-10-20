@@ -82,12 +82,16 @@ and tested.)
   viewport culling, minimap.
 - **interpolation.js** — ~100 ms behind-blend for remote players and
   projectiles, capped extrapolation.
-- **renderer.js** — baked offscreen background, sprite sheets with walk
-  frames, procedural fallback; draws players, wardens, projectiles,
+- **renderer.js** — baked offscreen background per biome, sprite sheets with
+  walk frames, procedural fallback; draws players, wardens, projectiles,
   effects, bursts, relays, echoes, safe-city rectangles, tower rooms and a
   receding fogline, compact top-centre HUD (credits + zone), top-left
   radar/mode strip and tower-run status; emits the three module hooks
   (`render:world`, `render:fx`, `render:overlay`).
+- **biomes.js** — biome metadata + procedural ground painters for grass,
+  water, scorched earth, frost-and-ember, wind, cipher and arena; wasteland
+  reuses the baked ruin tiles. Zone backgrounds are cached per
+  biome + world size in renderer.js.
 - **netcode.js** — every socket event in one place, including hub state,
   world map, tower runs, arena menu, fast travel, shop, friends/inbox/gifts,
   skill unlocks and arena zone changes.

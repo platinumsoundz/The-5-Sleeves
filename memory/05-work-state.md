@@ -3,7 +3,30 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 15 menu cleanup, paperdoll, functional skill tree).
+Last updated: 2026-10-20 (step 16 per-region biome backgrounds).
+
+## Step 16 — Per-region biome backgrounds (DONE)
+
+- **Zones carry a biome** — `server/zones-catalog.js` tags every zone:
+  `haven-perimeter` = grass; all five wild roads = the same `wasteland`;
+  `haven-coast` = water; `haven-scorched` = earth; `haven-frozen` = fire;
+  `haven-apex`/`haven-citadel` = cipher; arenas = arena. `zoneMeta`,
+  `worldMapPayload` and the zone-atmosphere banner all expose the biome.
+- **Canon respected** — spirits and tints were left on the canon table
+  (Wind, Water, Earth, Fire, Cipher + Dark); the biome is visual art only.
+  So the five elemental looks are all present (grass/Wind spawn, water coast,
+  earth scorched wastes, frost-and-ember Fire city, cipher Citadel) without
+  rewriting lore.
+- **`public/src/biomes.js`** — biome metadata plus compact deterministic tile
+  painters (grass tufts, waves, rust/ash, frost with ember cracks, wind
+  streaks, circuit traces, arena plate). The wasteland path still uses the
+  baked `ruins_tiles.png` art with the procedural fallback.
+- **Renderer** — background cache keyed by `biome + width + height`, so each
+  region bakes once and swaps in one blit; the live perimeter dash is tinted
+  with the biome edge colour. The arrival banner now reads
+  `book · biome label`.
+- 5 new tests in `test/biomes.test.js` (zone coverage, wild uniformity,
+  fallback, floor/wall painting, bands); suite green **75/75** (~62 s).
 
 ## Step 15 — Menu cleanup, paperdoll and working skill tree (DONE)
 
@@ -151,9 +174,10 @@ Last updated: 2026-10-20 (step 15 menu cleanup, paperdoll, functional skill tree
   intact worktree as commit `2d976f5` ("Restore full game after local git
   object-store loss"). **All content is present, but the granular history of
   roadmap builds 0–6 is gone.** Do NOT delete files inside `.git/objects`.
-- Local history has the restored baseline plus Steps 12–14 pushed.
-  `origin/main` = `adda620` ("Fit the HUD and menus to phone screens"),
-  on top of `578c529` ("Build the village-scale world…"), verified with
+- Local history has the restored baseline plus Steps 12–16 pushed.
+  `origin/main` tracks Steps 15–16 ("Clean up the menu pages and make the
+  skill tree functional", "Give every region its own biome background") on
+  top of `3594f89` ("Record the mobile UI polish push"). Verified with
   `git ls-remote` after pushing. (An earlier push attempt from this
   environment failed with "could not read Username for
   'https://github.com'" — the owner pushed from their side that time. The
@@ -179,22 +203,22 @@ Last updated: 2026-10-20 (step 15 menu cleanup, paperdoll, functional skill tree
 
 ## In progress
 
-- None. Step 15 (menu cleanup, paperdoll, functional skill tree) is COMPLETE
-  and green (70/70), committed as this build.
+- None. Step 16 (per-region biome backgrounds) is COMPLETE and green
+  (75/75), committed as this build.
 
 ## What is left / next session
 
-- **Polish continues (owner-directed).** Step 15 restructured the MENU pages
-  (character stats, inventory paperdoll, skills + core upgrades, real node
-  effects). Remaining polish candidates, in rough priority order: per-region
-  backgrounds, player colour customisation, faction identity/UI, title-screen
-  zone picker, chat/party panel visuals, map canvas text.
+- **Polish continues (owner-directed).** Steps 15–16 restructured the MENU
+  pages and gave every region its own ground art. Remaining owner asks in
+  this polish pass: player colour customisation and making the six factions
+  visible/working as first-class identities. Then: title-screen zone picker,
+  chat/party panel visuals, map canvas text.
 - Playtest the city → tower → road loop; tune enemy scaling/credit prices.
 - Approve or rewrite the PROPOSED terminal lore.
 - Next system after polish (suggested): private rooms → auth → PWA → store.
 - The title screen intentionally offers only the First Village; every other
   city is unlocked by walking the chain or fast-travelling from the MENU map.
-- Step 14 is pushed (`adda620`); keep committing and pushing each build.
+- Steps 15–16 are pushed; keep committing and pushing each build.
 
 ## Session build queue (this session, in order)
 

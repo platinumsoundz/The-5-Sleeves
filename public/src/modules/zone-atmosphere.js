@@ -2,6 +2,8 @@
 // zone's colour and announces the zone name for a few seconds after arrival.
 // Purely cosmetic — the server decides which zone the operative is in.
 // Priority 30: after world dressing, before gameplay UI.
+import { biomeFor } from '../biomes.js';
+
 export default {
   name: 'zone-atmosphere',
   summary: 'Per-zone colour tint and arrival banner.',
@@ -38,7 +40,7 @@ export default {
       draw.fillText(zone.name.toUpperCase(), width / 2, height * 0.2);
       draw.fillStyle = '#7fb8ac';
       draw.font = '11px system-ui, sans-serif';
-      draw.fillText((zone.book || zone.spirit || '').toUpperCase(), width / 2, height * 0.2 + 20);
+      draw.fillText(((zone.book || zone.spirit || '') + ' · ' + biomeFor(zone.biome).label).toUpperCase(), width / 2, height * 0.2 + 20);
       draw.restore();
     });
   }

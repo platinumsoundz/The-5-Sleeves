@@ -118,7 +118,7 @@ function lobbyPayload() {
 }
 function zoneMeta(zone) {
   return {
-    id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint,
+    id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint, biome: zone.biome,
     kind: zone.kind, mode: zone.mode, arena: !!zone.arena, friendlyFire: zone.friendlyFire !== false,
     danger: zone.danger || 0, levelBand: zone.levelBand || null,
     towerIndex: zone.towerIndex || null, towerName: zone.towerName || zone.tower?.name || null,

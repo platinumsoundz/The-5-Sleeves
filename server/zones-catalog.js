@@ -102,6 +102,7 @@ function arena(config) {
     friendlyFire: config.alignment !== 'pve',
     npcs: [],
     terminals: [],
+    biome: 'arena',
     ...config
   };
 }
@@ -114,6 +115,7 @@ const ZONES = [
     book: 'Book I — The Perimeter and the First Tower',
     spirit: 'Wind',
     tint: 'rgba(80, 220, 200, 0.05)',
+    biome: 'grass',
     order: 0,
     advertise: true,
     towerIndex: null,
@@ -128,6 +130,7 @@ const ZONES = [
     book: 'The road east',
     spirit: 'Wind',
     tint: 'rgba(80, 220, 200, 0.04)',
+    biome: 'wasteland',
     order: 1,
     danger: 1,
     levelBand: [1, 4],
@@ -143,6 +146,7 @@ const ZONES = [
     book: 'Book II — The Sunken Coast',
     spirit: 'Water',
     tint: 'rgba(70, 130, 255, 0.07)',
+    biome: 'water',
     order: 2,
     towerIndex: 1,
     towerName: 'Tower 1 · Drowned Pylon',
@@ -157,6 +161,7 @@ const ZONES = [
     book: 'The road east',
     spirit: 'Water',
     tint: 'rgba(70, 130, 255, 0.05)',
+    biome: 'wasteland',
     order: 3,
     danger: 2,
     levelBand: [5, 9],
@@ -171,6 +176,7 @@ const ZONES = [
     book: 'Book III — Shadows of Exile',
     spirit: 'Earth',
     tint: 'rgba(255, 170, 80, 0.06)',
+    biome: 'earth',
     order: 4,
     towerIndex: 2,
     towerName: 'Tower 2 · Ember Spire',
@@ -185,6 +191,7 @@ const ZONES = [
     book: 'The road east',
     spirit: 'Earth',
     tint: 'rgba(255, 170, 80, 0.05)',
+    biome: 'wasteland',
     order: 5,
     danger: 3,
     levelBand: [10, 14],
@@ -199,6 +206,7 @@ const ZONES = [
     book: 'Book IV — The Frozen Wastes',
     spirit: 'Fire',
     tint: 'rgba(200, 235, 255, 0.07)',
+    biome: 'fire',
     order: 6,
     towerIndex: 3,
     towerName: 'Tower 3 · White Kiln',
@@ -213,6 +221,7 @@ const ZONES = [
     book: 'The road east',
     spirit: 'Fire',
     tint: 'rgba(200, 235, 255, 0.05)',
+    biome: 'wasteland',
     order: 7,
     danger: 4,
     levelBand: [15, 19],
@@ -227,6 +236,7 @@ const ZONES = [
     book: 'Book V — The Apex Citadel',
     spirit: 'Cipher + Dark',
     tint: 'rgba(180, 90, 255, 0.06)',
+    biome: 'cipher',
     order: 8,
     towerIndex: 4,
     towerName: 'Tower 4 · Rebind Bastion',
@@ -241,6 +251,7 @@ const ZONES = [
     book: 'The final road',
     spirit: 'Dark',
     tint: 'rgba(180, 90, 255, 0.05)',
+    biome: 'wasteland',
     order: 9,
     danger: 5,
     levelBand: [20, 25],
@@ -255,6 +266,7 @@ const ZONES = [
     book: 'Book V — The Apex Citadel',
     spirit: 'Cipher + Dark',
     tint: 'rgba(200, 120, 255, 0.08)',
+    biome: 'cipher',
     order: 10,
     towerIndex: 5,
     towerName: 'Tower 5 · Apex Spire',
@@ -266,27 +278,27 @@ const ZONES = [
   tower({
     id: 'tower-1', name: 'Tower 1 · Drowned Pylon', havenId: 'haven-coast', towerIndex: 1,
     order: 2, danger: 2, levelBand: [5, 9],
-    book: 'Tower 1', spirit: 'Water', tint: 'rgba(70, 130, 255, 0.1)'
+    book: 'Tower 1', spirit: 'Water', tint: 'rgba(70, 130, 255, 0.1)', biome: 'water'
   }),
   tower({
     id: 'tower-2', name: 'Tower 2 · Ember Spire', havenId: 'haven-scorched', towerIndex: 2,
     order: 4, danger: 4, levelBand: [10, 14],
-    book: 'Tower 2', spirit: 'Earth', tint: 'rgba(255, 170, 80, 0.1)'
+    book: 'Tower 2', spirit: 'Earth', tint: 'rgba(255, 170, 80, 0.1)', biome: 'earth'
   }),
   tower({
     id: 'tower-3', name: 'Tower 3 · White Kiln', havenId: 'haven-frozen', towerIndex: 3,
     order: 6, danger: 6, levelBand: [15, 19],
-    book: 'Tower 3', spirit: 'Fire', tint: 'rgba(200, 235, 255, 0.1)'
+    book: 'Tower 3', spirit: 'Fire', tint: 'rgba(200, 235, 255, 0.1)', biome: 'fire'
   }),
   tower({
     id: 'tower-4', name: 'Tower 4 · Rebind Bastion', havenId: 'haven-apex', towerIndex: 4,
     order: 8, danger: 8, levelBand: [20, 24],
-    book: 'Tower 4', spirit: 'Cipher + Dark', tint: 'rgba(180, 90, 255, 0.1)'
+    book: 'Tower 4', spirit: 'Cipher + Dark', tint: 'rgba(180, 90, 255, 0.1)', biome: 'cipher'
   }),
   tower({
     id: 'tower-5', name: 'Tower 5 · Apex Spire', havenId: 'haven-citadel', towerIndex: 5,
     order: 10, danger: 10, levelBand: [25, 30],
-    book: 'Tower 5', spirit: 'Cipher + Dark', tint: 'rgba(200, 120, 255, 0.12)'
+    book: 'Tower 5', spirit: 'Cipher + Dark', tint: 'rgba(200, 120, 255, 0.12)', biome: 'cipher'
   }),
 
   arena({
@@ -344,6 +356,7 @@ function worldMapPayload() {
     id: zone.id, name: zone.name, kind: zone.kind, order: zone.order,
     towerIndex: zone.towerIndex || null, havenId: zone.havenId || null,
     danger: zone.danger || 0, levelBand: zone.levelBand || null,
+    biome: zone.biome || 'wasteland',
     exits: { ...(zone.exits || {}) }
   })).sort((a, b) => a.order - b.order || (a.kind === 'tower' ? 1 : -1));
 }
