@@ -147,6 +147,11 @@ it committed and tested after running the full suite.)
 - **audioManager.js** — Web Audio SFX, mute toggle.
 - **hud.js** — top-level 3 px XP progress line and a compact level/credit/
   zone/ability summary; no duplicate health bar.
+- **PWA shell** — `public/manifest.json` configures standalone landscape
+  launch; `index.html` includes Apple home-screen metadata. Settings exposes
+  a standard Fullscreen API toggle with unsupported-browser guidance.
+- **fullscreen.js** — DOM-free fullscreen API state/toggle helper; safe to
+  import in Node and handles browser rejection.
 - **config.js** — world/core/colour constants.
 
 ## Zones (`server/zones-catalog.js` + `server/sim/`)
@@ -242,6 +247,8 @@ it committed and tested after running the full suite.)
 - Visual coverage regression suite (`test/visuals.test.js`) checks zone
   biome propagation, named tower landmarks and required baked sprite files;
   **added but unrun**.
+- `test/pwa.test.js` covers standalone manifest metadata, Apple tags, and
+  fullscreen enter/exit/unsupported behavior; **added but unrun**.
 - `test/shooting.test.js` adds six regressions for mode persistence, aim
   normalization/selection and repeat cadence. The suite was not run; recent
   auth, hazard, visual, balance and shooting changes also remain unverified.
@@ -249,8 +256,8 @@ it committed and tested after running the full suite.)
 
 ## Planned next (owner-directed)
 
-- Step 13 HTTPS/controller/HUD changes are implemented but unverified; see
-  `memory/05-work-state.md`. Run `npm test` and browser/controller playtests
-  before marking the build complete.
+- Step 14 PWA/fullscreen and Step 13 HTTPS/controller/HUD changes are
+  implemented but unverified; see `memory/05-work-state.md`. Run `npm test`
+  and browser/device checks before marking the builds complete.
 - The roadmap remains complete; future work is playtest tuning, canon
   approval and the future roadmap brainstorm.
