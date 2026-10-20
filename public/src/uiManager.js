@@ -1,23 +1,26 @@
-import { PROFILE_KEY, WORLD_DEFAULT } from './config.js';
+import { ITEM_CATALOG, PROFILE_KEY, WORLD_DEFAULT } from './config.js';
+import { createMenu } from './menu.js';
 
 export function createUIManager(actions) {
   const $ = (selector) => document.querySelector(selector);
   const title = $('#title-screen'), form = $('#join-form'), nameInput = $('#username-input');
-  const enterButton = $('#enter-button'), nameError = $('#name-error'), menu = $('#character-menu');
+  const enterButton = $('#enter-button'), nameError = $('#name-error');
   const hints = $('#control-hints'), status = $('#status'), archiveToast = $('#archive-toast');
   const partyWidget = $('#party-widget'), partyMap = $('#party-minimap'), partyMembers = $('#party-members');
   const inviteToast = $('#party-invite-toast'), inviteMessage = $('#party-invite-message');
   const chatList = $('#chat-messages'), chatForm = $('#chat-form'), chatInput = $('#chat-input');
   const chatPanel = $('#chat-panel'), chatToggle = $('#chat-toggle'), chatBadge = $('#chat-badge');
   const abilityButton = $('#ability-button');
+  const chatActions = $('#chat-actions'), chatActionsName = $('#chat-actions-name'), chatActionsList = $('#chat-actions-list');
+  const shopPanel = $('#shop-panel'), shopItems = $('#shop-items'), shopBalance = $('#shop-balance'), shopStatus = $('#shop-status');
   let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, inviteTimer = null;
-  // Chat starts collapsed so it never covers the play area; messages that
-  // arrive while it is closed raise the unread badge instead.
-  let chatOpen = false, unreadChat = 0;
+  let chatOpen = false, unreadChat = 0, chatTarget = null, shopPayload = null;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
   let profileSnapshot = JSON.stringify(profile);
   if (typeof profile.name === 'string') nameInput.value = profile.name;
+
+  const menuController = createMenu({ actions, getState: actions.getState, getPlayer: actions.getPlayer });
 
   function saveProfile() {
     const serialized = JSON.stringify(profile);
@@ -26,14 +29,8 @@ export function createUIManager(actions) {
   }
   function updateMenu(player) {
     if (!player) return;
-    $('#skill-points').textContent = 'Level ' + (player.level || 1) + ' · Skill Points: ' + (player.skillPoints || 0);
-    $('#atk-level').textContent = 'Lv ' + (player.atk || 0);
-    $('#plating-level').textContent = 'Lv ' + (player.plating || 0);
-    $('#overclock-level').textContent = 'Lv ' + (player.overclock || 0);
-    document.querySelectorAll('.upgrade-button').forEach((button) => {
-      button.disabled = !joined || (player.skillPoints || 0) <= 0 || (player[button.dataset.upgrade] || 0) >= 99;
-    });
-    document.querySelectorAll('.color-option').forEach((button) => button.classList.toggle('selected', button.dataset.color === player.energyColor));
+    const points = $('#skill-points');
+    if (points) points.textContent = 'Level ' + (player.level || 1) + ' · Skill Points: ' + (player.skillPoints || 0) + ' · ' + (actions.getState?.()?.zone?.name || 'The Perimeter');
   }
   function showToast(message, duration = 4500) {
     archiveToast.textContent = message;
@@ -62,13 +59,68 @@ export function createUIManager(actions) {
     if (!joined) return;
     setChatOpen(typeof forceOpen === 'boolean' ? forceOpen : !chatOpen);
   }
+  function closeChatActions() {
+    chatTarget = null;
+    chatActions?.classList.add('hidden');
+  }
+  function renderGiftChoices() {
+    if (!chatTarget || !chatActionsList) return;
+    const player = actions.getPlayer?.();
+    const items = (player?.inventory || []).filter((id) => ITEM_CATALOG[id]);
+    if (!items.length) {
+      const note = document.createElement('p'); note.className = 'chat-action-note';
+      note.textContent = 'No giftable items in your inventory.';
+      chatActionsList.append(note);
+      return;
+    }
+    const heading = document.createElement('div'); heading.className = 'chat-action-heading'; heading.textContent = 'SEND A GIFT';
+    chatActionsList.append(heading);
+    for (const id of items) {
+      const item = ITEM_CATALOG[id];
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'chat-action';
+      button.textContent = item.name;
+      button.addEventListener('click', () => {
+        actions.sendGift?.(chatTarget.id, id);
+        closeChatActions();
+      });
+      chatActionsList.append(button);
+    }
+  }
+  function renderChatActions() {
+    if (!chatActionsList || !chatTarget) return;
+    chatActionsList.replaceChildren();
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'chat-action'; add.textContent = 'ADD FRIEND';
+    add.addEventListener('click', () => { actions.addFriend?.(chatTarget.id, chatTarget.name); closeChatActions(); });
+    const invite = document.createElement('button');
+    invite.type = 'button'; invite.className = 'chat-action'; invite.textContent = 'INVITE TO PARTY';
+    invite.addEventListener('click', () => { actions.invitePlayer?.(chatTarget.id); closeChatActions(); });
+    const gift = document.createElement('button');
+    gift.type = 'button'; gift.className = 'chat-action'; gift.textContent = 'SEND A GIFT';
+    gift.addEventListener('click', () => { chatActionsList.replaceChildren(); renderGiftChoices(); });
+    chatActionsList.append(add, invite, gift);
+  }
+  function openChatActions(playerId, name, event) {
+    if (!chatActions || !chatActionsList) return;
+    chatTarget = { id: playerId, name: name || 'Operative' };
+    chatActionsName.textContent = chatTarget.name;
+    renderChatActions();
+    chatActions.classList.remove('hidden');
+    const width = 210, x = Math.max(8, Math.min(window.innerWidth - width - 8, (event?.clientX || window.innerWidth / 2) - width / 2));
+    const y = Math.max(8, Math.min(window.innerHeight - 150, (event?.clientY || window.innerHeight / 2) + 10));
+    chatActions.style.left = x + 'px'; chatActions.style.top = y + 'px';
+  }
   function appendChat(message, system = false) {
     const item = document.createElement('li');
     if (system) { item.className = 'chat-system'; item.textContent = message; }
     else {
       const channel = document.createElement('span'); channel.className = 'chat-channel';
       channel.textContent = '[' + String(message.channel || 'global').toUpperCase() + '] ';
-      const name = document.createElement('strong'); name.textContent = String(message.name || 'Operative') + ': ';
+      const name = document.createElement('button');
+      name.type = 'button'; name.className = 'chat-name';
+      name.textContent = String(message.name || 'Operative') + ': ';
+      name.addEventListener('click', (event) => { event.stopPropagation(); openChatActions(message.playerId, message.name, event); });
       const text = document.createElement('span'); text.textContent = String(message.text || '');
       item.append(channel, name, text);
     }
@@ -116,6 +168,32 @@ export function createUIManager(actions) {
       row.append(label, bar, xp); partyMembers.appendChild(row);
     });
   }
+  function renderShop(payload) {
+    shopPayload = payload;
+    if (!shopItems) return;
+    shopBalance.textContent = 'CORE POINTS: ' + (payload?.corePoints || 0) + ' · STARTER WEAPONS & ARMOR';
+    shopItems.replaceChildren();
+    const inventory = payload?.inventory || [];
+    for (const item of payload?.items || []) {
+      const owned = inventory.includes(item.id);
+      const equipped = payload.equipped?.[item.slot] === item.id;
+      const card = document.createElement('div'); card.className = 'shop-item' + (owned ? ' owned' : '');
+      const copy = document.createElement('div');
+      const title = document.createElement('strong'); title.textContent = item.name;
+      const meta = document.createElement('small'); meta.textContent = item.tier + ' · ' + item.slot.toUpperCase() + ' · ' + (item.price ? item.price + ' CORE PTS' : 'FREE');
+      const desc = document.createElement('p'); desc.textContent = item.desc;
+      copy.append(title, meta, desc);
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'menu-action';
+      button.textContent = equipped ? 'EQUIPPED' : owned ? 'OWNED' : item.price > (payload?.corePoints || 0) ? 'NEED ' + item.price : 'BUY';
+      button.disabled = owned || item.price > (payload?.corePoints || 0);
+      button.addEventListener('click', () => actions.buyItem?.(item.id));
+      card.append(copy, button);
+      shopItems.append(card);
+    }
+    if (shopStatus) shopStatus.textContent = '';
+  }
+  function showShop(payload) { renderShop(payload); shopPanel?.classList.remove('hidden'); }
+  function hideShop() { shopPanel?.classList.add('hidden'); }
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -123,21 +201,26 @@ export function createUIManager(actions) {
     if (!name) { nameError.textContent = 'Enter a character name.'; return; }
     nameError.textContent = ''; enterButton.disabled = true; actions.join(name);
   });
-  $('#specs-button').addEventListener('click', () => actions.toggleMenu());
+  $('#menu-button')?.addEventListener('click', () => actions.toggleMenu());
   if (chatToggle) chatToggle.addEventListener('click', () => toggleChat());
-  // Enter opens the collapsed chat and focuses the input; Escape closes it
-  // before the character menu takes over.
   window.addEventListener('keydown', (event) => {
     if (event.target && event.target.closest && event.target.closest('input, textarea')) return;
-    if (event.key === 'Enter' && joined && !chatOpen) { event.preventDefault(); toggleChat(true); chatInput.focus(); }
+    if (event.key === 'Enter' && joined && !chatOpen && !menuController.isOpen()) { event.preventDefault(); toggleChat(true); chatInput.focus(); }
     if (event.key === 'Escape' && chatOpen) { event.preventDefault(); toggleChat(false); }
+    if (event.key === 'Escape' && menuController.isOpen()) menuController.close();
   });
-  $('#menu-close').addEventListener('click', () => menu.classList.add('hidden'));
-  menu.addEventListener('click', (event) => { if (event.target === menu) menu.classList.add('hidden'); });
+  document.addEventListener('click', (event) => {
+    if (!chatActions || chatActions.classList.contains('hidden')) return;
+    if (!chatActions.contains(event.target)) closeChatActions();
+  });
+  $('#menu-close')?.addEventListener('click', () => menuController.close());
   document.querySelectorAll('.upgrade-button').forEach((button) => button.addEventListener('click', () => actions.upgrade(button.dataset.upgrade)));
   document.querySelectorAll('.color-option').forEach((button) => button.addEventListener('click', () => actions.selectDomain(button.dataset.color)));
-  $('#party-leave').addEventListener('click', () => actions.leaveParty());
+  $('#party-leave')?.addEventListener('click', () => actions.leaveParty());
   document.querySelectorAll('.chat-tab').forEach((button) => button.addEventListener('click', () => selectChatChannel(button.dataset.chatChannel)));
+  $('#chat-actions-close')?.addEventListener('click', closeChatActions);
+  $('#shop-close')?.addEventListener('click', hideShop);
+  shopPanel?.addEventListener('click', (event) => { if (event.target === shopPanel) hideShop(); });
   chatForm.addEventListener('submit', (event) => {
     event.preventDefault();
     let text = chatInput.value.trim(), channel = activeChannel;
@@ -147,11 +230,11 @@ export function createUIManager(actions) {
     if (!text) return;
     actions.sendChat(channel, text); chatInput.value = '';
   });
-  $('#party-accept').addEventListener('click', () => {
+  $('#party-accept')?.addEventListener('click', () => {
     if (currentInvite) actions.respondParty(currentInvite.inviteId, true);
     currentInvite = null; inviteToast.classList.add('hidden');
   });
-  $('#party-decline').addEventListener('click', () => {
+  $('#party-decline')?.addEventListener('click', () => {
     if (currentInvite) actions.respondParty(currentInvite.inviteId, false);
     currentInvite = null; inviteToast.classList.add('hidden');
   });
@@ -161,13 +244,20 @@ export function createUIManager(actions) {
     joinAccepted({ name, stats }) {
       joined = true; profile = { ...profile, name, ...stats }; saveProfile();
       title.classList.add('hidden'); enterButton.disabled = false; nameError.textContent = '';
-      status.textContent = 'Welcome, ' + name; updateMenu(profile);
+      status.textContent = 'CONNECTED';
+      status.classList.remove('offline');
+      showToast('Welcome, ' + name + ' — the safe hub is yours.', 3000);
       unreadChat = 0; setChatOpen(false); renderBadge();
     },
     joinError(message) { nameError.textContent = message; enterButton.disabled = false; },
     showArchiveToast: showToast,
     updatePlayer(player) {
-      profile = { name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor };
+      profile = {
+        name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge,
+        corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp,
+        atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor,
+        inventory: player.inventory, equipped: player.equipped, skills: player.skills, friends: player.friends
+      };
       saveProfile(); updateMenu(player);
       if (player.abilityShort) {
         abilityButton.textContent = player.abilityShort;
@@ -177,15 +267,12 @@ export function createUIManager(actions) {
     },
     setInputMode(mode) {
       document.body.dataset.inputMode = mode;
-      if (mode === 'keyboard') hints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">Q</span> Sleeve<br /><span class="control-badge">F</span> Read &nbsp; <span class="control-badge">C</span> Specs &nbsp; <span class="control-badge">+ / −</span> Zoom';
-      else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">A / R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">RT</span> Sleeve<br /><span class="control-badge">Y</span> Read &nbsp; <span class="control-badge">START / SELECT</span> Specs';
+      if (mode === 'keyboard') hints.innerHTML = '<span class="control-badge">WASD / ↑↓←→</span> Move &nbsp; <span class="control-badge">SPACE</span> Blast<br /><span class="control-badge">SHIFT</span> Dash &nbsp; <span class="control-badge">E</span> Shield &nbsp; <span class="control-badge">Q</span> Sleeve<br /><span class="control-badge">F</span> Interact &nbsp; <span class="control-badge">C</span> Menu &nbsp; <span class="control-badge">+ / −</span> Zoom';
+      else if (mode === 'controller') hints.innerHTML = '<span class="control-badge">STICK / D-PAD</span> Move &nbsp; <span class="control-badge">A / R1</span> Blast<br /><span class="control-badge">X / L1</span> Dash &nbsp; <span class="control-badge">B / L2</span> Shield &nbsp; <span class="control-badge">RT</span> Sleeve<br /><span class="control-badge">Y</span> Interact &nbsp; <span class="control-badge">START / SELECT</span> Menu';
       else hints.textContent = '';
     },
-    toggleMenu(forceOpen) {
-      if (!joined) return;
-      const open = typeof forceOpen === 'boolean' ? forceOpen : menu.classList.contains('hidden');
-      if (open) updateMenu(actions.getPlayer?.()); menu.classList.toggle('hidden', !open);
-    },
+    toggleMenu(forceOpen) { menuController.toggle(forceOpen); },
+    toggleMenuFromInput(forceOpen) { menuController.toggle(forceOpen); },
     updateParty: renderParty,
     showPartyInvite(invite) {
       currentInvite = invite;
@@ -200,8 +287,22 @@ export function createUIManager(actions) {
     chatMessage: (message) => appendChat(message),
     chatError: (message) => appendChat(message, true),
     setBootStatus(text) { $('#boot-status').textContent = text; },
-    // Zone picker on the title screen. `selectedZone` lives in the caller and
-    // is read again on submit, so remembering the choice is the caller's job.
+    zoneChanged(payload) {
+      const name = payload?.zone?.name || 'the next zone';
+      showToast('Entering ' + name + (payload?.arena ? ' — combat live.' : ' — safe hub online.'), 3200);
+      if (menuController.isOpen()) menuController.refresh();
+    },
+    hubState() { if (menuController.isOpen()) menuController.refresh(); },
+    towersChanged() {},
+    towerUnlocked(tower) { showToast('Tower online: ' + (tower?.name || 'regional tower') + ' — fogline pushed back.', 4200); },
+    showShop,
+    shopUpdate: renderShop,
+    shopError(message) { if (shopStatus) shopStatus.textContent = message; showToast(message, 3200); },
+    friendsChanged() { if (menuController.isOpen()) menuController.refresh(); },
+    inboxChanged() { if (menuController.isOpen()) menuController.refresh(); },
+    skillUpdated(payload) { showToast((payload?.name || 'Sleeve node') + ' unlocked.', 3000); if (menuController.isOpen()) menuController.refresh(); },
+    notice(message) { showToast(message, 3200); },
+    giftSent(payload) { showToast('Gift sent to ' + payload.targetName + ': ' + payload.itemName + '.', 3200); },
     renderZones(zones, selectedId) {
       const options = $('#zone-options');
       if (!options) return;
@@ -221,7 +322,6 @@ export function createUIManager(actions) {
         button.addEventListener('click', () => actions.selectZone(zone.id));
         options.append(button);
       }
-    },
-    toggleMenuFromInput(forceOpen) { this.toggleMenu(forceOpen); }
+    }
   };
 }

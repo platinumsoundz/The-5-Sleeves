@@ -17,7 +17,7 @@ const { createSimulation } = require('./server/sim/state.js');
 const { stepZone, seedZone } = require('./server/sim/index.js');
 const { spawnWarden } = require('./server/sim/wardens.js');
 const { abilityFor, castAbility } = require('./server/sim/abilities.js');
-const { distance } = require('./server/sim/combat.js');
+const { distance, inSafeZone } = require('./server/sim/combat.js');
 const {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
   MAX_WARDENS, LEVEL_HP_GAIN
@@ -82,11 +82,35 @@ for (const catalogZone of zoneCatalog()) {
     refreshLevelFields,
     applyXp,
     awardNearbyParty,
-    persistPlayer
+    persistPlayer,
+    sameParty
   });
   zones[sim.id] = sim;
   zoneOrder.push(sim.id);
   for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
+  seedZone(sim);
+}
+// Two instanced Domination arenas reached only through the hub portals. They
+// are registered in `zones` for travel but deliberately kept out of
+// `zoneOrder`, so the title-screen lobby still lists the five canon zones.
+const ARENA_ZONES = [
+  { id: 'arena-pvp', name: 'Domination Arena · PvP', book: 'Hub Arena', spirit: 'Cipher', tint: 'rgba(255, 80, 120, 0.07)', terminals: [], arena: true, mode: 'arena-pvp', friendlyFire: true },
+  { id: 'arena-pve', name: 'Domination Arena · Co-op', book: 'Hub Arena', spirit: 'Water', tint: 'rgba(80, 190, 255, 0.07)', terminals: [], arena: true, mode: 'arena-pve', friendlyFire: false }
+];
+for (const arena of ARENA_ZONES) {
+  const sim = createSimulation(arena, {
+    io,
+    playerSockets,
+    scoreLimit: SCORE_LIMIT,
+    refreshLevelFields,
+    applyXp,
+    awardNearbyParty,
+    persistPlayer,
+    sameParty
+  });
+  zones[sim.id] = sim;
+  // PvE arena keeps rogue entities; the PvP arena is players only.
+  if (sim.mode === 'arena-pve') for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
   seedZone(sim);
 }
 const DEFAULT_ZONE = zones[DEFAULT_ZONE_ID];
@@ -160,6 +184,11 @@ function persistPlayer(player, save = true) {
 const parties = {};
 const playerParties = {};
 const pendingPartyInvites = {};
+// Squad mates never damage each other, regardless of zone mode.
+function sameParty(firstId, secondId) {
+  const partyId = playerParties[firstId];
+  return !!partyId && partyId === playerParties[secondId];
+}
 function partySnapshot(party) {
   if (!party) return null;
   return {
@@ -229,14 +258,25 @@ function movePlayerToZone(player, socket, nextZone) {
     previous.broadcast();
   }
   player.zoneId = nextZone.id;
-  player.x = 100 + Math.random() * (nextZone.world.width - 200);
-  player.y = 100 + Math.random() * (nextZone.world.height - 200);
+  const spawn = nextZone.spawn || { x: 100 + Math.random() * (nextZone.world.width - 200), y: 100 + Math.random() * (nextZone.world.height - 200) };
+  player.x = spawn.x;
+  player.y = spawn.y;
   player.respawnAt = 0;
   nextZone.players[player.id] = player;
   nextZone.memberCount += 1;
   socket.join('zone:' + nextZone.id);
   socket.emit('player:position', { x: player.x, y: player.y });
   socket.emit('archive:echoes', nextZone.echoes);
+  socket.emit('zone:changed', {
+    zone: {
+      id: nextZone.id, name: nextZone.name, book: nextZone.book, spirit: nextZone.spirit, tint: nextZone.tint,
+      mode: nextZone.mode, arena: !!nextZone.arena, friendlyFire: nextZone.friendlyFire !== false
+    },
+    mode: nextZone.mode,
+    arena: !!nextZone.arena,
+    friendlyFire: nextZone.friendlyFire !== false,
+    spawn: { x: player.x, y: player.y }
+  });
   nextZone.broadcast();
   hooks.emit('zoneChanged', player, socket);
 }
@@ -249,8 +289,8 @@ function buildPlayer(socket, requestedName, profile, zone) {
     id: socket.id,
     name: requestedName,
     zoneId: zone.id,
-    x: 100 + Math.random() * (zone.world.width - 200),
-    y: 100 + Math.random() * (zone.world.height - 200),
+    x: (zone.spawn || { x: zone.world.width / 2, y: zone.world.height / 2 }).x,
+    y: (zone.spawn || { x: zone.world.width / 2, y: zone.world.height / 2 }).y,
     energyColor: storedDomain,
     color: SLEEVE_COLORS[storedDomain],
     accentColor: SLEEVE_ACCENTS[storedDomain],
@@ -300,10 +340,13 @@ io.on('connection', (socket) => {
   console.log('Client connected: ' + socket.id);
   // Plug-and-play modules can claim their own socket events; they receive
   // (player, payload, socket) and player is null until the join completes.
-  for (const [eventName, handler] of Object.entries(moduleSocketHandlers)) {
+  // Several modules may share one event (e.g. interact = terminals + NPCs).
+  for (const [eventName, handlers] of Object.entries(moduleSocketHandlers)) {
     socket.on(eventName, (payload) => {
-      try { handler(playersById[socket.id], payload, socket); }
-      catch (error) { console.error('[module socket ' + eventName + '] ' + error.message); }
+      for (const handler of handlers) {
+        try { handler(playersById[socket.id], payload, socket); }
+        catch (error) { console.error('[module socket ' + eventName + '] ' + error.message); }
+      }
     });
   }
   socket.emit('server:welcome', { message: 'Connected to The 5 Sleeves Online.', playerId: socket.id, world: DEFAULT_ZONE.world, core: DEFAULT_ZONE.core });
@@ -343,7 +386,7 @@ io.on('connection', (socket) => {
     refreshLevelFields(player);
     socket.emit('join:accepted', {
       playerId: player.id, name: player.name,
-      zone: { id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint },
+      zone: { id: zone.id, name: zone.name, book: zone.book, spirit: zone.spirit, tint: zone.tint, mode: zone.mode, arena: !!zone.arena, friendlyFire: zone.friendlyFire !== false },
       stats: { hp: player.hp, maxHp: player.maxHp, level: player.level, xp: player.xp, coreCharge: player.coreCharge, corePoints: player.corePoints, skillPoints: player.skillPoints, partyXp: player.partyXp, atk: player.atk, plating: player.plating, overclock: player.overclock, energyColor: player.energyColor }
     });
     socket.emit('archive:echoes', zone.echoes);
@@ -399,15 +442,19 @@ io.on('connection', (socket) => {
     if (now - player.lastAbilityAt < ability.cooldown) return;
     player.lastAbilityAt = now;
     const zone = playerZone(player);
-    if (zone) castAbility(zone, player, aim);
-    zone?.broadcast();
+    if (!zone) return;
+    if (inSafeZone(zone, player)) { socket.emit('hub:notice', 'Sleeve abilities are offline inside the safe hub.'); return; }
+    castAbility(zone, player, aim);
+    zone.broadcast();
   });
 
   socket.on('party:invite:send', (targetId) => {
     if (!player || typeof targetId !== 'string' || targetId === player.id) return;
     const target = playersById[targetId];
-    if (!target || target.zoneId !== player.zoneId || distance(player, target) > 200) {
-      socket.emit('party:error', 'That operative is not nearby.');
+    // Invites are allowed from the chat roster even at long range; squads can
+    // already span zones, and the chat name menu is a first-class entry point.
+    if (!target) {
+      socket.emit('party:error', 'That operative is not online.');
       return;
     }
     if (playerParties[targetId]) {
@@ -501,6 +548,7 @@ io.on('connection', (socket) => {
     player.lastAttackAt = now;
     const zone = playerZone(player);
     if (!zone) return;
+    if (inSafeZone(zone, player)) { socket.emit('hub:notice', 'Combat is disabled inside the safe hub.'); return; }
     const id = String(zone.next.projectile++);
     zone.projectiles[id] = { id, ownerId: player.id, x: player.x + aim.x * 22, y: player.y + aim.y * 22, vx: aim.x * 520, vy: aim.y * 520, radius: 9, expiresAt: now + 1100, color: player.color, accentColor: player.accentColor };
   });
@@ -628,12 +676,21 @@ const moduleContext = {
   zones: () => zones,
   playerZone: (playerId) => playerZone(playersById[playerId]),
   on: (event, handler) => hooks.on(event, handler),
-  registerSocket: (name, handler) => { moduleSocketHandlers[name] = handler; },
+  registerSocket: (name, handler) => {
+    if (!moduleSocketHandlers[name]) moduleSocketHandlers[name] = [];
+    moduleSocketHandlers[name].push(handler);
+  },
   route: (method, routePath, handler) => {
     const register = typeof app[method] === 'function' ? app[method].bind(app) : app.get.bind(app);
     register(routePath, handler);
   },
   distance,
+  sameParty,
+  travel: (player, zoneId) => {
+    const zone = zones[zoneId];
+    const socket = playerSockets[player?.id];
+    if (player && zone && socket) movePlayerToZone(player, socket, zone);
+  },
   applyXp,
   persistPlayer: (target) => persistPlayer(target),
   xpScale: () => XP_SCALE

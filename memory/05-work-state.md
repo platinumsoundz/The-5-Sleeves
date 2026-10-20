@@ -3,7 +3,29 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (step 11 mobile HUD redesign).
+Last updated: 2026-10-20 (step 12 Adventure Hub).
+
+## Step 12 — Adventure Hub, portals and expanded MENU (DONE)
+
+- **Welcome + HUD** — the persistent welcome text is gone; a 3 s toast greets
+  the operative instead. The connection pill only shows while connecting or
+  offline, so the radar is pinned to the top-left corner. Game-mode and tower
+  status sit directly beneath it; HP/level/Conduit Pulse live compactly in
+  the top-centre. The default camera is wider (VIEW_TARGET 940×620).
+- **Safe hub** — canon-zone spawns sit inside a 112-radius no-combat bubble
+  around the Cipher Core. Attacks/abilities are rejected inside, damage to
+  occupants is blocked, wardens ignore them, and respawns return there.
+- **Physical hub NPCs** — Quartermaster Vale opens the shop; the PvP and
+  co-op arena gates travel to instanced `arena-pvp` / `arena-pve`
+  simulations. Co-op sets `friendlyFire: false`; party members are always
+  immune to each other. Arenas stay out of the title-screen lobby.
+- **Exploration** — three regional towers unlock by presence, pay 60 XP and
+  push the fogline back; radar/map show dormant vs online state.
+- **Expanded MENU** — Character, Skill Tree, Inventory, Party & Friends,
+  Inbox, Map and Settings (SFX toggle, remappable keys, Exit to Title).
+  Chat names open Add Friend / Invite to Party / Send Gift.
+- Ledger bumped to `2.4.0`; suite green (56/56, including `test/hub.test.js`
+  safe-zone, NPC, tower and friendly-fire coverage).
 
 ## Step 11 — mobile HUD redesign (DONE)
 
@@ -79,7 +101,9 @@ Last updated: 2026-10-20 (step 11 mobile HUD redesign).
 
 ## What is left / next session
 
-- Roadmap items 1–14 are COMPLETE. No build is in flight.
+- Step 12 (Adventure Hub, physical portals, expanded MENU, chat actions) is
+  COMPLETE and covered by `test/hub.test.js`. No build is in flight.
+- Roadmap items 1–14 are COMPLETE; step 12 was an owner-directed extension.
 - **Recovery note:** the commit history for those builds was reconstructed
   as one commit (`2d976f5`) after the object-store incident. Future builds
   start clean from there.
@@ -88,8 +112,9 @@ Last updated: 2026-10-20 (step 11 mobile HUD redesign).
 - Next work is owner-directed: brainstorm `ROADMAP-FUTURE.md`, approve or
   rewrite the proposed terminal lore, then pick the next system (suggested
   order: in-game zone switcher → private rooms → auth → PWA → store).
-- In-game zone switching currently has no UI (server event exists only);
-  the title-screen picker is the only player-facing zone choice.
+- In-game zone switching is exposed through the hub portals (and the server
+  `zone:switch` event); there is still no free-roam zone list in the MENU.
+  The title-screen picker remains the only direct canon-zone choice.
 7. Canon polish + draft the future roadmap for brainstorming (includes
    the owner's product asks: monetization, email logins, Android/PC +
    console/iOS — see `07-product-direction.md`).

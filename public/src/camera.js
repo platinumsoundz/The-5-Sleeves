@@ -2,7 +2,9 @@ import { WORLD_DEFAULT } from './config.js';
 
 // Minimum world-space region the viewport should reveal, which drives the
 // zoom level. Smaller numbers mean the camera sits closer to the action.
-export const VIEW_TARGET = Object.freeze({ width: 660, height: 430 });
+// Kept deliberately wide so the hub, towers and approaching wardens all fit
+// on screen (the adventure view is wider than the old arena view).
+export const VIEW_TARGET = Object.freeze({ width: 940, height: 620 });
 const ZOOM_SMOOTHING = 4;
 const FOLLOW_SMOOTHING = 9;
 const SHAKE_DECAY = 26;
@@ -18,7 +20,7 @@ export function createCamera() {
     y: WORLD_DEFAULT.height / 2,
     zoom: 1,
     zoomScale: 1,
-    minZoom: 1,
+    minZoom: 0.85,
     maxZoom: 3.6,
     shake: 0,
     offsetX: 0,

@@ -1,7 +1,7 @@
 // One zone's full simulation step. server.js runs this for every zone on
 // each tick; zones with no members skip broadcasting but keep stepping
 // (cheap: an empty zone has only wardens and echoes to move).
-const { distance, damageTarget, respawnPlayer, damageableTargets, isHostile, applySlow } = require('./combat.js');
+const { distance, damageTarget, respawnPlayer, damageableTargets, isHostile, inSafeZone, applySlow } = require('./combat.js');
 const { updateWardens } = require('./wardens.js');
 const { updateObjectives } = require('./objectives.js');
 const { stepProjectiles } = require('./projectiles.js');
@@ -64,7 +64,8 @@ function stepZone(sim, now, deltaSeconds) {
     effect.nextTickAt = now + 250;
     const source = sim.players[effect.ownerId] || { id: effect.ownerId, kind: 'player' };
     for (const target of damageableTargets(sim)) {
-      if (!isHostile(source, target) || target.hp <= 0) continue;
+      if (!isHostile(source, target, sim) || target.hp <= 0) continue;
+      if (target.kind !== 'ai' && inSafeZone(sim, target)) continue;
       if (distance(target, effect) > effect.radius) continue;
       damageTarget(sim, target, effect.damage, source, 'pool');
       if (effect.slowMs) applySlow(target, effect.slowMs);

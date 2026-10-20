@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -68,14 +68,18 @@
     "Combat juice module (roadmap #11, COMPLETE): combat-juice.js draws hit sparks, floating damage numbers, afterimages and proximity screenshake from server combat events",
     "Collapsible Chat Box",
     "Top-Right HUD & Top-Left Radar Realignment",
-    "360-Degree On-Screen Analog Joystick"
+    "360-Degree On-Screen Analog Joystick",
+    "Safe Zone Hub & NPCs",
+    "Physical Portals (PvP/PvE Domination)",
+    "Expanded Menu (Inventory, Party, Inbox, Map, Skill Tree)",
+    "Interactive Chat Context Actions"
   ],
   "in_progress_features": [],
   "upcoming_features": [
     "URGENT: push to origin — local git history was lost once (2026-10-20 object-store incident); never delete .git/objects/**/.l2s.tmp_obj_* files (PRoot hardlink backing data)",
     "Owner brainstorm: ROADMAP-FUTURE.md covers monetization (cosmetics only), optional email accounts as an auth module, PWA/Android then iOS/console, private rooms, zone hazards, persistence/observability, and open questions",
     "Owner review of PROPOSED terminal lore for sunken-coast, scorched-wastes, frozen-wastes, apex-citadel (server/zones-catalog.js)",
-    "In-game zone switcher UI (server zone:switch + zoneChanged hook already exist; only the title-screen picker has UI)",
+    "In-game zone switcher UI (hub portals already reach the instanced arenas; a free-roam canon-zone list in the MENU is still pending)",
     "Zones/rooms (roadmap #9, COMPLETE): one simulation per canon book in server/sim/* (combat, abilities, wardens, objectives, projectiles, echoes) with zone-scoped broadcasts; server.js is now a host (lobby, squads, chat, profiles, zone travel); title-screen zone picker; zone-atmosphere client module",
     "Zone travel: zone:switch moves an operative between the five canon zones and fires the zoneChanged hook (terminals re-announce per zone)",
     "Fixed-timestep server loop (roadmap #13, COMPLETE): whole FIXED_DT_MS simulation slices with a 5-step catch-up cap, snapshots broadcast on a separate BROADCAST_MS cadence",
@@ -84,5 +88,5 @@
     "Faction-specific character animation and combat effects",
     "Progression balancing and additional levels"
   ],
-  "dev_notes": "SESSION BOOTSTRAP: read memory/00-index.md first and follow memory/01-session-protocol.md (one system per build, plug-and-play modules only, save state after each build). Client is split into small browser ES modules under public/src/ (assetLoader, audioManager, camera, characterRenderer, config, inputManager, interpolation, netcode, renderer, uiManager, world). public/client.js is the master orchestrator. Server logic lives in server.js with pure helpers extracted to server/ (progression.js). Procedural rendering remains active when optional files under public/assets/ are absent; regenerate baked sprites with 'npm run sprites'. Tests run with 'npm test' (node --test) and cover abilities, wardens, objectives, progression, camera, interpolation, renderer, sprites, modules and the server. Ajaye's segmented Cipher Sleeve is rendered on his anatomical left arm only; his right arm remains ordinary clothing and skin. Universe canon lives in lore/ (see lore/README.md): any new lore-bearing content (terminal logs, item names, abilities, characters) must fit those documents, and canon conflicts are raised with the project owner rather than silently resolved."
+  "dev_notes": "SESSION BOOTSTRAP: read memory/00-index.md first and follow memory/01-session-protocol.md (one system per build, plug-and-play modules only, save state after each build). Client is split into small browser ES modules under public/src/ (assetLoader, audioManager, camera, characterRenderer, config, inputManager, interpolation, keybinds, menu, menu-pages, netcode, renderer, uiManager, world). public/client.js is the master orchestrator. Server logic lives in server.js with pure helpers extracted to server/ (progression.js, shop-catalog.js, skill-tree.js). Procedural rendering remains active when optional files under public/assets/ are absent; regenerate baked sprites with 'npm run sprites'. Tests run with 'npm test' (node --test) and cover abilities, wardens, objectives, progression, camera, interpolation, renderer, sprites, modules and the server. Ajaye's segmented Cipher Sleeve is rendered on his anatomical left arm only; his right arm remains ordinary clothing and skin. Universe canon lives in lore/ (see lore/README.md): any new lore-bearing content (terminal logs, item names, abilities, characters) must fit those documents, and canon conflicts are raised with the project owner rather than silently resolved."
 }

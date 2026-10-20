@@ -10,6 +10,12 @@ function clampToWorld(sim, entity) {
 
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 
+// The safe hub blocks all damage to operatives standing inside it.
+function inSafeZone(sim, entity) {
+  if (!sim || !sim.safe || !entity) return false;
+  return distance(entity, sim.safe) <= sim.safe.radius;
+}
+
 function spawnBurst(sim, burst) {
   const id = 'burst-' + sim.next.burst++;
   sim.bursts[id] = { id, duration: burst.duration || 380, expiresAt: Date.now() + (burst.duration || 380), ...burst };
@@ -22,9 +28,14 @@ function damageableTargets(sim) {
   return [...Object.values(sim.players), ...Object.values(sim.ai)];
 }
 
-function isHostile(a, b) {
+function isHostile(a, b, sim) {
   if (!a || !b || a.id === b.id) return false;
   if (a.kind === 'ai' && b.kind === 'ai') return false;
+  // Operatives never hurt squad mates, and co-op arenas disable PvP entirely.
+  if (a.kind !== 'ai' && b.kind !== 'ai' && sim) {
+    if (sim.friendlyFire === false) return false;
+    if (typeof sim.host?.sameParty === 'function' && sim.host.sameParty(a.id, b.id)) return false;
+  }
   return true;
 }
 
@@ -32,6 +43,9 @@ function isHostile(a, b) {
 // the hit so clients can play impact feedback.
 function damageTarget(sim, target, amount, source, kind = 'hit', options = {}) {
   if (!target || target.hp <= 0 || amount <= 0) return 0;
+  // The starting hub is a hard no-combat bubble for players (wardens can still
+  // be damaged outside it).
+  if (target.kind !== 'ai' && inSafeZone(sim, target)) return 0;
   const now = Date.now();
   const shielded = now < (target.shieldUntil || 0);
   const dealt = shielded ? amount * 0.4 : amount;
@@ -75,12 +89,18 @@ function handleDown(sim, target, source) {
 
 function respawnPlayer(sim, player) {
   player.hp = Math.max(1, Math.round(player.maxHp * 0.6));
-  // Spawn away from the Core so players are not dropped straight back into it.
-  for (let attempt = 0; attempt < 24; attempt += 1) {
-    const x = PERIMETER_MARGIN + 60 + Math.random() * (sim.world.width - PERIMETER_MARGIN * 2 - 120);
-    const y = PERIMETER_MARGIN + 60 + Math.random() * (sim.world.height - PERIMETER_MARGIN * 2 - 120);
-    if (distance({ x, y }, CORE) < CORE.radius + 130) continue;
-    player.x = x; player.y = y; break;
+  // Canon zones respawn operatives back in the safe hub; arenas use their own
+  // spawn pad so a respawn never drops a fighter onto a relay.
+  if (sim.spawn) {
+    player.x = sim.spawn.x;
+    player.y = sim.spawn.y;
+  } else {
+    for (let attempt = 0; attempt < 24; attempt += 1) {
+      const x = PERIMETER_MARGIN + 60 + Math.random() * (sim.world.width - PERIMETER_MARGIN * 2 - 120);
+      const y = PERIMETER_MARGIN + 60 + Math.random() * (sim.world.height - PERIMETER_MARGIN * 2 - 120);
+      if (distance({ x, y }, CORE) < CORE.radius + 130) continue;
+      player.x = x; player.y = y; break;
+    }
   }
   player.respawnAt = 0;
   sim.host.playerSockets[player.id]?.emit('player:position', { x: player.x, y: player.y });
@@ -102,6 +122,9 @@ function applyBurn(target, source, durationMs, power) {
 }
 
 function knockback(sim, target, fromX, fromY, force) {
+  // The hub is a hard bubble: even utility casts cannot shove an operative
+  // standing inside it.
+  if (target.kind !== 'ai' && inSafeZone(sim, target)) return;
   const dx = target.x - fromX, dy = target.y - fromY;
   const length = Math.hypot(dx, dy);
   // A target standing on top of the source still needs a nudge in some direction.
@@ -126,7 +149,7 @@ function distanceToSegment(point, fromX, fromY, toX, toY) {
 }
 
 module.exports = {
-  clampToWorld, distance, spawnBurst, damageableTargets, isHostile,
+  clampToWorld, distance, inSafeZone, spawnBurst, damageableTargets, isHostile,
   damageTarget, handleDown, respawnPlayer,
   applySlow, applyHaste, applyBurn, knockback, distanceToSegment
 };

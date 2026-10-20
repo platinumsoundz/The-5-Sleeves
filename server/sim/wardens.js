@@ -1,7 +1,7 @@
 // PvE: Rust Wardens — patrolling defence drones (canon: dormant tower
 // network defence). One zone's wardens only ever chase that zone's players.
 const { WARDEN } = require('./spec.js');
-const { clampToWorld, distance, spawnBurst } = require('./combat.js');
+const { clampToWorld, distance, inSafeZone, spawnBurst } = require('./combat.js');
 const { CORE, PERIMETER_MARGIN } = require('./state.js');
 
 function wardenSpawnPoint(sim) {
@@ -48,6 +48,7 @@ function nearestPlayer(sim, entity, radius) {
   let best = null, bestDistance = radius;
   for (const player of Object.values(sim.players)) {
     if (player.hp <= 0) continue;
+    if (inSafeZone(sim, player)) continue;
     const away = distance(entity, player);
     if (away < bestDistance) { bestDistance = away; best = player; }
   }

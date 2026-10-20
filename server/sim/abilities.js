@@ -1,6 +1,6 @@
 // The six signature sleeve abilities, resolved server-side. One ability per
 // domain; `kind` decides how the cast resolves, everything else is tuning.
-const { distance, damageTarget, damageableTargets, isHostile, applySlow, applyHaste, applyBurn, knockback, spawnBurst } = require('./combat.js');
+const { distance, damageTarget, damageableTargets, isHostile, inSafeZone, applySlow, applyHaste, applyBurn, knockback, spawnBurst } = require('./combat.js');
 
 const DOMAIN_ABILITIES = {
   cipher: { id: 'conduit-pulse', name: 'Conduit Pulse', short: 'PULSE', cooldown: 6000, kind: 'pulse', radius: 135, damage: 14, knockback: 70, charge: 20 },
@@ -21,7 +21,8 @@ function castAbility(sim, player, aim) {
   if (ability.kind === 'pulse' || ability.kind === 'gale' || ability.kind === 'siphon') {
     let drained = 0;
     for (const target of damageableTargets(sim)) {
-      if (!isHostile(player, target) || target.id === player.id || target.hp <= 0) continue;
+      if (!isHostile(player, target, sim) || target.id === player.id || target.hp <= 0) continue;
+      if (target.kind !== 'ai' && inSafeZone(sim, target)) continue;
       if (distance(origin, target) > ability.radius) continue;
       const dealt = damageTarget(sim, target, ability.damage, player, ability.kind);
       if (ability.kind === 'siphon' && dealt) drained += dealt * ability.drain;
@@ -74,7 +75,8 @@ function explodeProjectile(sim, projectile, owner) {
   spawnBurst(sim, { kind: 'blast', x: projectile.x, y: projectile.y, radius: spec.radius, color: projectile.color, accentColor: projectile.accentColor });
   for (const target of damageableTargets(sim)) {
     if (target.id === projectile.ownerId || target.hp <= 0) continue;
-    if (!isHostile(source, target)) continue;
+    if (!isHostile(source, target, sim)) continue;
+    if (target.kind !== 'ai' && inSafeZone(sim, target)) continue;
     if (distance(target, projectile) > spec.radius) continue;
     damageTarget(sim, target, spec.damage, owner, 'blast');
     if (spec.burnMs && target.hp > 0) applyBurn(target, owner, spec.burnMs, spec.burnPower);

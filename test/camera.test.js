@@ -4,12 +4,12 @@ import { createCamera, updateCamera, zoomForViewport, screenToWorld, visibleWorl
 
 const WORLD = { width: 1000, height: 700 };
 
-test('zoom scales with viewport size', () => {
+test('zoom scales with viewport size and keeps the adventure view wide', () => {
   const camera = createCamera();
   const desktop = zoomForViewport(camera, 1280, 720);
   const phone = zoomForViewport(camera, 390, 844);
-  assert.ok(desktop > 1.5 && desktop < 2.5, 'desktop zoom should sit close to the action');
-  assert.ok(phone >= 1, 'phone zoom should never drop below 1x');
+  assert.ok(desktop > 1.05 && desktop < 1.5, 'desktop zoom reveals a wider slice of the world');
+  assert.ok(phone >= 0.8, 'phone zoom stays readable but wider than before');
   assert.ok(desktop > phone - 1);
 });
 

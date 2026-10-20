@@ -1,4 +1,4 @@
-import { CORE_DEFAULT, DOMAINS, PERIMETER_MARGIN, TILE_SIZE, WORLD_DEFAULT } from './config.js';
+import { CORE_DEFAULT, DOMAINS, HUB, PERIMETER_MARGIN, TILE_SIZE, WORLD_DEFAULT } from './config.js';
 import { bus } from './plugin-host.js';
 import { drawSpriteFrame, optionalImage } from './assetLoader.js';
 import { drawPlayer, drawWarden } from './characterRenderer.js';
@@ -116,17 +116,73 @@ function drawPerimeterWall(ctx, world, time) {
   ctx.restore();
 }
 
-function drawFog(ctx, world, time, view) {
+function drawSafeZone(ctx, state, time) {
+  const safe = state.hub || state.safeZone || (state.zone?.arena ? null : HUB);
+  if (!safe) return;
+  const pulse = 1 + Math.sin(time * 0.0018) * 0.03;
+  ctx.save();
+  const glow = ctx.createRadialGradient(safe.x, safe.y, safe.radius * 0.35, safe.x, safe.y, safe.radius * pulse);
+  glow.addColorStop(0, 'rgba(80,255,214,.03)');
+  glow.addColorStop(0.75, 'rgba(80,255,214,.06)');
+  glow.addColorStop(1, 'rgba(80,255,214,0)');
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(safe.x, safe.y, safe.radius * pulse, 0, Math.PI * 2); ctx.fill();
+  ctx.setLineDash([12, 10]); ctx.lineDashOffset = -time * 0.012;
+  ctx.strokeStyle = 'rgba(126,255,224,.48)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(safe.x, safe.y, safe.radius, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(160,255,232,.8)'; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center';
+  ctx.fillText('SAFE HUB · NO COMBAT', safe.x, safe.y - safe.radius - 10);
+  ctx.restore();
+}
+
+function drawTowers(ctx, state, time) {
+  for (const tower of state.towers || []) {
+    const unlocked = !!tower.unlocked;
+    const pulse = 0.6 + Math.sin(time * 0.003 + tower.x) * 0.3;
+    ctx.save();
+    ctx.translate(tower.x, tower.y);
+    ctx.globalAlpha = unlocked ? 0.18 : 0.28;
+    ctx.fillStyle = unlocked ? '#7dffd8' : '#4d6b63';
+    ctx.beginPath(); ctx.arc(0, 0, tower.radius || 64, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.setLineDash(unlocked ? [] : [5, 8]);
+    ctx.strokeStyle = unlocked ? 'rgba(125,255,216,.85)' : 'rgba(126,168,155,.55)';
+    ctx.lineWidth = unlocked ? 2.5 : 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, tower.radius || 64, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = unlocked ? '#baffee' : '#78978d';
+    ctx.fillRect(-5, -30, 10, 46);
+    ctx.fillStyle = unlocked ? '#7dffd8' : '#4f6a62';
+    ctx.fillRect(-12, -20, 24, 8);
+    ctx.globalAlpha = unlocked ? 0.9 : 0.4;
+    ctx.fillStyle = unlocked ? '#7dffd8' : '#8aa9a0';
+    ctx.beginPath(); ctx.arc(0, -38, 5 + pulse * 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = unlocked ? 'rgba(186,255,238,.9)' : 'rgba(150,180,172,.7)';
+    ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText((tower.name || 'TOWER').toUpperCase() + (unlocked ? ' · ONLINE' : ' · DORMANT'), 0, (tower.radius || 64) + 16);
+    ctx.restore();
+  }
+}
+
+function drawFog(ctx, world, time, view, towers = []) {
   const width = world.width, height = world.height;
-  const corners = [[0, 0, width * .5], [width, 0, width * .48], [0, height, height * .5], [width, height, height * .5]];
+  // Every regional tower that comes online thins and shrinks the fogline, so
+  // restoring the network visibly pushes the wasteland back.
+  const online = towers.filter((tower) => tower.unlocked).length;
+  const cleared = towers.length ? Math.min(1, online / towers.length) : 0;
+  const fogAlpha = 0.2 * (1 - cleared * 0.72);
+  const shrink = 1 - cleared * 0.22;
+  const corners = [[0, 0, width * .5 * shrink], [width, 0, width * .48 * shrink], [0, height, height * .5 * shrink], [width, height, height * .5 * shrink]];
   for (const [x, y, radius] of corners) {
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    gradient.addColorStop(0, 'rgba(87,104,79,.2)'); gradient.addColorStop(1, 'rgba(30,40,33,0)');
+    gradient.addColorStop(0, 'rgba(87,104,79,' + fogAlpha.toFixed(3) + ')'); gradient.addColorStop(1, 'rgba(30,40,33,0)');
     ctx.fillStyle = gradient; ctx.fillRect(view.left, view.top, view.right - view.left, view.bottom - view.top);
   }
   const perimeter = 2 * (width + height);
-  for (let i = 0; i < 44; i += 1) {
-    const distance = (i * perimeter / 44 + time * .018) % perimeter;
+  const motes = Math.round(44 * (1 - cleared * 0.5));
+  for (let i = 0; i < motes; i += 1) {
+    const distance = (i * perimeter / Math.max(1, motes) + time * .018) % perimeter;
     const drift = Math.sin(time * .002 + i * 2.3) * 10;
     const inset = 12 + (i % 4) * 5 + drift;
     let x, y;
@@ -262,48 +318,40 @@ function slotRect(id, fallback) {
   return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
 }
 
+// Compact top-centre readout: HP, level/XP and the Conduit Pulse quest line.
+// Kept small and translucent so it never blocks the viewport centre.
 function drawHud(ctx, state, width) {
   const player = state.players[state.playerId] || state.localPlayer;
   if (!player) return;
   ctx.save(); ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  // Top-right block: stats, core, points, ability cooldown and progression all
-  // live in one column beneath the SPECS / CHAT / SFX buttons.
-  const slot = slotRect('hud-slot', { x: width - 222, y: 56, width: 210, height: 115 });
-  const w = Math.max(150, Math.min(240, slot.width || 210)), x = slot.x, y = slot.y;
-  ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y, w, 45);
-  ctx.fillStyle = '#421e2a'; ctx.fillRect(x + 8, y + 8, w - 16, 10);
-  ctx.fillStyle = '#f25d75'; ctx.fillRect(x + 8, y + 8, (w - 16) * Math.max(0, player.hp / player.maxHp), 10);
-  // Drop a pixel of type on narrow phones so HP and CORE never collide.
-  ctx.fillStyle = '#fff'; ctx.font = (w < 190 ? '10px' : '11px') + ' system-ui'; ctx.textAlign = 'left'; ctx.fillText('HP ' + Math.ceil(player.hp) + '/' + player.maxHp, x + 8, y + 32);
-  ctx.fillStyle = '#61ffe0'; ctx.textAlign = 'right'; ctx.fillText('CORE ' + Math.floor(player.coreCharge) + '% · ' + player.corePoints + ' pts', x + w - 8, y + 32);
-
-  // Sleeve ability readout with its cooldown sweep.
-  const cooldownMax = player.abilityCooldownMax || 1;
-  const cooldown = player.abilityCooldown || 0;
-  const ready = cooldown <= 0;
-  ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y + 50, w, 30);
-  ctx.fillStyle = ready ? '#7dffe4' : '#7e938f'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'left';
-  ctx.fillText('[Q] ' + String(player.abilityName || 'SLEEVE ABILITY').toUpperCase(), x + 8, y + 64);
-  ctx.fillStyle = 'rgba(20,40,50,.9)'; ctx.fillRect(x + 8, y + 68, w - 16, 5);
-  if (ready) { ctx.fillStyle = '#3ce0b5'; ctx.fillRect(x + 8, y + 68, w - 16, 5); }
-  else {
-    ctx.fillStyle = '#6cc9ff';
-    ctx.fillRect(x + 8, y + 68, (w - 16) * Math.max(0, 1 - cooldown / cooldownMax), 5);
-    ctx.fillStyle = '#cfefff'; ctx.font = '9px system-ui'; ctx.textAlign = 'right';
-    ctx.fillText((cooldown / 1000).toFixed(1) + 's', x + w - 8, y + 76);
-  }
-
-  // Progression readout: level and progress toward the next one.
+  const slot = slotRect('hud-center', { x: width / 2 - 150, y: 10, width: 300, height: 72 });
+  const w = Math.max(220, Math.min(330, slot.width || 300));
+  const x = Math.max(8, Math.min(width - w - 8, slot.x + (slot.width - w) / 2)), y = slot.y;
   const level = player.level || 1;
   const into = player.xpIntoLevel || 0;
   const needed = player.xpNeeded || 1;
-  ctx.fillStyle = 'rgba(8,18,31,.8)'; ctx.fillRect(x, y + 82, w, 30);
-  ctx.fillStyle = '#ffe9a0'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'left';
-  ctx.fillText('LEVEL ' + level, x + 8, y + 96);
-  ctx.fillStyle = 'rgba(64,52,24,.9)'; ctx.fillRect(x + 8, y + 100, w - 16, 5);
-  ctx.fillStyle = '#ffc857'; ctx.fillRect(x + 8, y + 100, (w - 16) * Math.min(1, into / needed), 5);
-  ctx.fillStyle = '#ffe9c0'; ctx.font = '9px system-ui'; ctx.textAlign = 'right';
-  ctx.fillText(into + '/' + needed + ' XP', x + w - 8, y + 96);
+  ctx.fillStyle = 'rgba(6,17,26,.74)'; ctx.fillRect(x, y, w, 70);
+  ctx.strokeStyle = 'rgba(118,255,224,.28)'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, 69);
+  // HP line.
+  ctx.fillStyle = '#421e2a'; ctx.fillRect(x + 8, y + 9, w - 92, 8);
+  ctx.fillStyle = '#f25d75'; ctx.fillRect(x + 8, y + 9, (w - 92) * Math.max(0, player.hp / Math.max(1, player.maxHp)), 8);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'left';
+  ctx.fillText('HP ' + Math.ceil(player.hp) + '/' + player.maxHp, x + 12, y + 15.5);
+  ctx.fillStyle = '#ffe9a0'; ctx.textAlign = 'right'; ctx.font = 'bold 11px system-ui';
+  ctx.fillText('LV ' + level, x + w - 9, y + 17);
+  // Conduit Pulse quest information.
+  ctx.fillStyle = '#61ffe0'; ctx.textAlign = 'left'; ctx.font = 'bold 9px system-ui';
+  ctx.fillText('CONDUIT PULSE · CORE ' + Math.floor(player.coreCharge || 0) + '% · ' + (player.corePoints || 0) + ' PTS', x + 8, y + 32);
+  ctx.fillStyle = '#8faeb0'; ctx.textAlign = 'right'; ctx.font = '9px system-ui';
+  ctx.fillText(String(player.abilityName || 'SLEEVE').toUpperCase(), x + w - 8, y + 32);
+  // XP line.
+  ctx.fillStyle = 'rgba(64,52,24,.9)'; ctx.fillRect(x + 8, y + 41, w - 16, 5);
+  ctx.fillStyle = '#ffc857'; ctx.fillRect(x + 8, y + 41, (w - 16) * Math.min(1, into / Math.max(1, needed)), 5);
+  ctx.fillStyle = '#ffe9c0'; ctx.textAlign = 'left'; ctx.font = '9px system-ui';
+  ctx.fillText(into + '/' + needed + ' XP', x + 8, y + 57);
+  const cooldown = player.abilityCooldown || 0;
+  ctx.textAlign = 'right'; ctx.fillStyle = cooldown > 0 ? '#8faeb0' : '#7dffe4';
+  ctx.fillText(cooldown > 0 ? (cooldown / 1000).toFixed(1) + 's' : 'READY', x + w - 8, y + 57);
   ctx.restore();
 }
 
@@ -330,6 +378,21 @@ function drawMinimap(ctx, state, width) {
   ctx.beginPath(); ctx.arc(x + core.x * sx, y + core.y * sy, core.radius * sx, 0, Math.PI * 2); ctx.stroke();
   for (const echo of Object.values(state.archiveEchoes || {})) {
     ctx.fillStyle = 'rgba(150,255,236,.85)'; ctx.fillRect(x + echo.x * sx - 1, y + echo.y * sy - 1, 2, 2);
+  }
+  // Safe hub and regional towers.
+  const safe = state.hub || state.safeZone;
+  if (safe) {
+    ctx.strokeStyle = 'rgba(126,255,224,.45)';
+    ctx.beginPath(); ctx.arc(x + safe.x * sx, y + safe.y * sy, safe.radius * sx, 0, Math.PI * 2); ctx.stroke();
+  }
+  for (const tower of state.towers || []) {
+    ctx.fillStyle = tower.unlocked ? '#7dffd8' : '#78978d';
+    ctx.fillRect(x + tower.x * sx - 2, y + tower.y * sy - 2, 4, 4);
+    if (!tower.unlocked) { ctx.strokeStyle = 'rgba(120,151,141,.6)'; ctx.strokeRect(x + tower.x * sx - 4, y + tower.y * sy - 4, 8, 8); }
+  }
+  for (const npc of state.npcs || []) {
+    ctx.fillStyle = npc.color || '#ffd479';
+    ctx.beginPath(); ctx.arc(x + npc.x * sx, y + npc.y * sy, 2.4, 0, Math.PI * 2); ctx.fill();
   }
   for (const player of Object.values(state.players || {})) {
     ctx.fillStyle = player.hp <= 0 ? '#666' : (player.id === state.playerId ? '#ffffff' : (player.color || '#8ef'));
@@ -430,7 +493,7 @@ function drawBanner(ctx, state, width, height, time) {
   ctx.restore();
 }
 
-// Faction standings for the domination match, under the top-left radar.
+// Game-mode strip + faction standings, anchored directly under the minimap.
 function drawScoreboard(ctx, state, width) {
   const payload = state.objectives || {};
   const scores = Object.entries(payload.scores || {}).filter(([, score]) => score > 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -438,23 +501,31 @@ function drawScoreboard(ctx, state, width) {
   const radar = minimapRect(width);
   const mapWidth = radar.width;
   const mapHeight = Math.round(mapWidth * world.height / world.width);
-  const x = radar.x, y = radar.y + mapHeight + 8;
+  const x = radar.x, y = radar.y + mapHeight + 6;
   const limit = (payload.match && payload.match.scoreLimit) || 0;
-  const rows = Math.max(1, scores.length);
-  const panelHeight = 22 + rows * 15;
+  const arena = !!state.zone?.arena || String(state.zone?.mode || '').startsWith('arena');
+  const modeLabel = arena
+    ? (state.friendlyFire === false ? 'CO-OP DOMINATION' : 'PVP DOMINATION')
+    : 'WASTELAND · TOWER HUNT';
+  const towers = state.towers || [];
+  const online = towers.filter((tower) => tower.unlocked).length;
+  const rows = Math.max(0, scores.length);
+  const panelHeight = 34 + rows * 15;
   ctx.save();
   ctx.fillStyle = 'rgba(6,17,26,.82)'; ctx.fillRect(x, y, mapWidth, panelHeight);
   ctx.strokeStyle = 'rgba(118,255,224,.4)'; ctx.lineWidth = 1;
   ctx.strokeRect(x + .5, y + .5, mapWidth - 1, panelHeight - 1);
   ctx.textAlign = 'left'; ctx.font = 'bold 9px system-ui';
-  ctx.fillStyle = 'rgba(160,200,190,.85)';
-  ctx.fillText('DOMINATION' + (limit ? ' · ' + limit + ' PTS' : ''), x + 8, y + 14);
+  ctx.fillStyle = arena ? (state.friendlyFire === false ? '#8ce0ff' : '#ff9bad') : '#8effc6';
+  ctx.fillText(modeLabel, x + 8, y + 13);
+  ctx.fillStyle = 'rgba(160,200,190,.75)'; ctx.font = '9px system-ui';
+  ctx.fillText(towers.length ? 'TOWERS ' + online + '/' + towers.length + (limit ? ' · ' + limit + ' PTS' : '') : 'REGIONAL TOWER NETWORK', x + 8, y + 26);
   if (!scores.length) {
-    ctx.fillStyle = 'rgba(150,180,180,.6)'; ctx.font = '10px system-ui';
-    ctx.fillText('no relays held', x + 8, y + 29);
+    ctx.fillStyle = 'rgba(150,180,180,.55)'; ctx.font = '9px system-ui';
+    ctx.fillText(arena ? 'no relays held' : 'push the fogline back', x + 8, y + 40);
   }
   scores.forEach(([faction, score], index) => {
-    const rowY = y + 28 + index * 15;
+    const rowY = y + 40 + index * 15;
     ctx.fillStyle = factionColor(faction);
     ctx.fillRect(x + 8, rowY - 7, 7, 7);
     ctx.fillStyle = '#dff3f5'; ctx.font = '10px system-ui'; ctx.textAlign = 'left';
@@ -513,6 +584,8 @@ export function renderFrame(canvas, ctx, state, time) {
   ctx.save();
   applyCamera(ctx, camera, width, height);
   drawBackground(ctx, world, view); drawPerimeterWall(ctx, world, time);
+  drawSafeZone(ctx, state, time);
+  drawTowers(ctx, state, time);
   // Module hook: ground-level decoration (props, landmarks, terminals) —
   // drawn under everything that moves.
   bus.emit('render:world', { ctx, state, time, view, world });
@@ -525,7 +598,7 @@ export function renderFrame(canvas, ctx, state, time) {
   drawBursts(ctx, state.bursts, time);
   // Module hook: above-entity effects (sparks, damage numbers, afterimages).
   bus.emit('render:fx', { ctx, state, time, view, world });
-  drawFog(ctx, world, time, view); ctx.restore();
+  drawFog(ctx, world, time, view, state.towers); ctx.restore();
 
   drawVignette(ctx, width, height);
   drawMinimap(ctx, state, width);

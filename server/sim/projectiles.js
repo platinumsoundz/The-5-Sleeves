@@ -1,6 +1,6 @@
 // Projectile stepping: movement, wall absorption, swept-path hits, expiry.
 // Ember Lances explode on impact; warden shots are plain tracers.
-const { distance, distanceToSegment, damageTarget, damageableTargets, isHostile, spawnBurst } = require('./combat.js');
+const { distance, distanceToSegment, damageTarget, damageableTargets, isHostile, inSafeZone, spawnBurst } = require('./combat.js');
 const { explodeProjectile } = require('./abilities.js');
 
 function stepProjectiles(sim, now, deltaSeconds) {
@@ -24,7 +24,8 @@ function stepProjectiles(sim, now, deltaSeconds) {
     let hit = false;
     for (const target of damageableTargets(sim)) {
       if (target.id === projectile.ownerId || target.hp <= 0) continue;
-      if (!isHostile(owner || { id: projectile.ownerId, kind: 'player' }, target)) continue;
+      if (!isHostile(owner || { id: projectile.ownerId, kind: 'player' }, target, sim)) continue;
+      if (target.kind !== 'ai' && inSafeZone(sim, target)) continue;
       if (distanceToSegment(target, fromX, fromY, projectile.x, projectile.y) > 21 + (target.radius || 0)) continue;
       damageTarget(sim, target, projectile.damage || 20 + 3 * (owner?.atk || 0), owner, 'blast');
       if (projectile.explodes) explodeProjectile(sim, projectile, owner);

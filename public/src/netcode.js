@@ -20,6 +20,39 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     state.zone = data.zone || state.zone;
     callbacks.joinAccepted?.(data);
   });
+  socket.on('zone:changed', (payload) => {
+    const next = payload?.zone || {};
+    state.zone = {
+      ...(state.zone || {}), ...next,
+      mode: payload?.mode || next.mode || state.zoneMode,
+      arena: payload ? !!payload.arena : !!next.arena,
+      friendlyFire: payload?.friendlyFire !== false
+    };
+    state.zoneMode = payload?.mode || next.mode || state.zoneMode;
+    callbacks.zoneChanged?.(payload);
+  });
+  socket.on('hub:state', (payload) => {
+    state.hub = payload?.safe || null;
+    state.safeZone = payload?.safe || null;
+    state.npcs = payload?.npcs || [];
+    state.towers = payload?.towers || [];
+    state.zoneMode = payload?.mode || state.zoneMode;
+    state.friendlyFire = payload?.friendlyFire !== false;
+    callbacks.hubState?.(payload);
+  });
+  socket.on('hub:notice', (message) => callbacks.notice?.(message));
+  socket.on('towers', (towers) => { state.towers = towers || []; });
+  socket.on('tower:unlocked', (payload) => callbacks.towerUnlocked?.(payload));
+  socket.on('shop:open', (payload) => callbacks.shop?.(payload));
+  socket.on('shop:update', (payload) => callbacks.shop?.(payload));
+  socket.on('shop:error', (message) => callbacks.shopError?.(message));
+  socket.on('friends:state', (friends) => { state.friends = friends || []; callbacks.friends?.(state.friends); });
+  socket.on('friends:error', (message) => callbacks.notice?.(message));
+  socket.on('inbox:update', (inbox) => { state.inbox = inbox || []; callbacks.inbox?.(state.inbox); });
+  socket.on('gift:sent', (payload) => callbacks.giftSent?.(payload));
+  socket.on('gift:error', (message) => callbacks.notice?.(message));
+  socket.on('skill:update', (payload) => callbacks.skillUpdate?.(payload));
+  socket.on('skill:error', (message) => callbacks.notice?.(message));
   socket.on('zones:lobby', (zones) => {
     state.zones = zones || [];
     callbacks.zonesLobby?.(state.zones);
@@ -119,6 +152,13 @@ export function createNetcode(state, callbacks = {}, audio = null) {
     invitePlayer: (playerId) => socket.emit('party:invite:send', playerId),
     respondParty: (inviteId, accept) => socket.emit('party:respond', { inviteId, accept }),
     leaveParty: () => socket.emit('party:leave'),
-    sendChat: (channel, text) => socket.emit('chat:send', { channel, text })
+    sendChat: (channel, text) => socket.emit('chat:send', { channel, text }),
+    buyItem: (itemId) => socket.emit('shop:buy', { itemId }),
+    equipItem: (itemId) => socket.emit('player:equip', { itemId }),
+    addFriend: (targetId, name) => socket.emit('friends:add', { targetId, name }),
+    removeFriend: (targetId) => socket.emit('friends:remove', { targetId }),
+    sendGift: (targetId, itemId) => socket.emit('gift:send', { targetId, itemId }),
+    claimInbox: (entryId) => socket.emit('inbox:claim', { entryId }),
+    unlockSkill: (nodeId) => socket.emit('player:skill', { nodeId })
   };
 }

@@ -24,15 +24,23 @@ and tested.)
 - **Progression** — single `applyXp` funnel; curve in
   `server/progression.js` (`xpForLevel`, `levelFromXp`, cap 40); level-up =
   skill point + 10 max HP + broadcast; `XP_SCALE` env; persisted.
-- **Parties** — squads up to 4, click-to-invite, shared party XP for nearby
-  members, squad chat channel.
-- **Chat** — global / squad / faction, control-char filtered, 240-char cap.
+- **Parties** — squads up to 4, click-to-invite (chat name menu works at any
+  range), shared party XP for nearby members, squad chat channel, automatic
+  party-friendly-fire immunity.
+- **Chat** — global / squad / faction, control-char filtered, 240-char cap;
+  clicking a chat name opens Add Friend / Invite to Party / Send Gift.
 - **Archive Echoes** — up to 5 random lore pickups, respawn every 7 s, pay
   skill point + core charge + XP.
 - **Persistence** — `player-profiles.json`: name, domain, stats, skill
-  points, XP/level, core charge/points. Atomic tmp+rename saves, periodic
-  (10 s) + on-event flushes. Modules extend the record via the `persist`
-  hook.
+  points, XP/level, core charge/points, inventory/equipment, friends and
+  inbox. Atomic tmp+rename saves, periodic (10 s) + on-event flushes.
+  Modules extend the record via the `persist` hook.
+- **Safe hub & arenas** — every canon zone spawns operatives inside a
+  no-combat bubble around the Cipher Core (`HUB` in `server/sim/spec.js`);
+  attacks/abilities are rejected inside, damage to occupants is blocked,
+  wardens ignore them, and respawns return to the hub. Two instanced
+  Domination rooms (`arena-pvp`, `arena-pve`) exist in the zone registry but
+  stay out of the lobby; the co-op room sets `friendlyFire: false`.
 - **Tick loop** — single `setInterval(50 ms)`; dt capped at 100 ms.
 - **Plug-and-play module system** — `server/hook-bus.js` +
   `server/module-loader.js` auto-scan `server/modules/*.js` at boot with a
@@ -40,14 +48,27 @@ and tested.)
   registerSocket, route, distance, applyXp, persistPlayer, xpScale). Broken
   modules are skipped, never fatal.
 
+## Server support files
+
+- **shop-catalog.js** — Quartermaster Vale stock, starter inventory/equipment
+  and the shared item lookup (gear is collection/visual progression only).
+- **skill-tree.js** — server mirror of the eight-node branching skill tree;
+  node costs, parent requirements and descriptions.
+
 ## Server modules (`server/modules/`)
 
 - **archive-terminals** — 3 canon-lore terminals (Transit Manifest,
   Observatory Console, Sealed Vault Interface), radius-based interact,
   40 XP + 12 core charge once per operative, `terminalsRead` persisted via
-  the persist hook. Client interaction UI still pending (roadmap #10).
+  the persist hook. Client UI lives in the terminals client module.
+- **hub-services** — physical shop NPC, PvP/PvE portal travel, tower unlocks
+  (60 XP), inventory/equipment persistence and shop payloads.
+- **social-services** — friends list (mutual add/remove), persistent inbox
+  with claimable attachments, and inventory gifting to online operatives.
+- **sleeve-skills** — server-validated skill-node unlocks; spends skill
+  points only when the parent chain is complete.
 
-## Client core (`public/client.js` + `public/src/`, 13 modules)
+## Client core (`public/client.js` + `public/src/`, 16 modules)
 
 - **camera.js** — follow, look-ahead, auto/scroll/key zoom, shake hook,
   viewport culling, minimap.
@@ -55,21 +76,26 @@ and tested.)
   projectiles, capped extrapolation.
 - **renderer.js** — baked offscreen background, sprite sheets with walk
   frames, procedural fallback; draws players, wardens, projectiles,
-  effects, bursts, relays, echoes, fog, HUD chrome, minimap; emits the
-  three module hooks (`render:world`, `render:fx`, `render:overlay`).
-- **netcode.js** — every socket event in one place.
+  effects, bursts, relays, echoes, safe-hub ring, tower beacons and a
+  receding fogline, compact top-centre HUD and top-left radar/mode strip;
+  emits the three module hooks (`render:world`, `render:fx`, `render:overlay`).
+- **netcode.js** — every socket event in one place, including hub state,
+  towers, shop, friends/inbox/gifts, skill unlocks and arena zone changes.
 - **plugin-host.js** — client hook bus (DOM-free, Node-importable).
 - **module-runner.js** — fetches `/api/client-modules`, parallel import,
   priority-ordered setup with loading-screen progress callbacks.
-- **uiManager.js** — title/join + boot-status line, character menu
-  (upgrades + domain select), HUD hints per input mode, party widget +
-  minimap, collapsible chat (default-closed CHAT toggle with unread badge;
-  Enter opens it, Escape closes it), toasts.
-- **inputManager.js** — keyboard (WASD/arrows, Space attack, Shift dash,
-  E shield, Q ability, **F interact**, C specs, +/- zoom), touch 360-degree
-  analog joystick (bottom-left, dead zone, clamped drag vector) +
-  action buttons (incl. READ), gamepad (Y/triangle = interact) with
-  dynamic HUD hints.
+- **uiManager.js** — title/join + boot-status line, MENU coordinator
+  (seven pages), shop panel, welcome/toast lifecycle, HUD hints per input
+  mode, party widget + minimap, collapsible chat with unread badge and the
+  chat-name action popup.
+- **menu.js / menu-pages.js** — menu navigation plus Character, Skill Tree,
+  Inventory, Party & Friends, Inbox, Map and Settings renderers.
+- **keybinds.js** — remappable combat/menu action keys with localStorage
+  persistence and readable key labels.
+- **inputManager.js** — keyboard (WASD/arrows move; remappable Space/Shift/
+  E/Q/F/C defaults, +/- zoom), touch 360-degree analog joystick
+  (bottom-left, dead zone, clamped drag vector) + action buttons (incl.
+  READ), gamepad (Y/triangle = interact) with dynamic HUD hints.
 - **world.js** — deterministic ruin props, named landmarks, terminal
   helpers (pure, Node-testable).
 - **assetLoader.js / characterRenderer.js** — baked PNG sheets with
@@ -125,16 +151,18 @@ and tested.)
 - **replay-viewer** (priority 10) — observer director camera for
   `?spectate=<zone>` and rolling-buffer playback for
   `?replay=1&zone=<zone>`.
+- **hub-world** (priority 25) — draws the physical Quartermaster and the two
+  arena gates and shows the nearby `F · ...` interaction prompt.
 
 ## Tooling & tests
 
 - `npm start` / `npm run dev` (watch) / `npm test` (node --test) /
   `npm run sprites` (bake art via `tools/generate-sprites.js`).
 - `tools/png.js` — dependency-free PNG writer + supersampled rasteriser.
-- 19 suites: server boot/health, server modules, zones, fixed timestep,
-  spectate/replay, abilities, wardens, objectives, progression, camera,
-  interpolation, renderer, sprites, module import resolution, client
-  module contract, analog-stick maths. 54 tests, all green.
+- 16 suites: server boot/health, server modules, safe hub/portals, zones,
+  fixed timestep, spectate/replay, abilities, wardens, objectives,
+  progression, camera, interpolation, renderer, sprites, module import
+  resolution, client module contract, analog-stick maths. 56 tests, all green.
 
 ## Planned this session (ROADMAP items, not built yet)
 

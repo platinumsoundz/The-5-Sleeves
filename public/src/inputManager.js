@@ -1,5 +1,7 @@
 // Pure analog-stick maths: turn a drag offset into a unit-scaled vector in any
 // direction. Exported so Node tests can prove 360-degree movement without a DOM.
+import { loadKeybinds } from './keybinds.js';
+
 export function stickVector(dx, dy, max = 52, deadZone = 5) {
   const length = Math.hypot(dx, dy);
   if (!Number.isFinite(length) || length < deadZone || max <= 0) return { x: 0, y: 0 };
@@ -9,6 +11,8 @@ export function stickVector(dx, dy, max = 52, deadZone = 5) {
 
 export function createInputManager({ onAction, onMenu, onMode, audio }) {
   const held = new Set();
+  const binds = loadKeybinds();
+  window.addEventListener('keybinds:changed', () => Object.assign(binds, loadKeybinds()));
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let mode = hasTouch ? 'touch' : 'keyboard';
   let padVector = { x: 0, y: 0 };
@@ -65,14 +69,18 @@ export function createInputManager({ onAction, onMenu, onMode, audio }) {
 
   window.addEventListener('keydown', (event) => {
     if (event.target?.closest?.('input, textarea')) return;
+    const code = event.code;
+    // The menu key always toggles, even while the menu is open. Everything
+    // else belongs to the overlay (tabs, keybind capture, page buttons).
+    if (code === binds.menu) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) onMenu(); return; }
+    if (document.body?.dataset?.menuOpen === 'true') return;
     const direction = directionButtons[event.key];
     if (direction) { setMode('keyboard'); event.preventDefault(); setDirection(direction, true); }
-    if (event.code === 'Space') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('attack'); }
-    if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('dash'); }
-    if (event.code === 'KeyE') { setMode('keyboard'); if (!event.repeat) triggerAction('shield'); }
-    if (event.code === 'KeyQ') { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('ability'); }
-    if (event.code === 'KeyF') { setMode('keyboard'); if (!event.repeat) triggerAction('interact'); }
-    if (event.code === 'KeyC') { setMode('keyboard'); if (!event.repeat) onMenu(); }
+    if (code === binds.attack) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('attack'); }
+    if (code === binds.dash || (binds.dash === 'ShiftLeft' && code === 'ShiftRight')) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('dash'); }
+    if (code === binds.shield) { setMode('keyboard'); if (!event.repeat) triggerAction('shield'); }
+    if (code === binds.ability) { setMode('keyboard'); event.preventDefault(); if (!event.repeat) triggerAction('ability'); }
+    if (code === binds.interact) { setMode('keyboard'); if (!event.repeat) triggerAction('interact'); }
     if (event.code === 'Escape') onMenu(false);
   });
   window.addEventListener('keyup', (event) => {

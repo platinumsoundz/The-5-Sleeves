@@ -7,10 +7,13 @@ const WORLD = { width: 1000, height: 700 };
 const PERIMETER_MARGIN = 40;
 const CORE = { x: WORLD.width / 2, y: WORLD.height / 2, radius: 90 };
 
+const { HUB, HUB_NPCS, TOWERS } = require('./spec.js');
+
 const OBJECTIVE_RADIUS = 95;
 const OBJECTIVE_CAPTURE_RATE = 20;
 const OBJECTIVE_SCORE_RATE = 1;
 const MATCH_RESET_DELAY = 12000;
+const ARENA_SPAWN = Object.freeze({ x: 500, y: 400 });
 const OBJECTIVE_SPOTS = [
   { id: 'relay-west', name: 'West Relay', x: 250, y: 180 },
   { id: 'relay-east', name: 'East Relay', x: 750, y: 180 },
@@ -37,6 +40,14 @@ function createSimulation(catalogZone, host) {
     world: WORLD,
     core: CORE,
     host,
+    // Arena rooms are combat-only; canon zones start inside the safe hub.
+    arena: !!catalogZone.arena,
+    mode: catalogZone.mode || 'wasteland',
+    friendlyFire: catalogZone.friendlyFire !== false,
+    safe: catalogZone.arena ? null : { ...HUB, spawn: { ...HUB.spawn } },
+    spawn: catalogZone.spawn ? { ...catalogZone.spawn } : (catalogZone.arena ? { ...ARENA_SPAWN } : { ...HUB.spawn }),
+    npcs: catalogZone.arena ? [] : HUB_NPCS.map((npc) => ({ ...npc })),
+    towers: catalogZone.arena ? [] : TOWERS.map((tower) => ({ ...tower, unlocked: false, unlockedBy: null })),
     players: {},
     ai: {},
     projectiles: {},
@@ -61,6 +72,7 @@ function createSimulation(catalogZone, host) {
       sim.send('effects', sim.effects);
       sim.send('bursts', sim.bursts);
       sim.send('objectives', sim.objectivesPayload());
+      if (sim.towers.length) sim.send('towers', sim.towers);
     }
   };
   resetObjectives(sim);

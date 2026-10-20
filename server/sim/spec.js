@@ -45,7 +45,29 @@ const XP_ECHO = 15;
 const XP_CORE_POINT = 25;
 const XP_PLAYER_KILL = 30;
 const XP_CAPTURE = 20;
+const XP_TOWER = 60;
 const LEVEL_HP_GAIN = 10;
+
+// The protected starting hub around the Cipher Core. Nothing inside this ring
+// can be damaged and attacks cannot be fired from it. NPCs stand just outside
+// the Core ring so their prompts stay readable but inside the safe bubble.
+const HUB = Object.freeze({
+  x: 500, y: 350, radius: 112,
+  spawn: Object.freeze({ x: 500, y: 455 })
+});
+const HUB_NPCS = Object.freeze([
+  { id: 'npc-shop', kind: 'shop', name: 'Quartermaster Vale', role: 'SHOP VENDOR', x: 395, y: 350, radius: 62, color: '#ffd479' },
+  { id: 'npc-pvp', kind: 'portal', targetZone: 'arena-pvp', name: 'Arena Gate · PvP', role: 'DOMINATION · FULL PVP', x: 605, y: 350, radius: 62, color: '#ff6b7a' },
+  { id: 'npc-pve', kind: 'portal', targetZone: 'arena-pve', name: 'Arena Gate · Co-op', role: 'DOMINATION · NO FRIENDLY FIRE', x: 500, y: 245, radius: 62, color: '#5fd0ff' }
+]);
+
+// Regional towers outside the hub. Walking up to a dormant tower unlocks it
+// and pushes the fogline back (the client draws the ring and beacon state).
+const TOWERS = Object.freeze([
+  { id: 'tower-pylon', name: 'Tower 1 · Fallen Pylon', x: 500, y: 118, radius: 64 },
+  { id: 'tower-parapet', name: 'Tower 2 · East Parapet', x: 872, y: 118, radius: 64 },
+  { id: 'tower-transit', name: 'Tower 3 · Transit Terminus', x: 124, y: 612, radius: 64 }
+]);
 
 // Archive Echo lore lines (Tower log fragments).
 const ARCHIVE_LOGS = [
@@ -60,6 +82,7 @@ module.exports = {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
   RESPAWN_DELAY, AI_RESPAWN_DELAY, ABILITY_BURST_LIFETIME, BURN_TICK_CAP,
   MAX_WARDENS, WARDEN,
-  XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, LEVEL_HP_GAIN,
+  XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, XP_TOWER, LEVEL_HP_GAIN,
+  HUB, HUB_NPCS, TOWERS,
   ARCHIVE_LOGS
 };
