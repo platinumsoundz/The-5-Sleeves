@@ -84,7 +84,9 @@ export function activateFocusedMenuItem() {
   if (!scope) return false;
   const items = Array.from(scope.querySelectorAll(FOCUSABLE)).filter(visible);
   if (!items.length) return false;
-  let target = items.includes(document.activeElement) ? document.activeElement : items[0];
+  let target = items.includes(document.activeElement)
+    ? document.activeElement
+    : (items.find((item) => !item.hasAttribute('data-gamepad-back')) || items[0]);
   target.focus();
   target.click();
   return true;
