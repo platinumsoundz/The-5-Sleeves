@@ -93,6 +93,7 @@ const network = createNetcode(state, {
   arenaMenu: (payload) => ui?.showArenaMenu(payload),
   towerState: (payload) => { state.towerRun = payload; },
   towerCleared: (payload) => {
+    bus.emit('net:tower-cleared', payload);
     state.banner = { text: (payload.name || 'TOWER') + ' ONLINE', color: '#7dffd8', at: Date.now(), ttl: 4200 };
     state.killFeed.push({ text: 'TOWER CLEARED · +' + (payload.credits || 0) + ' CREDITS', at: Date.now(), color: '#ffe9a0' });
     if (state.killFeed.length > 5) state.killFeed.shift();
