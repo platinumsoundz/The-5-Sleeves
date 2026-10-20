@@ -41,8 +41,8 @@ export default {
     copy.append(
       element('div', 'TOWER LINK RESTORED · FIRST CONTACT', 'cipher-kicker'),
       Object.assign(element('h2', 'CIPHER'), { id: 'cipher-intro-title' }),
-      element('div', 'AI / SPIRIT INTERFACE · ALLIED', 'cipher-role'),
-      element('p', 'Thank you for bringing the tower back online. I was lost in the static. I’m Cipher. I’ll help you find the remaining towers—if you’ll have me.')
+      element('div', 'ALLIED AI COMPANION', 'cipher-role'),
+      element('p', 'Thank you for bringing the tower back online. I’m Cipher. I’m here to help you find and restore the remaining towers, if you’ll accept my guidance.')
     );
     const close = element('button', 'CONTINUE');
     close.type = 'button';
