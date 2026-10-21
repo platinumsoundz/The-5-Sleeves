@@ -75,12 +75,15 @@ it committed and tested after running the full suite.)
   passive/special-upgrade expansion; that separate balance build is pending.
 
 - **Enemy content and registry** — `server/content/enemies.js` holds stable
-  enemy IDs and current Rust Warden stats/scaling/visuals. `server/sim/enemy-registry.js`
+  enemy IDs and stats/scaling/visuals. `server/sim/enemy-registry.js`
   dispatches catalogued `spawnEnemy`/`updateEnemies` requests by behavior ID;
-  `server/sim/wardens.js` remains the patrol-shooter behavior implementation.
-  Existing server/tower spawns route through this interface. Only Rust Warden
-  is registered so far; new behavior handlers and kill/loot policy are future
-  content work. `test/enemy-catalog.test.js` added, unrun.
+  the patrol-shooter handler now supports Rust Wardens and the proposed small
+  Scavenger Drone. Wilderness counts use `MAX_WARDENS`/`MAX_DRONES`; server
+  and tower spawns route through the registry. Other behaviors and enemy-
+  specific loot policies remain future work. `test/enemy-catalog.test.js`
+  added, unrun.
+- **enemyRenderer.js** — renders small catalog enemies as compact procedural
+  drones and retains baked/procedural rendering for the medium Warden.
 
 ## Server modules (`server/modules/`)
 
