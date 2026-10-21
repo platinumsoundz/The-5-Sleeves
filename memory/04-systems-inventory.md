@@ -74,6 +74,14 @@ it committed and tested after running the full suite.)
   requirements and descriptions. Owner requested a substantial five-faction
   passive/special-upgrade expansion; that separate balance build is pending.
 
+- **Enemy content and registry** — `server/content/enemies.js` holds stable
+  enemy IDs and current Rust Warden stats/scaling/visuals. `server/sim/enemy-registry.js`
+  dispatches catalogued `spawnEnemy`/`updateEnemies` requests by behavior ID;
+  `server/sim/wardens.js` remains the patrol-shooter behavior implementation.
+  Existing server/tower spawns route through this interface. Only Rust Warden
+  is registered so far; new behavior handlers and kill/loot policy are future
+  content work. `test/enemy-catalog.test.js` added, unrun.
+
 ## Server modules (`server/modules/`)
 
 - **archive-terminals** — 3 canon-lore terminals (Transit Manifest,
