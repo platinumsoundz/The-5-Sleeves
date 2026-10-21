@@ -1,5 +1,5 @@
-const CACHE_NAME = 'five-sleeves-shell-v1';
-const APP_SHELL = ['/', '/manifest.json'];
+const CACHE_NAME = 'five-sleeves-shell-v2';
+const APP_SHELL = ['/', '/manifest.json', '/icon_5sleeves_compass.png', '/icon_5sleeves_title.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
