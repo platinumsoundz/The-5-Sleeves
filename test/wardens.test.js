@@ -65,12 +65,13 @@ test('wardens patrol the ruins and broadcast their state', async (t) => {
   const operative = await connect('Scout' + Date.now().toString(36));
   sockets.push(operative.socket);
 
-  const aiState = await once(operative.socket, 'ai', (payload) => Object.keys(payload || {}).length >= 6, 5000, 'four wardens and two small drones');
+  const aiState = await once(operative.socket, 'ai', (payload) => Object.keys(payload || {}).length >= 5, 5000, 'five enemies under the road cap');
   const allEnemies = Object.values(aiState);
   const wardens = allEnemies.filter((enemy) => enemy.name === 'Rust Warden');
   const drones = allEnemies.filter((enemy) => enemy.enemyType === 'scavenger-drone');
-  assert.equal(wardens.length, 4, 'the ruins retain four wardens');
-  assert.equal(drones.length, 2, 'the new small drone group also patrols the ruins');
+  assert.equal(wardens.length, 4, 'four wardens remain in the default road roster');
+  assert.equal(drones.length, 1, 'one small drone fills the fifth road slot');
+  assert.equal(allEnemies.length, 5, 'the combined road population never exceeds five');
   for (const warden of wardens) {
     assert.equal(warden.kind, 'ai');
     assert.equal(warden.name, 'Rust Warden');
