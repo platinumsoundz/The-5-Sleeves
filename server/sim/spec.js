@@ -29,26 +29,10 @@ const BURN_TICK_CAP = 60;
 
 // Hostile PvE drones that patrol the ruins and shoot at operatives.
 const MAX_WARDENS = Number.isFinite(Number(process.env.MAX_WARDENS)) ? Math.max(0, Number(process.env.MAX_WARDENS)) : 4;
-// Per-danger-tier growth keeps deeper roads harder without changing tier one.
-const WARDEN_SCALING = Object.freeze({
-  hpPerTier: 0.28, damagePerTier: 0.2, speedPerTier: 0.035,
-  aggroPerTier: 18, rangePerTier: 10, xpPerTier: 0.45, creditsPerTier: 0.55
-});
-const WARDEN = {
-  name: 'Rust Warden',
-  hp: 90,
-  speed: 74,
-  aggro: 330,
-  attackRange: 240,
-  shotCooldown: 1500,
-  damage: 12,
-  projectileSpeed: 300,
-  radius: 15,
-  xp: 12,
-  skillPoints: 1,
-  coreCharge: 10,
-  credits: 14
-};
+// Legacy imports use these aliases; new enemy data lives in one catalog.
+const { RUST_WARDEN } = require('../content/enemies.js');
+const WARDEN_SCALING = RUST_WARDEN.scaling;
+const WARDEN = { name: RUST_WARDEN.name, ...RUST_WARDEN.stats };
 
 // XP and credit bounties (scaled by XP_SCALE inside applyXp).
 const XP_ECHO = 15;
