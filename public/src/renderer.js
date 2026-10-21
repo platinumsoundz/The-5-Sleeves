@@ -1,7 +1,8 @@
 import { CORE_DEFAULT, DOMAINS, HUB, PERIMETER_MARGIN, TILE_SIZE, WORLD_DEFAULT } from './config.js';
 import { bus } from './plugin-host.js';
 import { optionalImage } from './assetLoader.js';
-import { drawPlayer, drawEnemy } from './characterRenderer.js';
+import { drawPlayer } from './characterRenderer.js';
+import { drawEnemy } from './enemyRenderer.js';
 import { applyCamera, isVisible, updateCamera, visibleWorldBounds } from './camera.js';
 import { INTERPOLATION_DELAY, sampleTrack } from './interpolation.js';
 import { drawHud, slotRect } from './hud.js';
