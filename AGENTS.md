@@ -7,8 +7,11 @@ developer session must read `memory/00-index.md` first**, then follow
 ## The five rules that matter most
 
 1. **Read memory before code.** Start at `memory/00-index.md`.
-2. **One system per build** — build, `npm test`, commit, update memory,
-   then start the next. Never leave two systems half-built.
+2. **One system per build** — build one system, add regression coverage, and
+   update memory before starting the next. The owner currently wants several
+   builds accumulated before verification: until they explicitly request a
+   batch, do not run tests or ask them to run tests. Keep unverified changes
+   uncommitted; resume verification/commit when the owner requests the batch.
 3. **Plug-and-play modules only** (`memory/03-module-architecture.md`). New
    features are small files dropped into `server/modules/` or
    `public/src/modules/`; the master scans them at boot. Target < 150 lines
@@ -23,7 +26,7 @@ developer session must read `memory/00-index.md` first**, then follow
 ## Quick reference
 
 - `PROJECT_INDEX.md` — compact map from features to owning code and focused tests.
-- `npm test` — must be green before every commit (38+ tests).
+- `npm test` — owner has deferred execution until they request a combined batch; do not prompt them to run it before then.
 - `npm start` / `npm run dev` — run the server (port 3000).
 - `npm run sprites` — regenerate baked pixel art.
 - `ROADMAP.md` — build plan and status markers.
