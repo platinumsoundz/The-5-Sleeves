@@ -1,7 +1,7 @@
 import { CORE_DEFAULT, DOMAINS, HUB, PERIMETER_MARGIN, TILE_SIZE, WORLD_DEFAULT } from './config.js';
 import { bus } from './plugin-host.js';
 import { optionalImage } from './assetLoader.js';
-import { drawPlayer, drawWarden } from './characterRenderer.js';
+import { drawPlayer, drawEnemy } from './characterRenderer.js';
 import { applyCamera, isVisible, updateCamera, visibleWorldBounds } from './camera.js';
 import { INTERPOLATION_DELAY, sampleTrack } from './interpolation.js';
 import { drawHud, slotRect } from './hud.js';
@@ -587,7 +587,7 @@ export function renderFrame(canvas, ctx, state, time) {
   drawObjectives(ctx, state, time);
   drawEffects(ctx, state.effects, time);
   drawCipherCore(ctx, state.core || CORE_DEFAULT, time); drawProjectiles(ctx, projectiles);
-  Object.values(state.ai || {}).forEach((warden) => { if (warden.hp > 0) drawWarden(ctx, warden, time); });
+  Object.values(state.ai || {}).forEach((enemy) => { if (enemy.hp > 0) drawEnemy(ctx, enemy, time); });
   players.forEach((player) => drawPlayer(ctx, player, state.playerId, time));
   drawBursts(ctx, state.bursts, time);
   // Module hook: above-entity effects (sparks, damage numbers, afterimages).
