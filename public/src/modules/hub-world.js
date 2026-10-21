@@ -42,7 +42,7 @@ function drawGate(draw, state, time, label, x, y, angle, open = true, levelBand 
   draw.restore();
   draw.save();
   draw.fillStyle = open ? 'rgba(186,255,238,.9)' : 'rgba(255,211,168,.95)'; draw.font = 'bold 10px system-ui'; draw.textAlign = 'center';
-  const textX = x > 900 ? x - 90 : x < 100 ? x + 90 : x;
+  const textX = levelBand ? (x > 900 ? x - 90 : x < 100 ? x + 90 : x) : x;
   const textY = y < 100 ? y + 34 : y > 600 ? y - 18 : y - 18;
   draw.fillText(label, textX, textY);
   const recommendation = recommendedLevelLabel(levelBand);
