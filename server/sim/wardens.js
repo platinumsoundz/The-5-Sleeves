@@ -19,16 +19,17 @@ function wardenSpawnPoint(sim) {
   return { x: sim.world.width - PERIMETER_MARGIN - 80, y: sim.world.height - PERIMETER_MARGIN - 80 };
 }
 
-function scaledStats(tier) {
+function scaledStats(tier, definition = RUST_WARDEN) {
   const step = Math.max(0, (Number(tier) || 1) - 1);
+  const base = definition.stats, scaling = definition.scaling;
   return {
-    hp: Math.round(WARDEN.hp * (1 + step * WARDEN_SCALING.hpPerTier)),
-    damage: Math.round(WARDEN.damage * (1 + step * WARDEN_SCALING.damagePerTier)),
-    speed: WARDEN.speed * (1 + step * WARDEN_SCALING.speedPerTier),
-    aggro: WARDEN.aggro + step * WARDEN_SCALING.aggroPerTier,
-    attackRange: WARDEN.attackRange + step * WARDEN_SCALING.rangePerTier,
-    xp: Math.round(WARDEN.xp * (1 + step * WARDEN_SCALING.xpPerTier)),
-    credits: Math.round(WARDEN.credits * (1 + step * WARDEN_SCALING.creditsPerTier)),
+    hp: Math.round(base.hp * (1 + step * scaling.hpPerTier)),
+    damage: Math.round(base.damage * (1 + step * scaling.damagePerTier)),
+    speed: base.speed * (1 + step * scaling.speedPerTier),
+    aggro: base.aggro + step * scaling.aggroPerTier,
+    attackRange: base.attackRange + step * scaling.rangePerTier,
+    xp: Math.round(base.xp * (1 + step * scaling.xpPerTier)),
+    credits: Math.round(base.credits * (1 + step * scaling.creditsPerTier)),
     level: Math.max(1, Math.round(tier))
   };
 }
@@ -37,7 +38,7 @@ function spawnWarden(sim, options = {}, definition = RUST_WARDEN) {
   const id = 'warden-' + sim.next.warden++;
   const spot = Number.isFinite(options.x) && Number.isFinite(options.y) ? { x: options.x, y: options.y } : wardenSpawnPoint(sim);
   const tier = options.tier || sim.danger || 1;
-  const stats = scaledStats(tier);
+  const stats = scaledStats(tier, definition);
   const warden = {
     id,
     kind: 'ai',
@@ -64,6 +65,8 @@ function spawnWarden(sim, options = {}, definition = RUST_WARDEN) {
     aggro: stats.aggro,
     attackRange: stats.attackRange,
     xp: stats.xp,
+    skillPoints: definition.stats.skillPoints,
+    coreCharge: definition.stats.coreCharge,
     credits: stats.credits,
     radius: definition.stats.radius,
     color: definition.visuals.color,
