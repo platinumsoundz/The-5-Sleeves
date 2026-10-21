@@ -64,6 +64,46 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done
 - [x] **13. Fixed-timestep server loop** with a decoupled broadcast rate. (`FIXED_DT_MS` / `BROADCAST_MS` env knobs)
 - [x] **14. Spectate + replay** — observer mode and a rolling snapshot buffer. (`?spectate=<zone>` and `?replay=1&zone=<zone>`; `GET /api/replay/:zoneId`)
 
+## Tier 5 — Owner-approved upcoming builds (NOT IMPLEMENTED)
+These are design-approved backlog items, not shipped features. Keep each system
+as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
+
+- [ ] **Regional wilderness progression** — expand roads and make them rewarding
+  to revisit; publish recommended levels, raise encounter difficulty by region,
+  cap each road at five simultaneous enemies, and use a novice-editable balance
+  file for region rosters, levels, enemy scaling and tower waves. Proposed road
+  roster: small; small + medium; medium; medium + large; large. New medium/large
+  types and a boss remain unbuilt. Towers should be substantially harder than
+  their preceding road; exact map sizes and wave counts need tuning.
+- [ ] **Wilderness PvP, party rewards and death fees** — non-party players may
+  fight in wilderness; parties are mutually protected. Every death charges a
+  5% medical fee; PvP deaths additionally transfer 5% of the victim's credits
+  to the victor (10% total loss), with the amount reported. Same-zone party
+  members get full XP/rewards and individual copies of eligible drops. Respawn
+  with a living party member, otherwise in a safe city. Towers stay PvE-only.
+- [ ] **Tower matchmaking and repeat maintenance** — each party gets a private
+  PvE tower run; solo operatives queue for 30 seconds, can start early with
+  1–4 players, and can be matched together. Occasionally one already-cleared
+  tower may fail; repair it by defeating stronger, party-scaled enemies. Failure
+  must not revoke clears/rewards. Frequency and mixed-level scaling remain open.
+- [ ] **Long-term collection progression** — players can eventually unlock all
+  items, powers and skills, while equipping a limited active loadout. Exact
+  loadout limits and respec rules remain open.
+- [ ] **Lightweight survival/content systems** — scrap field-crafting and repair,
+  useful temporary supplies, scheduled Fogline/weather shifts, and spirit-linked
+  Sleeve Chip ability variants. New lore and creature content requires canon
+  review; do not treat a chip as a spirit without consent.
+- [ ] **Step 17 technical work** — empty-zone simulation efficiency, renderer
+  entity culling, movement delta/throttling, and functional armor/boots/headgear
+  stats. Do not add a self-ping to prevent Render Free sleep; it does not keep
+  the instance awake.
+- [ ] **Accounts and durable progress** — reproduce the reported account
+  login issue, reduce the password minimum to six characters, and move progress
+  off Render Free's ephemeral filesystem after the owner selects a durable
+  storage provider.
+- [ ] **Notification polish** — move system notices right; show earned credits
+  in the XP-style feed while preserving blue story/log/quest notices.
+
 ## Conventions
 - `npm test` runs the node test suite (`test/`).
 - `npm run sprites` regenerates the procedural pixel-art assets.
