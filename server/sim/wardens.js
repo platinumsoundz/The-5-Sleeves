@@ -1,6 +1,6 @@
 // PvE: Rust Wardens — patrolling defence drones (canon: dormant tower
 // network defence). Wild roads scale them by danger tier; tower rooms spawn
-// controlled waves through spawnWarden(sim, { x, y, tier }).
+// controlled waves through the shared enemy-registry interface.
 const { RUST_WARDEN } = require('../content/enemies.js');
 const WARDEN = RUST_WARDEN.stats;
 const { clampToWorld, distance, inSafeZone, spawnBurst } = require('./combat.js');
@@ -33,8 +33,10 @@ function scaledStats(tier, definition = RUST_WARDEN) {
   };
 }
 
-function spawnWarden(sim, options = {}, definition = RUST_WARDEN) {
-  const id = 'warden-' + sim.next.warden++;
+function spawnPatrolShooter(sim, options = {}, definition = RUST_WARDEN) {
+  const counterKey = definition.counterKey || 'enemy';
+  sim.next[counterKey] = sim.next[counterKey] || 1;
+  const id = counterKey + '-' + sim.next[counterKey]++;
   const spot = Number.isFinite(options.x) && Number.isFinite(options.y) ? { x: options.x, y: options.y } : wardenSpawnPoint(sim);
   const tier = options.tier || sim.danger || 1;
   const stats = scaledStats(tier, definition);
@@ -92,7 +94,7 @@ function nearestPlayer(sim, entity, radius) {
   return best;
 }
 
-function fireWardenShot(sim, warden, target, now) {
+function firePatrolShot(sim, warden, target, now) {
   const angle = Math.atan2(target.y - warden.y, target.x - warden.x) + (Math.random() - 0.5) * 0.12;
   const id = String(sim.next.projectile++);
   sim.projectiles[id] = {
@@ -121,9 +123,9 @@ function respawnWarden(sim, warden) {
   warden.targetId = null; warden.lastShotAt = 0; warden.nextWanderAt = 0;
 }
 
-function updateWardens(sim, now, deltaSeconds) {
+function updatePatrolShooters(sim, now, deltaSeconds) {
   for (const warden of Object.values(sim.ai)) {
-    if (warden.enemyType !== RUST_WARDEN.id) continue;
+    if (warden.behavior !== 'patrol-shooter') continue;
     if (warden.hp <= 0) {
       if (now >= (warden.respawnAt || 0)) respawnWarden(sim, warden);
       continue;
@@ -137,7 +139,7 @@ function updateWardens(sim, now, deltaSeconds) {
       if (away > (warden.attackRange || WARDEN.attackRange) * 0.55) { moveX = dx / away; moveY = dy / away; }
       if (away <= (warden.attackRange || WARDEN.attackRange) && now - warden.lastShotAt >= (warden.shotCooldown || WARDEN.shotCooldown)) {
         warden.lastShotAt = now;
-        fireWardenShot(sim, warden, target, now);
+        firePatrolShot(sim, warden, target, now);
       }
     } else {
       if (now >= warden.nextWanderAt) {
@@ -158,4 +160,9 @@ function updateWardens(sim, now, deltaSeconds) {
   }
 }
 
-module.exports = { spawnWarden, updateWardens, scaledStats };
+function spawnWarden(sim, options = {}) { return spawnPatrolShooter(sim, options, RUST_WARDEN); }
+
+module.exports = {
+  spawnWarden, updateWardens: updatePatrolShooters, spawnPatrolShooter,
+  updatePatrolShooters, scaledStats
+};
