@@ -262,6 +262,9 @@ it committed and tested after running the full suite.)
   requests. Manifest includes a scalable SVG app icon. `test/pwa.test.js`
   covers metadata, registration, service-worker behavior and fullscreen;
   **added but unrun**.
+- `test/input.test.js` covers touch-pointer mode switching after desktop-mode
+  startup, plus existing joystick and controller binding regressions; **added
+  but unrun**.
 - `test/shooting.test.js` adds six regressions for mode persistence, aim
   normalization/selection and repeat cadence. The suite was not run; recent
   auth, hazard, visual, balance and shooting changes also remain unverified.
