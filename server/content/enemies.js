@@ -21,6 +21,31 @@ const RUST_WARDEN = Object.freeze({
 });
 
 // Key by stable id: saved data and spawn callers should never rely on display names.
-const ENEMY_CATALOG = Object.freeze({ [RUST_WARDEN.id]: RUST_WARDEN });
+const SCAVENGER_DRONE = Object.freeze({
+  id: 'scavenger-drone',
+  name: 'Scavenger Drone',
+  size: 'small',
+  behavior: 'patrol-shooter',
+  counterKey: 'drone',
+  spawnCount: 2,
+  stats: Object.freeze({
+    hp: 35, speed: 105, aggro: 270, attackRange: 185, shotCooldown: 2100,
+    damage: 5, projectileSpeed: 270, projectileRadius: 5, projectileLifetimeMs: 1600, radius: 8,
+    xp: 4, skillPoints: 0, coreCharge: 2, credits: 4
+  }),
+  scaling: Object.freeze({
+    hpPerTier: 0.18, damagePerTier: 0.15, speedPerTier: 0.025,
+    aggroPerTier: 12, rangePerTier: 6, xpPerTier: 0.25, creditsPerTier: 0.3
+  }),
+  visuals: Object.freeze({
+    color: '#718894', accentColor: '#d5e8df',
+    projectileColor: '#d9a86e', projectileAccent: '#ffe0b0'
+  })
+});
 
-module.exports = { ENEMY_CATALOG, RUST_WARDEN };
+const ENEMY_CATALOG = Object.freeze({
+  [RUST_WARDEN.id]: RUST_WARDEN,
+  [SCAVENGER_DRONE.id]: SCAVENGER_DRONE
+});
+
+module.exports = { ENEMY_CATALOG, RUST_WARDEN, SCAVENGER_DRONE };
