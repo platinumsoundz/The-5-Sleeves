@@ -7,7 +7,7 @@ export function createUIManager(actions) {
   const title = $('#title-screen'), form = $('#join-form'), nameInput = $('#username-input');
   const enterButton = $('#enter-button'), nameError = $('#name-error');
   const accountMode = $('#account-mode'), passwordInput = $('#password-input');
-  const hints = $('#control-hints'), status = $('#status'), archiveToast = $('#archive-toast');
+  const hints = $('#control-hints'), status = $('#status'), archiveToast = $('#archive-toast'), systemToast = $('#system-toast');
   const partyWidget = $('#party-widget'), partyMap = $('#party-minimap'), partyMembers = $('#party-members');
   const inviteToast = $('#party-invite-toast'), inviteMessage = $('#party-invite-message');
   const chatList = $('#chat-messages'), chatForm = $('#chat-form'), chatInput = $('#chat-input');
@@ -16,7 +16,7 @@ export function createUIManager(actions) {
   const chatActions = $('#chat-actions'), chatActionsName = $('#chat-actions-name'), chatActionsList = $('#chat-actions-list');
   const shopPanel = $('#shop-panel'), shopItems = $('#shop-items'), shopBalance = $('#shop-balance'), shopStatus = $('#shop-status');
   const arenaPanel = $('#arena-panel'), arenaOptions = $('#arena-options'), arenaNote = $('#arena-note'), arenaTitle = $('#arena-title');
-  let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, inviteTimer = null;
+  let joined = false, activeChannel = 'global', currentInvite = null, toastTimer = null, archiveToastTimer = null, inviteTimer = null;
   let chatOpen = false, unreadChat = 0, chatTarget = null, shopPayload = null;
   let profile = {};
   try { profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (_) { profile = {}; }
@@ -66,10 +66,16 @@ export function createUIManager(actions) {
     if (points) points.textContent = 'Level ' + (player.level || 1) + ' · ' + (player.credits || 0) + 'c · Skill Points: ' + (player.skillPoints || 0) + ' · ' + zoneName;
   }
   function showToast(message, duration = 4500) {
+    systemToast.textContent = message;
+    systemToast.classList.add('visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => systemToast.classList.remove('visible'), duration);
+  }
+  function showArchiveToast(message, duration = 4500) {
     archiveToast.textContent = message;
     archiveToast.classList.add('visible');
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => archiveToast.classList.remove('visible'), duration);
+    if (archiveToastTimer) clearTimeout(archiveToastTimer);
+    archiveToastTimer = setTimeout(() => archiveToast.classList.remove('visible'), duration);
   }
   function renderBadge() {
     if (!chatBadge) return;
@@ -360,7 +366,7 @@ export function createUIManager(actions) {
       if (passwordInput) passwordInput.value = '';
       actions.join(username, selectedFaction, 'account');
     },
-    showArchiveToast: showToast,
+    showArchiveToast,
     updatePlayer(player) {
       profile = {
         name: player.name, hp: player.hp, maxHp: player.maxHp, coreCharge: player.coreCharge,
