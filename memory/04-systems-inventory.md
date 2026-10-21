@@ -298,5 +298,12 @@ it committed and tested after running the full suite.)
   HTTPS/controller/HUD changes are implemented but unverified; see
   `memory/05-work-state.md`. Run `npm test` and browser/device checks before
   marking the builds complete.
-- The roadmap remains complete; future work is playtest tuning, canon
-  approval and the future roadmap brainstorm.
+- `ROADMAP.md` and `ROADMAP-FUTURE.md` now include the owner's approved,
+  unimplemented wilderness/PvP/party/tower/endgame systems and the accepted
+  lightweight crafting, weather and Sleeve Chip concepts. The five-enemy road
+  cap, rising size roster, 5% medical fee + PvP credit transfer, same-zone full
+  party rewards, private PvE tower matchmaking and repeat tower-maintenance
+  loop are design decisions, not shipped features. Exact balancing, tower
+  outage cadence, reward eligibility edge cases, database choice and canon
+  review remain open. Step 17 performance/gear work and account/storage fixes
+  are also still unbuilt.
