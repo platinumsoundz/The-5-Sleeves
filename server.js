@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 const { zoneCatalog, DEFAULT_ZONE_ID, LOBBY_ZONE_IDS, worldMapPayload } = require('./server/zones-catalog.js');
 const { createSimulation } = require('./server/sim/state.js');
 const { stepZone, seedZone } = require('./server/sim/index.js');
-const { spawnWarden } = require('./server/sim/wardens.js');
+const { spawnEnemy } = require('./server/sim/enemy-registry.js');
 const { abilityFor, castAbility } = require('./server/sim/abilities.js');
 const { distance, inSafeZone } = require('./server/sim/combat.js');
 const {
@@ -108,13 +108,13 @@ for (const catalogZone of CATALOG) {
   const sim = createSimulation(catalogZone, hostServices());
   zones[sim.id] = sim;
   if (sim.kind === 'wild') {
-    for (let i = 0; i < MAX_WARDENS; i += 1) spawnWarden(sim);
+    for (let i = 0; i < MAX_WARDENS; i += 1) spawnEnemy(sim, 'rust-warden');
     for (const spot of catalogZone.guardianSpawns || []) {
-      spawnWarden(sim, { x: spot.x, y: spot.y, tier: catalogZone.danger || 10 });
+      spawnEnemy(sim, 'rust-warden', { x: spot.x, y: spot.y, tier: catalogZone.danger || 10 });
     }
   }
   if (sim.kind === 'arena' && sim.alignment === 'pve') {
-    for (let i = 0; i < Math.min(MAX_WARDENS, 3); i += 1) spawnWarden(sim, { tier: 2 });
+    for (let i = 0; i < Math.min(MAX_WARDENS, 3); i += 1) spawnEnemy(sim, 'rust-warden', { tier: 2 });
   }
   if (sim.kind !== 'haven' && sim.kind !== 'tower') seedZone(sim);
 }
