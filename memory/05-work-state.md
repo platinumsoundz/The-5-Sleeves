@@ -3,9 +3,24 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: recommended-level labels added; tests pending.
+Last updated: notification polish implemented; verification and project ledger pending.
 
-## Current build — Recommended-level entrance labels (IMPLEMENTED, UNVERIFIED)
+## Current build — Notification polish (IMPLEMENTED, UNVERIFIED)
+
+- Ordinary system notices now use a dedicated safe-area position on the right;
+  archive/story notices stay in a separate blue left-side toast. Added the
+  auto-discovered `credit-feedback` client module, which watches authoritative
+  balance snapshots and adds credit increases to the existing XP-style HUD
+  ticker without changing server rewards. Normalized existing feed/banner
+  timestamps to the animation-frame clock so those messages expire correctly.
+- Added `test/notification-polish.test.js` for credit deltas, toast separation
+  and timestamp usage. Neither focused tests nor `npm test` could be run because
+  no shell/command runner is available. No commit has been made.
+- The machine-readable project ledger remains at 2.8.5: its prior update failed
+  when GitHub was unreachable. Do not treat the ledger update or these changes
+  as verified; update it and run tests when repository/command access returns.
+
+## Previous build — Recommended-level entrance labels (IMPLEMENTED, UNVERIFIED)
 
 - Physical road and tower gates display the existing catalog level band;
   zone-arrival toasts repeat it. Safe-city arrival text identifies the band as
