@@ -16,8 +16,9 @@ Last updated: 2026-10-20 (enemy catalog and behavior registry added; tests not r
 - Kept legacy Warden stat exports for existing imports and set spawned Warden
   entities' explicit skill-point/core-charge rewards.
 - Added `test/enemy-catalog.test.js`; updated the beginner guide and its
-  regression test. The suite and gameplay were not run; add drones only after
-  verifying this registry and the rest of `npm test`.
+  regression test. The suite and gameplay were not run because no shell/test
+  runner is available here; add drones only after verifying this registry and
+  the rest of `npm test`.
 
 ## Current session — Beginner content editing guide (IMPLEMENTED, UNVERIFIED)
 
