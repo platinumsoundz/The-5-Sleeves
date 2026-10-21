@@ -2,8 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tileVariantFrame, sourceRectForView, buildBackground, notificationLayout } from '../public/src/renderer.js';
 import { drawEnemy } from '../public/src/enemyRenderer.js';
+import { coreStatusLabel } from '../public/src/characterRenderer.js';
 
 const WORLD = { width: 1000, height: 700 };
+
+test('safe-haven Core status says Charging! instead of confusing point totals', () => {
+  assert.equal(coreStatusLabel({ inCore: true, coreCharge: 0, corePoints: 0 }, 'haven'), 'Charging!');
+  assert.equal(coreStatusLabel({ inCore: false }, 'haven'), '');
+  assert.equal(coreStatusLabel({ inCore: true, coreCharge: 25, corePoints: 2 }, 'wild'), 'CHARGING 25% · 2 pts');
+});
 
 test('small enemies render as compact data-sized drones instead of full Warden sprites', () => {
   const rectangles = [];
