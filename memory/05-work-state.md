@@ -3,7 +3,21 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (beginner content editing guide added; tests not run).
+Last updated: 2026-10-20 (enemy catalog and behavior registry added; tests not run).
+
+## Current session — Enemy content catalog and behavior registry (IMPLEMENTED, UNVERIFIED)
+
+- Added `server/content/enemies.js` with stable enemy IDs and the current Rust
+  Warden's unchanged base stats, tier scaling, size label and visuals.
+- Added `server/sim/enemy-registry.js` with common `spawnEnemy` and
+  `updateEnemies` entry points. Existing open-world, Expanse, arena and tower
+  spawns use the registry. The Warden patrol/shooting behavior remains in its
+  own simulation file; no new enemy types or balance changes were added.
+- Kept legacy Warden stat exports for existing imports and set spawned Warden
+  entities' explicit skill-point/core-charge rewards.
+- Added `test/enemy-catalog.test.js`; updated the beginner guide and its
+  regression test. The suite and gameplay were not run; add drones only after
+  verifying this registry and the rest of `npm test`.
 
 ## Current session — Beginner content editing guide (IMPLEMENTED, UNVERIFIED)
 
