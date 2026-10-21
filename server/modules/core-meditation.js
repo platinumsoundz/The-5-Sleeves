@@ -39,7 +39,8 @@ module.exports = {
           session = { x: player.x, y: player.y, activity: activityStamp(player), idleSince: now, nextRewardAt: now + IDLE_MS, inCore: false };
           sessions.set(player.id, session);
         }
-        const inside = zone.kind === 'haven' && player.hp > 0 && distance(player, CORE) <= CORE.radius;
+        const core = zone.core || CORE;
+        const inside = zone.kind === 'haven' && player.hp > 0 && distance(player, core) <= core.radius;
         if (inside && player.hp < player.maxHp && deltaSeconds > 0) {
           player.hp = Math.min(player.maxHp, player.hp + player.maxHp * CORE_HEAL_RATE * deltaSeconds);
         }
