@@ -3,7 +3,24 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (first small drone added; tests not run).
+Last updated: 2026-10-20 (Core feedback/starting-haven consistency; tests not run).
+
+## Current session — Cipher Core feedback and first-haven check (IMPLEMENTED, UNVERIFIED)
+
+- Safe-haven Core proximity now displays `Charging!` instead of the confusing
+  core-point percentage/count. The existing point readout remains for active
+  zones. Healing and the `inCore` state use the simulation's own Core position.
+- Added regression coverage checking that the starting Perimeter and every
+  other haven heal at their configured Core, plus renderer-label checks.
+  Tests and live gameplay were not run because no test runner/browser is
+  available; this does not yet prove the reported first-Core issue is resolved
+  on the hosted build.
+- Still requested, separate builds: remove forced landscape orientation;
+  move ordinary system notifications right and show earned credits in the
+  XP-style feed; audit account registration/login, lower password minimum to
+  six characters, and make account progress survive Render sleep/restarts.
+  Render filesystem persistence requires a persistent disk or database, not
+  just a login-code change.
 
 ## Current session — First small drone archetype (IMPLEMENTED, UNVERIFIED)
 
