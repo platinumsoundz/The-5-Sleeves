@@ -3,7 +3,43 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (Step 16 branded PWA icons; tests not run).
+Last updated: 2026-10-20 (owner-approved gameplay design added to roadmaps; no gameplay code changed).
+
+## Current session — Owner-approved wilderness, PvP, party and tower design (PLANNING ONLY)
+
+- Owner decisions recorded in `ROADMAP.md` and `ROADMAP-FUTURE.md`; none of
+  these gameplay systems are implemented by this documentation update.
+- Wilderness PvP is open between non-party players; party members are protected.
+  PvP death costs 10% total: 5% medical fee and 5% transferred from victim to
+  victor. All deaths incur the rounded-down 5% medical fee with no debt and
+  amount feedback. Party members in the same zone receive full XP/rewards and
+  copies of eligible drops. Respawn with a living party member, otherwise at a
+  safe zone. Towers remain PvE-only.
+- Five concurrent enemies maximum per road, with progressively larger enemy
+  rosters: small; small+medium; medium; medium+large; large. Centralize novice-
+  editable region levels, spawn caps/rosters, scaling and tower wave settings
+  in a commented balance file. Make wilderness larger/rewarding without an
+  arbitrary travel-time target. Towers should exceed preceding-road difficulty;
+  escalation uses a mix of stronger enemies, more enemies and/or more waves.
+  The sample first tower (5 small, 3 medium, boss) is only a draft.
+- Private tower run per party; solo queue for 30 seconds, with early start for
+  1–4 players. Occasionally one previously cleared tower can fail; repair it
+  with stronger party-level enemies. Do not erase clears or rewards; keep at
+  most one outage at once. Exact outage cadence/mixed-party scaling are open.
+- Long-term plan: players can eventually unlock all items/powers/skills while
+  choosing a limited active loadout. Field crafting/repair, temporary supplies,
+  weather/Fogline shifts and Sleeve Chips are owner-approved concepts, not yet
+  specified or implemented.
+- Owner's working story framing for later universe-rule review: humans clear
+  vents/install programs to maintain towers; towers regulate planetary
+  elements; Fogline relates to non-continuous tower operation; spirits linked
+  to towers can hide in chips/networks; player is a smart-sleeve wearer after
+  Ajaye publicized the towers. Drone hostility (“detect/destroy tech like
+  Sleeves”) is only a hypothesis and is parked for later. Do not update canon
+  as fact before reviewing source rules.
+- Storage provider selection remains deferred. Step 17 performance/gear work,
+  account login/password/storage fixes, right-side notifications and credit
+  feed styling remain unbuilt. No code was changed and tests were not run.
 
 ## Current session — Step 16: Branded PWA icons and optional orientation (IMPLEMENTED, UNVERIFIED)
 
