@@ -2,7 +2,7 @@
 // each tick; zones with no members skip broadcasting but keep stepping
 // (cheap: an empty zone has only wardens and echoes to move).
 const { distance, damageTarget, respawnPlayer, damageableTargets, isHostile, inSafeZone, applySlow } = require('./combat.js');
-const { updateWardens } = require('./wardens.js');
+const { updateEnemies } = require('./enemy-registry.js');
 const { updateObjectives } = require('./objectives.js');
 const { stepProjectiles } = require('./projectiles.js');
 const { spawnArchiveEcho, collectArchiveEchoes, MAX_ARCHIVE_ECHOES } = require('./echoes.js');
@@ -53,7 +53,7 @@ function stepZone(sim, now, deltaSeconds) {
   }
 
   // Hostile wardens patrol, chase and shoot.
-  updateWardens(sim, now, deltaSeconds);
+  updateEnemies(sim, now, deltaSeconds);
 
   // Domination relays flip to whoever stands on them uncontested.
   updateObjectives(sim, now, deltaSeconds);
