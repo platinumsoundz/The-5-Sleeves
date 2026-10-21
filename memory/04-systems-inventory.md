@@ -162,9 +162,10 @@ it committed and tested after running the full suite.)
 - **audioManager.js** — Web Audio SFX, mute toggle.
 - **hud.js** — top-level 3 px XP progress line and a compact level/credit/
   zone/ability summary; no duplicate health bar.
-- **PWA shell** — `public/manifest.json` configures standalone landscape
-  launch; `index.html` includes Apple home-screen metadata. Settings exposes
-  a standard Fullscreen API toggle with unsupported-browser guidance.
+- **PWA shell** — `public/manifest.json` configures standalone launch without
+  locking device orientation and references the 192×192 compass and 512×512
+  title PNG icons. `index.html` includes Apple home-screen metadata. Settings
+  exposes a standard Fullscreen API toggle with unsupported-browser guidance.
 - **fullscreen.js** — DOM-free fullscreen API state/toggle helper; safe to
   import in Node and handles browser rejection.
 - **config.js** — world/core/colour constants.
@@ -278,11 +279,11 @@ it committed and tested after running the full suite.)
   biome propagation, named tower landmarks and required baked sprite files;
   **added but unrun**.
 - PWA shell support: root `public/sw.js` registers on load, network-first
-  handles same-origin static GET requests, caches the app shell for offline
-  navigation, and bypasses `/api/`, `/socket.io/`, writes and cross-origin
-  requests. Manifest includes a scalable SVG app icon. `test/pwa.test.js`
-  covers metadata, registration, service-worker behavior and fullscreen;
-  **added but unrun**.
+  handles same-origin static GET requests, caches the app shell (manifest and
+  both branded PNG icons) for offline use, and bypasses `/api/`, `/socket.io/`,
+  writes and cross-origin requests. `test/pwa.test.js` covers icon dimensions,
+  unlocked orientation, metadata, registration, service-worker behavior and
+  fullscreen; **added but unrun**.
 - `test/input.test.js` covers touch-pointer mode switching after desktop-mode
   startup, plus existing joystick and controller binding regressions; **added
   but unrun**.
