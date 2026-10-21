@@ -7,6 +7,7 @@ const { ENEMY_CATALOG, RUST_WARDEN, SCAVENGER_DRONE } = require('../server/conte
 const { spawnEnemy, updateEnemies, BEHAVIORS } = require('../server/sim/enemy-registry.js');
 const { scaledStats } = require('../server/sim/wardens.js');
 const { WARDEN } = require('../server/sim/spec.js');
+const { damageTarget } = require('../server/sim/combat.js');
 
 test('enemy catalog preserves the existing Rust Warden stats and tier curve', () => {
   assert.equal(ENEMY_CATALOG['rust-warden'], RUST_WARDEN);
@@ -38,6 +39,7 @@ test('small drones spawn from catalog values, share registered patrol behavior, 
   assert.equal(SCAVENGER_DRONE.size, 'small');
   assert.equal(SCAVENGER_DRONE.spawnCount, 2);
   assert.equal(drone.behavior, warden.behavior);
+  assert.equal(drone.size, 'small');
   assert.equal(drone.hp, 35);
   assert.equal(drone.speed, 105);
   assert.equal(drone.skillPoints, 0);
@@ -51,6 +53,29 @@ test('small drones spawn from catalog values, share registered patrol behavior, 
     Math.random = originalRandom;
   }
   assert.notDeepEqual({ x: drone.x, y: drone.y }, before, 'the small drone patrol behavior updates it');
+});
+
+test('drone kill rewards honor zero skill points and its smaller XP/credit bounty', () => {
+  const killer = { id: 'player-1', kind: 'player', skillPoints: 0, coreCharge: 0, credits: 0, inventory: [] };
+  const drone = { id: 'drone-1', kind: 'ai', hp: 1, tier: 1, xp: 4, credits: 4, skillPoints: 0, coreCharge: 2, name: 'Scavenger Drone', x: 10, y: 10 };
+  const sim = {
+    kind: 'wild', ai: { [drone.id]: drone }, players: { [killer.id]: killer }, send() {},
+    host: {
+      applyXp(player, amount) { player.xp = (player.xp || 0) + amount; },
+      awardNearbyParty() {}, persistPlayer() {}, playerSockets: { [killer.id]: { emit() {} } }
+    }
+  };
+  const originalRandom = Math.random;
+  try {
+    Math.random = () => 0.99;
+    damageTarget(sim, drone, 2, killer);
+  } finally {
+    Math.random = originalRandom;
+  }
+  assert.equal(killer.skillPoints, 0);
+  assert.equal(killer.coreCharge, 2);
+  assert.equal(killer.credits, 4);
+  assert.equal(killer.xp, 4);
 });
 
 test('unknown enemy ids fail clearly instead of silently spawning the wrong type', () => {
