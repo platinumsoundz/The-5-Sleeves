@@ -21,11 +21,22 @@ test('road and tower entry UI both use catalog level bands', async () => {
   assert.deepEqual(zones.get('wild-perimeter').levelBand, [1, 4]);
   assert.deepEqual(zones.get('tower-1').levelBand, [5, 9]);
 
-  const [entranceUi, arrivalUi] = await Promise.all([
-    readFile(new URL('../public/src/modules/hub-world.js', import.meta.url), 'utf8'),
-    readFile(new URL('../public/src/uiManager.js', import.meta.url), 'utf8')
-  ]);
-  assert.match(entranceUi, /recommendedLevelLabel\(levelBand\)/);
-  assert.match(entranceUi, /zone\.levelBand/);
+  const arrivalUi = await readFile(new URL('../public/src/uiManager.js', import.meta.url), 'utf8');
+  const handlers = {};
+  const labels = [];
+  const draw = {
+    save() {}, translate() {}, rotate() {}, beginPath() {}, moveTo() {}, lineTo() {},
+    closePath() {}, fill() {}, stroke() {}, restore() {},
+    fillText(label) { labels.push(label); }
+  };
+  hubWorld.setup({ dom: () => ({ style: {} }), on: (event, handler) => { handlers[event] = handler; } });
+  handlers['render:world']({
+    ctx: draw, time: 0, state: {
+      zone: { id: 'haven-coast', kind: 'haven', exits: { east: 'wild-coast', north: 'tower-1' }, levelBand: [5, 9] },
+      localPlayer: {}, npcs: []
+    }
+  });
+  assert.ok(labels.includes('RECOMMENDED LEVEL: 5–9'), 'entrance gates draw the recommendation');
+  assert.ok(labels.includes('EAST ROAD') && labels.includes('TOWER GATE'));
   assert.match(arrivalUi, /recommendedLevelLabel\(zone\.levelBand\)/);
 });
