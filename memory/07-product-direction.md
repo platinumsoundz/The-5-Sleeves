@@ -25,6 +25,13 @@ builds — each becomes a roadmap item in the future-roadmap brainstorm
   seasons/books, name changes, server region picks. HARD RULE from canon:
   no pay-to-win — power has a cost in-universe, and selling power would
   break both game balance and the story's themes.
+- **Rewarded ads — first slice implemented, unverified (2026-10-21).**
+  AdSense H5 reward breaks only, on an explicit tap: +100 credits or a 90 s
+  shield overcharge in a safe city, and a 60 % revive after a tower death.
+  The server issues single-use tokens and enforces minimum watch time,
+  cooldowns and daily caps. Rules: never mid-combat, never automatic, never
+  grant without a `viewed` result, and never let a display/banner unit
+  masquerade as a reward — only rewarded inventory may compensate a player.
 - **Optional accounts — first slice implemented, unverified.** The
   plug-and-play `auth` module currently supports username + password with
   salted scrypt hashes, rate limits, HTTPS enforcement outside development,

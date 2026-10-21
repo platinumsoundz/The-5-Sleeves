@@ -3,9 +3,39 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: PROJECT_INDEX.md added as a compact code-navigation map.
+Last updated: Step 18 opt-in rewarded adverts added (implementation; verification deferred).
 
-## Current build — Codebase navigation index (DOCUMENTATION)
+## Current build — Opt-in rewarded adverts (IMPLEMENTED, UNVERIFIED)
+
+- **The AdSense tag is now in the page** — the owner's
+  `ca-pub-8267279636493149` script sits in `public/index.html` with
+  `data-ad-frequency-hint="90s"`, which is what enables the H5 games
+  `adBreak` rewarded API. Auto ads must stay OFF in the AdSense dashboard:
+  every break in this game is triggered by a tap, never automatically.
+- **Server owns the payout** — new `server/modules/rewarded-ads.js` issues a
+  single-use token on `ad:request`, enforces a 5 s minimum watch, a 3 min
+  token life, per-offer cooldowns and UTC-daily caps, then re-checks the
+  place/dead state before `ad:claim` pays. Rewards: +100 credits and a 90 s
+  shield overcharge in safe cities, plus a 60 % in-place revive during a
+  live tower run.
+- **Tower revive is an offer, not a pop-up** — a tower death opens a 12 s
+  window; the module holds `respawnAt` so the operative is not sent home
+  mid-ad. `ad:skip` returns them to the city immediately; `ad:abandon`
+  releases the hold when an ad is dismissed, blocked or unavailable.
+- **Client** — `public/src/modules/rewarded-ads.js` draws a compact
+  safe-city supply bar (never mid-combat) and the tower death panel;
+  `public/src/ads-rewarded.js` wraps `adConfig`/`adBreak` and resolves
+  "unavailable" instead of paying when no ad can play.
+- **Device testing** — `?ads=sim` fakes a completed view after the server's
+  minimum watch so the owner can check layout before AdSense approves the
+  site for games ads. URL flag only; normal players always need a real ad.
+- **Coverage** — `test/rewarded-ads.test.js` (8 tests) pins the no-instant
+  claim, single-use tokens, caps/cooldowns, shield timing, tower revive,
+  cross-zone refusal, abandon release and safety floors. **Not executed**
+  (owner batch pending). Only a module-boot smoke check was run.
+- Not committed, per the owner's deferred verification workflow.
+
+## Previous build — Codebase navigation index (DOCUMENTATION)
 
 - Added root `PROJECT_INDEX.md`, mapping features to primary source files and
   focused regression files. It is a navigation aid, not an alternate source of
@@ -643,12 +673,18 @@ system still needs its own build, tests and memory update.
 
 ## In progress
 
-- None. Step 17 (player palette + faction identity) is COMPLETE and green
-  (82/82), committed as this build. The three owner asks in this polish pass
-  (menu cleanup, per-region biomes, colour/faction identity) are now done.
+- **Step 18 rewarded adverts** is implemented but unverified: tests are
+  written (`test/rewarded-ads.test.js`) and were deliberately not executed
+  under the owner's batch-verification rule. Changes are uncommitted. The
+  in-page AdSense tag, the safe-city supply bar and the tower revive panel
+  still need an owner device check (and AdSense approval for games ads).
 
 ## What is left / next session
 
+- **Confirm ad inventory**: check the AdSense dashboard has games/rewarded
+  ads enabled and Auto ads OFF, then load the game with `?ads=sim` to check
+  the supply bar and tower death panel on a phone. Without games-ad approval
+  `adBreak` is absent and the buttons correctly refuse to pay.
 - **Owner device check.** Verify portrait + landscape on a real phone: title
   faction picker, paperdoll slot filtering, skill-node taps, suit swatches,
   and the six region backgrounds (spawn grass, coast water, scorched earth,

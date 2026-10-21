@@ -46,6 +46,7 @@ adds a primary entry point.
 | Environmental hazards | `server/modules/zone-hazards.js` | `test/zone-hazards.test.js` |
 | Cipher memory / tower dialogue | `server/modules/cipher-companion-memory.js`, `public/src/modules/cipher-companion.js` | `test/cipher-companion.test.js`, `test/endgame.test.js` |
 | Match recording / spectating | `server/modules/spectate-replay.js` | `test/spectate.test.js` |
+| Opt-in rewarded ads (credits, shield, tower revive) | `server/modules/rewarded-ads.js`, `public/src/modules/rewarded-ads.js`, `public/src/ads-rewarded.js` | `test/rewarded-ads.test.js` |
 
 ## Client feature lookup
 

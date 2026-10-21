@@ -248,6 +248,13 @@ it committed and tested after running the full suite.)
 - **world-services** (priority 25) — unlocked-city fast travel and world map.
 - **tower-services** (priority 30) — three-wave tower runs, rewards and
   east-road unlocks.
+- **rewarded-ads** (priority 45) — opt-in AdSense supply transmissions.
+  Issues one single-use token per operative for `ad:request`, then pays
+  `ad:claim` only after a 5 s minimum watch, with a 3 min token life,
+  per-offer cooldowns and UTC-daily caps. Offers: +100 credits and a 90 s
+  shield overcharge inside safe cities, plus a 60 % in-place revive on a
+  live tower death (12 s offer window, `ad:skip` returns to the city,
+  `ad:abandon` releases the hold). **Implemented, unverified.**
 - **spectate-replay** (priority 70) — rolling 60 s snapshot buffer per
   active zone (`GET /api/replay/:zoneId`) and observer sockets
   (`spectate:join`) that watch a zone without joining its roster.
@@ -270,6 +277,14 @@ it committed and tested after running the full suite.)
   gates, tower rooms and the nearby `F · ...` interaction prompt.
 - **cipher-companion** (priority 45) — accessible hologram introduction after
   the operative's first tower clear; thanks them and offers future help.
+- **rewarded-ads** (priority 65) — safe-city supply bar (+100 credits, 90 s
+  shield) and a tower death panel offering a revive for a watched
+  transmission. Presentation/handshake only; the server module pays. Hides
+  itself over the title, menu, shop and arena panels. **Unverified.**
+- **ads-rewarded** (`public/src/ads-rewarded.js`, helper not a module) —
+  wraps the AdSense H5 `adConfig`/`adBreak` reward flow, resolves
+  "unavailable" when no ad can play, and supports `?ads=sim` for owner
+  device testing. Importable in Node (no top-level DOM).
 
 ## Tooling & tests
 

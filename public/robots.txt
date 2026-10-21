@@ -1,0 +1,12 @@
+# The game is public. AdSense needs to crawl the page and /ads.txt.
+User-agent: *
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /

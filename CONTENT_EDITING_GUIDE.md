@@ -19,6 +19,7 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 | XP for a specific activity and player-kill credits | `server/sim/spec.js` | `XP_*`, `CREDITS_*` |
 | XP needed per level | `server/progression.js` | `XP_LEVEL_BASE`, `XP_LEVEL_INCREMENT`, `MAX_LEVEL` |
 | XP reward scaling | `server.js` | `XP_SCALE` (environment setting) |
+| Rewarded-ad payouts, cooldowns, daily caps | `server/modules/rewarded-ads.js` | `OFFERS` (credits, shieldMs, reviveRatio, cooldownMs, dailyCap); `MIN_WATCH_MS` is the anti-abuse floor |
 | Relay capture speed and points per second | `server/sim/objectives.js` | `OBJECTIVE_CAPTURE_RATE`, `OBJECTIVE_SCORE_RATE` |
 | Match score limit and reset time | `server/sim/state.js`, `server/zones-catalog.js` | `scoreLimit`, `MATCH_RESET_DELAY` |
 | Wilderness enemy danger/level by region | `server/zones-catalog.js` | each `wild-*` zone's `danger` and `levelBand` |
