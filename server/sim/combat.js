@@ -93,7 +93,6 @@ function handleDown(sim, target, source) {
         killer.inventory.push(drop.id);
         sim.host.playerSockets[killer.id]?.emit('hub:notice', target.name + ' dropped ' + drop.name + '. Sell it at any merchant.');
       }
-      if (target.credits) sim.host.playerSockets[killer.id]?.emit('hub:notice', '+' + target.credits + ' credits salvaged.');
       sim.host.persistPlayer(killer);
       if (sim.arena && sim.arenaMode === 'tdm' && sim.alignment === 'pve') {
         sim.factionScores['co-op'] = (sim.factionScores['co-op'] || 0) + 1;
