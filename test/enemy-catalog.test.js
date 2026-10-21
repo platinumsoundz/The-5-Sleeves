@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const { ENEMY_CATALOG, RUST_WARDEN, SCAVENGER_DRONE } = require('../server/content/enemies.js');
 const { spawnEnemy, updateEnemies, BEHAVIORS } = require('../server/sim/enemy-registry.js');
 const { scaledStats } = require('../server/sim/wardens.js');
-const { WARDEN } = require('../server/sim/spec.js');
+const { WARDEN, MAX_WILD_ENEMIES } = require('../server/sim/spec.js');
 const { damageTarget } = require('../server/sim/combat.js');
 
 test('enemy catalog preserves the existing Rust Warden stats and tier curve', () => {
@@ -30,6 +30,17 @@ test('generic enemy entry points spawn and update the registered behavior', () =
   assert.equal(typeof BEHAVIORS[enemy.behavior].spawn, 'function');
   assert.equal(typeof BEHAVIORS[enemy.behavior].update, 'function');
   assert.doesNotThrow(() => updateEnemies(sim, 100, 0.05));
+});
+
+test('the shared registry enforces one five-enemy ceiling across all wild-road types', () => {
+  const sim = { kind: 'wild', next: { warden: 1 }, world: { width: 1000, height: 700 }, ai: {}, players: {}, danger: 1 };
+  for (let index = 0; index < MAX_WILD_ENEMIES; index += 1) {
+    const type = index % 2 ? 'scavenger-drone' : 'rust-warden';
+    assert.ok(spawnEnemy(sim, type), 'an enemy fills each available road slot');
+  }
+  assert.equal(MAX_WILD_ENEMIES, 5);
+  assert.equal(spawnEnemy(sim, 'rust-warden'), null, 'the next spawn is refused at the cap');
+  assert.equal(Object.keys(sim.ai).length, 5);
 });
 
 test('small drones spawn from catalog values, share registered patrol behavior, and earn no skill point', () => {
