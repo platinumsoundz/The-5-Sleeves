@@ -77,11 +77,13 @@ it committed and tested after running the full suite.)
 - **Enemy content and registry** — `server/content/enemies.js` holds stable
   enemy IDs and stats/scaling/visuals. `server/sim/enemy-registry.js`
   dispatches catalogued `spawnEnemy`/`updateEnemies` requests by behavior ID;
-  the patrol-shooter handler now supports Rust Wardens and the proposed small
-  Scavenger Drone. Wilderness counts use `MAX_WARDENS`/`MAX_DRONES`; server
-  and tower spawns route through the registry. Other behaviors and enemy-
-  specific loot policies remain future work. `test/enemy-catalog.test.js`
-  added, unrun.
+  the patrol-shooter handler supports Rust Wardens and the proposed small
+  Scavenger Drone. The registry enforces a shared five-enemy ceiling per wild
+  zone (`MAX_WILD_ENEMIES` in `server/sim/spec.js`); ordinary roads seed four
+  Wardens + one Drone, while the Eastern Expanse's five guardians fill its
+  population. Tower spawns remain uncapped by the road rule. Regression coverage
+  was added/updated in `test/enemy-catalog.test.js` and `test/wardens.test.js`;
+  execution is deferred for the owner's later batch.
 ## Server modules (`server/modules/`)
 
 - **archive-terminals** — 3 canon-lore terminals (Transit Manifest,
