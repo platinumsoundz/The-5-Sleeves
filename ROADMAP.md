@@ -103,8 +103,11 @@ as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
   login issue, reduce the password minimum to six characters, and move progress
   off Render Free's ephemeral filesystem after the owner selects a durable
   storage provider.
-- [ ] **Notification polish** — move system notices right; show earned credits
-  in the XP-style feed while preserving blue story/log/quest notices.
+- [~] **Notification polish** — ordinary system notices now use a dedicated
+  right-side safe-area toast; archive/story notices keep their blue left slot.
+  The auto-discovered `credit-feedback` module detects authoritative balance
+  increases and adds `+N CREDITS` to the existing XP-style HUD feed. Regression
+  tests are added but unrun; browser/device checks remain pending.
 
 ## Conventions
 - `npm test` runs the node test suite (`test/`).
