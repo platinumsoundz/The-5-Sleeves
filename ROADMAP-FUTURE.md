@@ -125,12 +125,17 @@ scaling decisions), budget for hosting/monitoring.
   `memory/02-universe-canon.md`).
 - Sprite/art pass per zone once the palette is approved.
 
-## 7. Owner-approved gameplay design queue (NOT IMPLEMENTED)
+## 7. Owner-approved gameplay design queue (IN PROGRESS; most items unimplemented)
 
 Implement one system per build, with regression tests. Values below are owner
 direction unless marked draft/open; do not present these as shipped behavior.
 
 ### Regional wilderness, enemies and tower challenge
+
+- **Implemented UI slice, verification pending:** physical road/tower entrance
+  labels and zone-arrival toasts show the existing catalog recommended-level
+  bands. The new regression test has not been run. Broader progression, tuning
+  and enemy-content work below remains unimplemented.
 
 - Make each wilderness road larger and worth revisiting for XP and sellable
   loot, without making traversal empty or annoyingly long. No fixed crossing
