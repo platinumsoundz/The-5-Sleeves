@@ -106,7 +106,7 @@ it committed and tested after running the full suite.)
 - **sleeve-skills** — server-validated skill-node unlocks; spends skill
   points only when the parent chain is complete.
 
-## Client core (`public/client.js` + `public/src/`, 20 modules)
+## Client core (`public/client.js` + `public/src/`)
 
 - **camera.js** — follow, look-ahead, auto/scroll/key zoom, shake hook,
   viewport culling, minimap.
@@ -135,11 +135,14 @@ it committed and tested after running the full suite.)
 - **controllerNavigation.js** — shared gamepad button map, focus navigation,
   topmost modal detection and gameplay input lock.
 - **uiManager.js** — title/join + boot-status line, MENU coordinator
-  (seven pages), shop + arena panels, welcome/toast lifecycle, controller-
-  accurate HUD hints, Escape/B-button back handling for dialogs and menus,
-  party widget + minimap, collapsible chat and chat-name action popup. Zone
-  arrival toasts include recommended-level bands for wilderness/towers and
-  identify the next challenge from a safe city (implementation unverified).
+  (seven pages), shop + arena panels, controller-accurate HUD hints, dialogs,
+  party widget/minimap and collapsible chat. Ordinary system notices use a
+  dedicated right-side toast; archive/story notices remain blue on the left.
+  Zone arrival toasts include recommended-level bands (unverified).
+- **credit-feedback.js client module** — watches server snapshots for increased
+  operative credits and adds a gold `+N CREDITS` entry to the existing XP-style
+  feed. It does not alter balances or rewards; implementation and test are
+  unverified.
 - **hub-world.js** — physical city NPCs, road gates and tower landmarks; road
   and tower entrance gates show the catalog recommended-level band. Uses the
   shared pure label helper in `public/src/level-recommendation.js` (unverified).
