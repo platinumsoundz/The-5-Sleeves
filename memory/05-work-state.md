@@ -13,6 +13,10 @@ Last updated: PROJECT_INDEX.md added as a compact code-navigation map.
 - Linked the index from `AGENTS.md` and `memory/00-index.md` so future agents
   can find it before broad searches. No tests were run for this documentation-
   only addition.
+- Recorded the owner's active batch-verification preference in `AGENTS.md` and
+  `memory/01-session-protocol.md`: add regression coverage as systems are built,
+  but defer test execution and prompts until the owner requests the batch; keep
+  unverified accumulated changes uncommitted.
 
 ## Previous build — Five-enemy wilderness cap (IMPLEMENTED, UNVERIFIED)
 
