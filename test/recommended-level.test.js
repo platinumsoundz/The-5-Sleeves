@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { recommendedLevelLabel } from '../public/src/level-recommendation.js';
+import hubWorld from '../public/src/modules/hub-world.js';
 
 const require = createRequire(import.meta.url);
 const { zoneCatalog } = require('../server/zones-catalog.js');
