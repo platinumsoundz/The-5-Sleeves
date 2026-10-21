@@ -8,6 +8,10 @@ import {
   activateFocusedMenuItem, dispatchUiBack, uiBlocksGameplay
 } from './controllerNavigation.js';
 
+export function inputModeForPointer(pointerType) {
+  return pointerType === 'touch' ? 'touch' : null;
+}
+
 export function stickVector(dx, dy, max = 52, deadZone = 5) {
   const length = Math.hypot(dx, dy);
   if (!Number.isFinite(length) || length < deadZone || max <= 0) return { x: 0, y: 0 };
@@ -23,6 +27,13 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   let padVector = { x: 0, y: 0 }, previousButtons = [];
   const stick = { vector: { x: 0, y: 0 } };
   const setMode = (next) => { mode = next; onMode(next); };
+  // Some iPads expose desktop-class capabilities and miss the startup touch check.
+  window.addEventListener('pointerdown', (event) => {
+    const pointerMode = inputModeForPointer(event.pointerType);
+    if (pointerMode) setMode(pointerMode);
+  }, { passive: true });
+  // Keep older Safari touch events covered; repeated mode updates are harmless.
+  window.addEventListener('touchstart', () => setMode('touch'), { passive: true });
   let uiBlocked = uiBlocksGameplay();
   const isUiBlocked = () => uiBlocked;
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
