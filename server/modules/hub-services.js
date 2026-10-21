@@ -176,7 +176,7 @@ module.exports = {
       recalcGear(player);
       ctx.persistPlayer(player);
       socket.emit('shop:update', shopPayload(player));
-      socket.emit('hub:notice', 'Sold ' + item.name + ' for ' + item.sell + ' credits.');
+      socket.emit('hub:notice', 'Sold ' + item.name + '.');
       zone.broadcast();
     });
 
