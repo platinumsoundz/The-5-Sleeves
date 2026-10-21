@@ -3,7 +3,19 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (Core feedback/starting-haven consistency; tests not run).
+Last updated: 2026-10-20 (Step 16 branded PWA icons; tests not run).
+
+## Current session — Step 16: Branded PWA icons and optional orientation (IMPLEMENTED, UNVERIFIED)
+
+- Added `public/icon_5sleeves_compass.png` (192×192) and
+  `public/icon_5sleeves_title.png` (512×512), supplied by the owner. Updated
+  the manifest to use both PNG icons and removed the landscape orientation
+  lock so the app follows device rotation.
+- Bumped the service-worker shell cache to v2 and precached the new manifest
+  and icons so previously cached assets are retired and icons work offline.
+  Added PWA regressions for PNG signatures/dimensions, manifest metadata and
+  shell-cache entries. Tests/device installation checks were not run; verify
+  the new icon after refreshing or reinstalling the PWA.
 
 ## Current session — Cipher Core feedback and first-haven check (IMPLEMENTED, UNVERIFIED)
 
@@ -15,12 +27,12 @@ Last updated: 2026-10-20 (Core feedback/starting-haven consistency; tests not ru
   Tests and live gameplay were not run because no test runner/browser is
   available; this does not yet prove the reported first-Core issue is resolved
   on the hosted build.
-- Still requested, separate builds: remove forced landscape orientation;
-  move ordinary system notifications right and show earned credits in the
-  XP-style feed; audit account registration/login, lower password minimum to
-  six characters, and make account progress survive Render sleep/restarts.
-  Render filesystem persistence requires a persistent disk or database, not
-  just a login-code change.
+- Still requested, separate builds: move ordinary system notifications right
+  and show earned credits in the XP-style feed; audit account
+  registration/login, lower password minimum to six characters, and make
+  account progress survive Render sleep/restarts. Render filesystem
+  persistence may require a persistent disk or database, not just a login-code
+  change.
 
 ## Current session — First small drone archetype (IMPLEMENTED, UNVERIFIED)
 
