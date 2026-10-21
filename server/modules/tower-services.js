@@ -1,6 +1,6 @@
 // Tower rooms: three waves of scaled Rust Wardens, then the tower is marked
 // complete for everyone inside. Clearing a city's tower opens its east road.
-const { spawnWarden } = require('../sim/wardens.js');
+const { spawnEnemy } = require('../sim/enemy-registry.js');
 const { TOWER_WAVES, TOWER_WAVE_SIZE, XP_TOWER_CLEAR, CREDITS_TOWER_CLEAR } = require('../sim/spec.js');
 const { markIntroSeen } = require('./cipher-companion-memory.js');
 
@@ -27,7 +27,7 @@ function spawnWave(zone, wave) {
     const radius = 145 + (i % 3) * 34;
     const x = Math.max(70, Math.min(zone.world.width - 70, tower.x + Math.cos(angle) * radius));
     const y = Math.max(80, Math.min(zone.world.height - 90, tower.y + Math.sin(angle) * radius));
-    spawnWarden(zone, { x, y, tier: zone.danger || zone.towerIndex || 1 });
+    spawnEnemy(zone, 'rust-warden', { x, y, tier: zone.danger || zone.towerIndex || 1 });
   }
 }
 
