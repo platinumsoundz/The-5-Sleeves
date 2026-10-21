@@ -150,6 +150,40 @@ export function drawPlayer(ctx, player, localId, time) {
   if (player.hp <= 0) { ctx.fillStyle = '#ff9eaa'; ctx.font = 'bold 10px system-ui'; ctx.fillText('DOWN', player.x, player.y + 31); }
 }
 
+// Choose a size-appropriate shape; small catalog enemies use a tiny procedural hull.
+export function drawEnemy(ctx, enemy, time) {
+  if (enemy.size === 'small') return drawSmallDrone(ctx, enemy, time);
+  return drawWarden(ctx, enemy, time);
+}
+
+function drawSmallDrone(ctx, drone, time) {
+  const radius = Math.max(5, drone.radius || 8);
+  const lift = Math.sin(time * .006 + drone.x) * 1.2;
+  ctx.save();
+  ctx.translate(drone.x, drone.y + lift);
+  ctx.rotate(Math.sin(time * .004 + drone.y) * .12);
+  ctx.fillStyle = drone.color || '#718894';
+  ctx.beginPath();
+  ctx.moveTo(-radius - 4, 0); ctx.lineTo(-2, -radius * .55); ctx.lineTo(2, -radius * .55);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(radius + 4, 0); ctx.lineTo(2, radius * .55); ctx.lineTo(-2, radius * .55);
+  ctx.closePath(); ctx.fill();
+  ctx.fillRect(-radius * .7, -radius * .55, radius * 1.4, radius * 1.1);
+  ctx.fillStyle = drone.accentColor || '#d5e8df';
+  ctx.fillRect(-2, -2, 4, 4);
+  ctx.restore();
+  if (drone.targetId) {
+    ctx.strokeStyle = 'rgba(255,190,120,.55)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(drone.x, drone.y, radius + 6, 0, Math.PI * 2); ctx.stroke();
+  }
+  if (drone.hp < drone.maxHp) {
+    const width = radius * 3;
+    ctx.fillStyle = '#302b27'; ctx.fillRect(drone.x - width / 2, drone.y - radius - 7, width, 3);
+    ctx.fillStyle = '#ffb768'; ctx.fillRect(drone.x - width / 2, drone.y - radius - 7, width * Math.max(0, drone.hp / drone.maxHp), 3);
+  }
+}
+
 // Hostile PvE drones. Baked sprite when available, procedural hull otherwise.
 export function drawWarden(ctx, warden, time) {
   const lift = Math.sin(time * .004 + warden.x) * 1.8;
