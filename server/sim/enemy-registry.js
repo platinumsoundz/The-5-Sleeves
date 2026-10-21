@@ -1,6 +1,6 @@
 // Shared spawn/update entry points let zones work with catalogued enemy types.
 const { ENEMY_CATALOG } = require('../content/enemies.js');
-const { spawnWarden, spawnPatrolShooter, updatePatrolShooters } = require('./wardens.js');
+const { spawnPatrolShooter, updatePatrolShooters } = require('./wardens.js');
 
 const BEHAVIORS = Object.freeze({
   'patrol-shooter': Object.freeze({ spawn: spawnPatrolShooter, update: updatePatrolShooters })
