@@ -4,6 +4,14 @@ These rules were set by the project owner. Every session — human or AI —
 follows them. They exist because of past failures; the "why" column is not
 optional reading.
 
+## Active owner workflow override
+
+The owner currently wants several roadmap builds accumulated before verification.
+Until they explicitly request a batch, do not execute tests or ask them to run
+tests. Keep adding regression coverage and record execution as deferred; leave
+unverified changes uncommitted. This active preference overrides the normal
+per-build test/commit cadence below until the owner requests batch verification.
+
 ## Before writing any code
 
 1. **Read this memory first.** Chapters 00 → 05, in order. Then read the
@@ -14,8 +22,10 @@ optional reading.
 
 ## How to build
 
-4. **One system per build.** Build, test, commit, update memory — then start
-   the next. Never leave two systems half-built.
+4. **One system per build.** Build one system, add regression coverage, and
+   update memory before starting the next. Normally verify and commit each
+   build; under the active owner override above, defer execution and commits
+   until the owner requests the combined verification batch.
 5. **Everything is a plug-and-play module** (chapter 03). The master scans
    module folders at boot; dropping a small file in adds the feature. No
    feature may require editing the core to be added.
@@ -25,8 +35,11 @@ optional reading.
 
 ## After every build (crash safety)
 
-7. **Run `npm test`** — the suite must be green before anything else.
-8. **Commit** with a message describing what the system does.
+7. Normally run `npm test` before a commit. Under the active owner override,
+   mark tests deferred and do not run them or prompt the owner to run them until
+   they explicitly request the batch.
+8. Commit only after the owner-authorized verification batch is green; keep
+   unverified accumulated changes uncommitted.
 9. **Update memory**: mark the item in `05-work-state.md`, add the system to
    `04-systems-inventory.md`, note any new rule in the right chapter, and
    bump `public/project-memory.json`. If a session is interrupted, the next
