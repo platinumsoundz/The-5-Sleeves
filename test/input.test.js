@@ -1,9 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { stickVector } from '../public/src/inputManager.js';
+import { readFileSync } from 'node:fs';
+import { inputModeForPointer, stickVector } from '../public/src/inputManager.js';
 import { GAMEPAD_ACTION_BUTTONS, GAMEPAD_BUTTONS, gamepadMenuDirection, nextFocusIndex } from '../public/src/controllerNavigation.js';
 
 const close = (a, b) => Math.abs(a - b) < 1e-9;
+
+test('touch pointer activity switches to touch controls even after desktop-mode startup', () => {
+  assert.equal(inputModeForPointer('touch'), 'touch');
+  assert.equal(inputModeForPointer('mouse'), null);
+  assert.equal(inputModeForPointer('pen'), null);
+  const source = readFileSync(new URL('../public/src/inputManager.js', import.meta.url), 'utf8');
+  assert.match(source, /addEventListener\('pointerdown'/);
+  assert.match(source, /addEventListener\('touchstart'/);
+});
 
 test('the analog stick covers all 360 degrees, including diagonals', () => {
   const angles = [0, 30, 45, 90, 135, 180, 225, 270, 315];
