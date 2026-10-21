@@ -420,7 +420,7 @@ export function createUIManager(actions) {
       const levelNote = recommendation ? ' · ' + recommendation : '';
       let message;
       if (kind === 'arena') message = 'Entering ' + (zone.name || 'the arena') + ' — combat live.';
-      else if (kind === 'haven') message = 'Entering ' + (zone.name || 'a safe city') + ' — no combat' + levelNote + '.';
+      else if (kind === 'haven') message = 'Entering ' + (zone.name || 'a safe city') + ' — no combat' + (recommendation ? ' · next challenge ' + recommendation : '') + '.';
       else if (kind === 'tower') message = 'Entering ' + (zone.name || 'the tower') + levelNote + ' — waves incoming.';
       else message = 'Entering ' + (zone.name || 'the wilderness') + levelNote + '.';
       showToast(message, 3200);
