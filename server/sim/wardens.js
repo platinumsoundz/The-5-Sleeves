@@ -68,6 +68,12 @@ function spawnWarden(sim, options = {}, definition = RUST_WARDEN) {
     coreCharge: definition.stats.coreCharge,
     credits: stats.credits,
     radius: definition.stats.radius,
+    shotCooldown: definition.stats.shotCooldown,
+    projectileSpeed: definition.stats.projectileSpeed,
+    projectileRadius: definition.stats.projectileRadius,
+    projectileLifetimeMs: definition.stats.projectileLifetimeMs,
+    projectileColor: definition.visuals.projectileColor,
+    projectileAccent: definition.visuals.projectileAccent,
     color: definition.visuals.color,
     accentColor: definition.visuals.accentColor
   };
@@ -95,15 +101,15 @@ function fireWardenShot(sim, warden, target, now) {
     hostile: true,
     x: warden.x + Math.cos(angle) * 20,
     y: warden.y + Math.sin(angle) * 20,
-    vx: Math.cos(angle) * WARDEN.projectileSpeed,
-    vy: Math.sin(angle) * WARDEN.projectileSpeed,
-    radius: 7,
+    vx: Math.cos(angle) * (warden.projectileSpeed || WARDEN.projectileSpeed),
+    vy: Math.sin(angle) * (warden.projectileSpeed || WARDEN.projectileSpeed),
+    radius: warden.projectileRadius || 7,
     damage: warden.damage || WARDEN.damage,
-    expiresAt: now + 1800,
-    color: RUST_WARDEN.visuals.projectileColor,
-    accentColor: RUST_WARDEN.visuals.projectileAccent
+    expiresAt: now + (warden.projectileLifetimeMs || 1800),
+    color: warden.projectileColor || RUST_WARDEN.visuals.projectileColor,
+    accentColor: warden.projectileAccent || RUST_WARDEN.visuals.projectileAccent
   };
-  spawnBurst(sim, { kind: 'muzzle', x: warden.x, y: warden.y, radius: 24, color: RUST_WARDEN.visuals.projectileColor, accentColor: RUST_WARDEN.visuals.projectileAccent, duration: 220, expiresAt: now + 220 });
+  spawnBurst(sim, { kind: 'muzzle', x: warden.x, y: warden.y, radius: 24, color: warden.projectileColor || RUST_WARDEN.visuals.projectileColor, accentColor: warden.projectileAccent || RUST_WARDEN.visuals.projectileAccent, duration: 220, expiresAt: now + 220 });
 }
 
 function respawnWarden(sim, warden) {
@@ -129,7 +135,7 @@ function updateWardens(sim, now, deltaSeconds) {
       const dx = target.x - warden.x, dy = target.y - warden.y;
       const away = Math.hypot(dx, dy) || 1;
       if (away > (warden.attackRange || WARDEN.attackRange) * 0.55) { moveX = dx / away; moveY = dy / away; }
-      if (away <= (warden.attackRange || WARDEN.attackRange) && now - warden.lastShotAt >= WARDEN.shotCooldown) {
+      if (away <= (warden.attackRange || WARDEN.attackRange) && now - warden.lastShotAt >= (warden.shotCooldown || WARDEN.shotCooldown)) {
         warden.lastShotAt = now;
         fireWardenShot(sim, warden, target, now);
       }
