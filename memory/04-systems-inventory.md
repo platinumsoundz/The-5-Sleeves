@@ -224,9 +224,12 @@ it committed and tested after running the full suite.)
   types are allowlisted server-side. Grants credits, skill points, items,
   skills and terminal reads through server-owned state.
 - **core-meditation** — safe-haven Cipher Cores heal nearby operatives at
-  3% max HP per second, capped at maximum health. The existing idle stipend
-  remains: 5 credits every 5 minutes after 30 seconds of inactivity, capped
-  at 20 credits per UTC day and persisted per operative.
+  3% max HP per second, capped at maximum health. The local safe-haven player
+  label now says `Charging!`; per-zone Core coordinates are used by healing
+  and the inCore state. The existing idle stipend remains: 5 credits every
+  5 minutes after 30 seconds of inactivity, capped at 20 credits per UTC day
+  and persisted per operative. New regression coverage checks every haven,
+  including the starting Perimeter.
 - **archive-terminals** (priority 50) — readable lore terminals per zone;
   first-read XP + core bounty, persisted per operative.
 - **hub-services** (priority 20) — city merchants, credits buy/sell, gear
