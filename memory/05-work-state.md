@@ -3,7 +3,18 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (PWA service worker and icon added; tests not run).
+Last updated: 2026-10-20 (iPad touch-mode detection fix; tests not run).
+
+## Current session — iPad touch controls (IMPLEMENTED, UNVERIFIED)
+
+- Touch pointerdown and legacy `touchstart` events now switch the input mode
+  to touch, even if an iPad starts with desktop/keyboard controls due to its
+  reported device capabilities. This hides PC key hints and reveals the
+  existing on-screen joystick/action buttons.
+- Added a pure mode-selection helper and regression coverage for touch,
+  mouse/pen, and both event listeners in `test/input.test.js`.
+- Tests and iPad Safari gameplay were not run. Verify with an actual iPad,
+  including the title screen, world movement and action buttons.
 
 ## Current session — Step 15: PWA service worker (IMPLEMENTED, UNVERIFIED)
 
