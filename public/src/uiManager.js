@@ -1,5 +1,6 @@
 import { DOMAINS, ITEM_CATALOG, PROFILE_KEY, WORLD_DEFAULT } from './config.js';
 import { createMenu } from './menu.js';
+import { recommendedLevelLabel } from './level-recommendation.js';
 
 export function createUIManager(actions) {
   const $ = (selector) => document.querySelector(selector);
@@ -415,11 +416,13 @@ export function createUIManager(actions) {
     zoneChanged(payload) {
       const zone = payload?.zone || {};
       const kind = zone.kind || (payload?.arena ? 'arena' : 'wild');
+      const recommendation = recommendedLevelLabel(zone.levelBand);
+      const levelNote = recommendation ? ' · ' + recommendation : '';
       let message;
       if (kind === 'arena') message = 'Entering ' + (zone.name || 'the arena') + ' — combat live.';
-      else if (kind === 'haven') message = 'Entering ' + (zone.name || 'a safe city') + ' — no combat.';
-      else if (kind === 'tower') message = 'Entering ' + (zone.name || 'the tower') + ' — waves incoming.';
-      else message = 'Entering ' + (zone.name || 'the wilderness') + (zone.levelBand ? ' — enemies LV ' + zone.levelBand[0] + '–' + zone.levelBand[1] : '') + '.';
+      else if (kind === 'haven') message = 'Entering ' + (zone.name || 'a safe city') + ' — no combat' + levelNote + '.';
+      else if (kind === 'tower') message = 'Entering ' + (zone.name || 'the tower') + levelNote + ' — waves incoming.';
+      else message = 'Entering ' + (zone.name || 'the wilderness') + levelNote + '.';
       showToast(message, 3200);
       if (menuController.isOpen()) menuController.refresh();
     },
