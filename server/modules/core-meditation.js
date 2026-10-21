@@ -73,7 +73,7 @@ module.exports = {
         player.meditationCredits += reward;
         session.nextRewardAt = now + REWARD_INTERVAL_MS;
         ctx.persistPlayer(player);
-        ctx.playerSockets()[player.id]?.emit('hub:notice', 'Cipher Core meditation: +' + reward + ' credits.');
+        ctx.playerSockets()[player.id]?.emit('hub:notice', 'Cipher Core meditation complete.');
         zone.broadcast();
       }
     });
