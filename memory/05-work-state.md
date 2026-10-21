@@ -3,9 +3,23 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: notification polish implemented; verification and project ledger pending.
+Last updated: five-enemy wilderness cap implemented; tests intentionally deferred for the owner's future batch.
 
-## Current build — Notification polish (IMPLEMENTED, UNVERIFIED)
+## Current build — Five-enemy wilderness cap (IMPLEMENTED, UNVERIFIED)
+
+- `MAX_WILD_ENEMIES = 5` is enforced centrally by `server/sim/enemy-registry.js`
+  across all catalogued enemy types in wild zones; arenas and PvE tower waves are
+  unchanged. Default ordinary roads seed four Rust Wardens and one Scavenger
+  Drone. The Eastern Expanse seeds its five existing guardians instead of also
+  receiving the ambient mix.
+- Added cap coverage in `test/enemy-catalog.test.js` and adjusted the default
+  population expectation in `test/wardens.test.js`. Tests are intentionally
+  deferred until the owner has accumulated multiple builds for one test pass.
+- No commit has been made. The machine-readable ledger remains behind because
+  GitHub access failed during its prior update; the owner asked to continue
+  building before the later batch verification.
+
+## Previous build — Notification polish (IMPLEMENTED, UNVERIFIED)
 
 - Ordinary system notices now use a dedicated safe-area position on the right;
   archive/story notices stay in a separate blue left-side toast. Added the
