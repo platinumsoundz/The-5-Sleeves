@@ -68,12 +68,13 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done
 These are design-approved backlog items, not shipped features. Keep each system
 as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
 
-- [~] **Regional wilderness progression** — entrance gate labels now show the
-  catalog's recommended level band for roads and towers, and arrival toasts
-  repeat it. This UI slice is implemented but unverified (tests not run). Still
-  pending: expand roads and make them rewarding to revisit; tune difficulty by
-  region; cap each road at five simultaneous enemies; centralize novice-editable
-  region rosters, level bands, enemy scaling and tower waves. Proposed road
+- [~] **Regional wilderness progression** — road/tower entrance labels show the
+  catalog's recommended level band. The shared enemy registry now enforces a
+  five-enemy cap per wild zone. Ordinary roads currently seed four Wardens and
+  one Scavenger Drone; the Eastern Expanse uses its five existing guardians
+  instead of extra ambient spawns. These slices are implemented but unverified.
+  Still pending: expand roads and make them rewarding to revisit; centralize and
+  tune novice-editable rosters, levels, scaling and tower waves. Proposed road
   roster: small; small + medium; medium; medium + large; large. New medium/large
   types and a boss remain unbuilt. Towers should be substantially harder than
   their preceding road; exact map sizes and wave counts need tuning.
