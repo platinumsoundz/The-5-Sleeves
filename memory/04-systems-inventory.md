@@ -133,8 +133,10 @@ it committed and tested after running the full suite.)
   Inventory, Party & Friends, Inbox, Map and Settings renderers.
 - **keybinds.js** — remappable combat/menu action keys with localStorage
   persistence and readable key labels.
-- **inputManager.js** — keyboard, unchanged touch joysticks/action buttons,
-  gamepad movement and D-pad/left-stick focus navigation. Controller bindings:
+- **inputManager.js** — keyboard, touch joysticks/action buttons, gamepad
+  movement and D-pad/left-stick focus navigation. Any touch pointer or legacy
+  `touchstart` switches out of desktop-control hints into visible touch mode,
+  including iPads that initially report desktop capabilities. Controller bindings:
   A interact/confirm, RT blast, B dash/back, Y shield, X/RB Sleeve ability;
   Start/Select opens or exits menus.
 - **shooting.js / shootingControls.js** — Settings-persisted Auto-Aim +
