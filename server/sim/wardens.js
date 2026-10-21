@@ -1,7 +1,9 @@
 // PvE: Rust Wardens — patrolling defence drones (canon: dormant tower
 // network defence). Wild roads scale them by danger tier; tower rooms spawn
 // controlled waves through spawnWarden(sim, { x, y, tier }).
-const { WARDEN, WARDEN_SCALING } = require('./spec.js');
+const { RUST_WARDEN } = require('../content/enemies.js');
+const WARDEN = RUST_WARDEN.stats;
+const WARDEN_SCALING = RUST_WARDEN.scaling;
 const { clampToWorld, distance, inSafeZone, spawnBurst } = require('./combat.js');
 const { CORE, PERIMETER_MARGIN } = require('./state.js');
 
@@ -31,7 +33,7 @@ function scaledStats(tier) {
   };
 }
 
-function spawnWarden(sim, options = {}) {
+function spawnWarden(sim, options = {}, definition = RUST_WARDEN) {
   const id = 'warden-' + sim.next.warden++;
   const spot = Number.isFinite(options.x) && Number.isFinite(options.y) ? { x: options.x, y: options.y } : wardenSpawnPoint(sim);
   const tier = options.tier || sim.danger || 1;
@@ -39,7 +41,9 @@ function spawnWarden(sim, options = {}) {
   const warden = {
     id,
     kind: 'ai',
-    name: WARDEN.name,
+    enemyType: definition.id,
+    behavior: definition.behavior,
+    name: definition.name,
     tier,
     level: stats.level,
     x: spot.x,
@@ -61,9 +65,9 @@ function spawnWarden(sim, options = {}) {
     attackRange: stats.attackRange,
     xp: stats.xp,
     credits: stats.credits,
-    radius: WARDEN.radius,
-    color: '#c98b3a',
-    accentColor: '#ffd9a0'
+    radius: definition.stats.radius,
+    color: definition.visuals.color,
+    accentColor: definition.visuals.accentColor
   };
   sim.ai[id] = warden;
   return warden;
@@ -94,10 +98,10 @@ function fireWardenShot(sim, warden, target, now) {
     radius: 7,
     damage: warden.damage || WARDEN.damage,
     expiresAt: now + 1800,
-    color: '#ffb266',
-    accentColor: '#ffe0b0'
+    color: RUST_WARDEN.visuals.projectileColor,
+    accentColor: RUST_WARDEN.visuals.projectileAccent
   };
-  spawnBurst(sim, { kind: 'muzzle', x: warden.x, y: warden.y, radius: 24, color: '#ffb266', accentColor: '#ffe0b0', duration: 220, expiresAt: now + 220 });
+  spawnBurst(sim, { kind: 'muzzle', x: warden.x, y: warden.y, radius: 24, color: RUST_WARDEN.visuals.projectileColor, accentColor: RUST_WARDEN.visuals.projectileAccent, duration: 220, expiresAt: now + 220 });
 }
 
 function respawnWarden(sim, warden) {
@@ -111,6 +115,7 @@ function respawnWarden(sim, warden) {
 
 function updateWardens(sim, now, deltaSeconds) {
   for (const warden of Object.values(sim.ai)) {
+    if (warden.enemyType !== RUST_WARDEN.id) continue;
     if (warden.hp <= 0) {
       if (now >= (warden.respawnAt || 0)) respawnWarden(sim, warden);
       continue;
