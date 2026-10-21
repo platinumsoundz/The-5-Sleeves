@@ -27,23 +27,23 @@ Last updated: 2026-10-20 (first small drone added; tests not run).
   Warden's unchanged base stats, tier scaling, size label and visuals.
 - Added `server/sim/enemy-registry.js` with common `spawnEnemy` and
   `updateEnemies` entry points. Existing open-world, Expanse, arena and tower
-  spawns use the registry. The Warden patrol/shooting behavior remains in its
-  own simulation file; no new enemy types or balance changes were added.
+  spawns use the registry. The patrol-shooter handler supports Warden and the
+  first small Scavenger Drone; Warden balance remains unchanged.
 - Kept legacy Warden stat exports for existing imports and set spawned Warden
   entities' explicit skill-point/core-charge rewards.
 - Added `test/enemy-catalog.test.js`; updated the beginner guide and its
   regression test. The suite and gameplay were not run because no shell/test
-  runner is available here; add drones only after verifying this registry and
-  the rest of `npm test`.
+  runner is available here; add more enemy types only after verifying this
+  registry and the rest of `npm test`.
 
 ## Current session — Beginner content editing guide (IMPLEMENTED, UNVERIFIED)
 
 - Added root `CONTENT_EDITING_GUIDE.md` mapping current editable enemy stats,
   item/weapon fields, loot tiers, XP/credit rewards, progression, region
   danger, and objective scoring to their actual source files.
-- Documented the current limitation: Rust Warden behavior is still specific
-  even though a data-driven enemy catalog/spawn-update registry has since been
-  added. New types still need a supported or newly registered AI behavior.
+- Documented the current limitation: Rust Warden patrol behavior was the
+  first supported registry behavior; the small Scavenger Drone now reuses it.
+  New types still need a supported or newly registered AI behavior.
 - New animals/monsters and other enemy families are proposed game content
   unless the canon source documents them. Owner requested climate/fog-altered
   fauna; label and review that content rather than treating it as comic canon.
