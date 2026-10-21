@@ -109,7 +109,7 @@ it committed and tested after running the full suite.)
 - **sleeve-skills** — server-validated skill-node unlocks; spends skill
   points only when the parent chain is complete.
 
-## Client core (`public/client.js` + `public/src/`, 19 modules)
+## Client core (`public/client.js` + `public/src/`, 20 modules)
 
 - **camera.js** — follow, look-ahead, auto/scroll/key zoom, shake hook,
   viewport culling, minimap.
