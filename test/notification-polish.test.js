@@ -22,9 +22,10 @@ test('authoritative credit increases appear in the existing XP-style HUD feed', 
 });
 
 test('ordinary notices move right while archive/story toasts keep their blue left slot', async () => {
-  const [html, ui] = await Promise.all([
+  const [html, ui, client] = await Promise.all([
     readFile(new URL('../public/index.html', import.meta.url), 'utf8'),
-    readFile(new URL('../public/src/uiManager.js', import.meta.url), 'utf8')
+    readFile(new URL('../public/src/uiManager.js', import.meta.url), 'utf8'),
+    readFile(new URL('../public/client.js', import.meta.url), 'utf8')
   ]);
   const systemRule = html.match(/#system-toast\s*\{([^}]+)\}/)?.[1] || '';
   const archiveRule = html.match(/#archive-toast\s*\{([^}]+)\}/)?.[1] || '';
@@ -33,5 +34,5 @@ test('ordinary notices move right while archive/story toasts keep their blue lef
   assert.match(archiveRule, /left:var\(--safe-l\)/);
   assert.match(archiveRule, /#dcedff/);
   assert.match(ui, /showArchiveToast: showArchiveToast/);
-  assert.match(ui, /notice\(message\) \{ showToast\(message, 3200\); \}/);
+  assert.match(ui, /notice\(message\) \{ showToast\(message, 3200\); \}/);\n  assert.doesNotMatch(client, /at:\\s*Date\\.now\\(\\)/, 'HUD feed timestamps use the animation-frame clock');
 });
