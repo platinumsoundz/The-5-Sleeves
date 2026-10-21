@@ -11,8 +11,11 @@ test('touch pointer activity switches to touch controls even after desktop-mode 
   assert.equal(inputModeForPointer('mouse'), null);
   assert.equal(inputModeForPointer('pen'), null);
   const source = readFileSync(new URL('../public/src/inputManager.js', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
   assert.match(source, /addEventListener\('pointerdown'/);
   assert.match(source, /addEventListener\('touchstart'/);
+  assert.match(html, /body\[data-input-mode=\"keyboard\"\].*#joystick.*body\[data-input-mode=\"controller\"\]/);
+  assert.match(html, /body\[data-input-mode=\"keyboard\"\] #control-hints, body\[data-input-mode=\"controller\"\] #control-hints/);
 });
 
 test('the analog stick covers all 360 degrees, including diagonals', () => {
