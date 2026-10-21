@@ -7,16 +7,26 @@ const manifest = JSON.parse(readFileSync(new URL('../public/manifest.json', impo
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
 const serviceWorker = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8');
 
-test('PWA manifest declares standalone landscape launch and requested colors', () => {
+test('PWA manifest uses branded PNG icons and leaves orientation unlocked', () => {
   assert.deepEqual(manifest, {
     short_name: '5 Sleeves', name: 'The 5 Sleeves Online', start_url: '/',
-    display: 'standalone', orientation: 'landscape',
+    display: 'standalone',
     background_color: '#0d1117', theme_color: '#00ffff',
     icons: [
-      { src: '/assets/app-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-      { src: '/assets/app-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
+      { src: 'icon_5sleeves_compass.png', sizes: '192x192', type: 'image/png' },
+      { src: 'icon_5sleeves_title.png', sizes: '512x512', type: 'image/png' }
     ]
   });
+  assert.equal(manifest.orientation, undefined, 'portrait and landscape follow the device');
+  for (const [path, expectedSize] of [
+    ['../public/icon_5sleeves_compass.png', 192],
+    ['../public/icon_5sleeves_title.png', 512]
+  ]) {
+    const png = readFileSync(new URL(path, import.meta.url));
+    assert.equal(png.toString('hex', 0, 8), '89504e470d0a1a0a', path + ' is a PNG');
+    assert.equal(png.readUInt32BE(16), expectedSize, path + ' width');
+    assert.equal(png.readUInt32BE(20), expectedSize, path + ' height');
+  }
   assert.match(html, /<link rel=\"manifest\" href=\"\/manifest\.json\"/);
   assert.match(html, /name=\"apple-mobile-web-app-capable\" content=\"yes\"/);
   assert.match(html, /name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\"/);
@@ -33,6 +43,9 @@ test('service worker uses network-first static requests and bypasses multiplayer
   assert.match(serviceWorker, /await fetch\(request\)/);
   assert.match(serviceWorker, /caches\.match\(request\)/);
   assert.match(serviceWorker, /cache\.addAll\(APP_SHELL\)/);
+  assert.match(serviceWorker, /five-sleeves-shell-v2/);
+  assert.match(serviceWorker, /icon_5sleeves_compass\.png/);
+  assert.match(serviceWorker, /icon_5sleeves_title\.png/);
 });
 
 test('fullscreen toggle requests and exits the standard document fullscreen API', async () => {
