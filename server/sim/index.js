@@ -52,7 +52,7 @@ function stepZone(sim, now, deltaSeconds) {
     }
   }
 
-  // Hostile wardens patrol, chase and shoot.
+  // Server-side patrol shooters acquire targets and fire hostile projectiles.
   updateEnemies(sim, now, deltaSeconds);
 
   // Domination relays flip to whoever stands on them uncontested.
