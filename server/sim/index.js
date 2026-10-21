@@ -30,7 +30,8 @@ function stepZone(sim, now, deltaSeconds) {
       if (player.respawnAt && now >= player.respawnAt) respawnPlayer(sim, player);
       continue;
     }
-    player.inCore = distance(player, CORE) <= CORE.radius;
+    const core = sim.core || CORE;
+    player.inCore = distance(player, core) <= core.radius;
     if (collectArchiveEchoes(sim, player)) echoesChanged = true;
     if (now < player.burnUntil) {
       damageTarget(sim, player, (player.burnPower || 0) * deltaSeconds, sim.players[player.burnSourceId], 'burn', { announce: false });
