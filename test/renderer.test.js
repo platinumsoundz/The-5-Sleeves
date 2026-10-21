@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tileVariantFrame, sourceRectForView, buildBackground, notificationLayout } from '../public/src/renderer.js';
-import { drawEnemy } from '../public/src/characterRenderer.js';
+import { drawEnemy } from '../public/src/enemyRenderer.js';
 
 const WORLD = { width: 1000, height: 700 };
 
