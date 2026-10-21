@@ -66,6 +66,15 @@ not part of the canon map.
 - **Domination relays** — "the tower recalibrates" framing.
 - **The Core** — the tower's Cipher Conduit.
 
+## Proposed game enemy content (not established comic canon)
+
+- **Scavenger Drone** — a small patrol-shooter added to the game at the
+  owner's request. It is a game-enemy archetype, not a newly asserted comic
+  character or canon faction.
+- Additional drone variants, AI bots, guardians, bosses, and climate/fog-
+  altered animals or monsters remain proposed game content unless the source
+  canon is reviewed and confirms them. Do not invent their comic history.
+
 ## Status labels (from the bible — do not upgrade silently)
 
 `ESTABLISHED CANON` · `WORKING INTERPRETATION` · `PROPOSED CANON` ·
