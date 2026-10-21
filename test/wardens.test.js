@@ -65,9 +65,12 @@ test('wardens patrol the ruins and broadcast their state', async (t) => {
   const operative = await connect('Scout' + Date.now().toString(36));
   sockets.push(operative.socket);
 
-  const aiState = await once(operative.socket, 'ai', (payload) => Object.keys(payload || {}).length >= 4, 5000, 'four wardens');
-  const wardens = Object.values(aiState);
-  assert.equal(wardens.length, 4, 'the ruins are patrolled by four wardens');
+  const aiState = await once(operative.socket, 'ai', (payload) => Object.keys(payload || {}).length >= 6, 5000, 'four wardens and two small drones');
+  const allEnemies = Object.values(aiState);
+  const wardens = allEnemies.filter((enemy) => enemy.name === 'Rust Warden');
+  const drones = allEnemies.filter((enemy) => enemy.enemyType === 'scavenger-drone');
+  assert.equal(wardens.length, 4, 'the ruins retain four wardens');
+  assert.equal(drones.length, 2, 'the new small drone group also patrols the ruins');
   for (const warden of wardens) {
     assert.equal(warden.kind, 'ai');
     assert.equal(warden.name, 'Rust Warden');
@@ -76,7 +79,7 @@ test('wardens patrol the ruins and broadcast their state', async (t) => {
     assert.ok(warden.radius > 0 && warden.maxHp > 0);
   }
 
-  // At least one drone should be walking somewhere during a patrol window.
+  // At least one enemy should be walking somewhere during a patrol window.
   const before = positions(aiState);
   const moved = await once(operative.socket, 'ai', (payload) => positions(payload || {}) !== before, 6000, 'warden patrol movement');
   assert.notEqual(positions(moved), before, 'wardens patrol on their own');
