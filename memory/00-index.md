@@ -20,6 +20,7 @@ authoritative narrative.
 ## Related files
 
 - `AGENTS.md` (repo root) — session bootstrap; points here.
+- `PROJECT_INDEX.md` (repo root) — compact code/test navigation map; does not replace source, canon, roadmap, or work-state files.
 - `ROADMAP.md` — the build plan with status markers.
 - `lore/` — the universe canon documents (bible + story outline).
 - `public/project-memory.json` — machine-readable ledger (client-served).
