@@ -14,6 +14,6 @@ test('beginner content guide points to enemy, item, XP, money and scoring contro
 
 test('guide warns that new enemies need behavior and proposed fauna is not comic canon', () => {
   assert.match(guide, /Adding enemy types: important current limitation/);
-  assert.match(guide, /Adding a row of stats alone will not make a new enemy work/);
+  assert.match(guide, /Adding a row of stats alone will\s+not make a new enemy work/);
   assert.match(guide, /proposed game content/);
 });
