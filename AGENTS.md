@@ -22,6 +22,7 @@ developer session must read `memory/00-index.md` first**, then follow
 
 ## Quick reference
 
+- `PROJECT_INDEX.md` — compact map from features to owning code and focused tests.
 - `npm test` — must be green before every commit (38+ tests).
 - `npm start` / `npm run dev` — run the server (port 3000).
 - `npm run sprites` — regenerate baked pixel art.
