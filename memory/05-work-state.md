@@ -3,7 +3,22 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (iPad touch-mode detection fix; tests not run).
+Last updated: 2026-10-20 (beginner content editing guide added; tests not run).
+
+## Current session — Beginner content editing guide (IMPLEMENTED, UNVERIFIED)
+
+- Added root `CONTENT_EDITING_GUIDE.md` mapping current editable enemy stats,
+  item/weapon fields, loot tiers, XP/credit rewards, progression, region
+  danger, and objective scoring to their actual source files.
+- Documented the current limitation: Rust Warden behavior/spawning is
+  hard-coded, so new enemy stats alone cannot create working enemies. Next
+  content-system build should establish a small data-driven enemy catalog and
+  behavior interface before adding drones, other AI, and bosses.
+- New animals/monsters and other enemy families are proposed game content
+  unless the canon source documents them. Owner requested climate/fog-altered
+  fauna; label and review that content rather than treating it as comic canon.
+- Added `test/content-guide.test.js`; tests were not run because no test
+  runner is available. No gameplay values or behavior changed in this slice.
 
 ## Current session — iPad touch controls (IMPLEMENTED, UNVERIFIED)
 
