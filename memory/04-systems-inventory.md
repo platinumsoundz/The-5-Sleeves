@@ -261,13 +261,15 @@ it committed and tested after running the full suite.)
 
 ## Tooling & tests
 
-- Root `CONTENT_EDITING_GUIDE.md` maps beginner edits for Warden stats,
+- Root `CONTENT_EDITING_GUIDE.md` maps beginner edits for enemy stats/counts,
   item/loot definitions, XP/credits, score tuning and regional danger. It
-  documents the enemy catalog/registry and that new types still need an
-  implemented behavior handler.
+  documents the enemy catalog/registry and that new behaviors need a handler.
 - `test/content-guide.test.js` checks guide coverage and canon guardrails;
-  `test/enemy-catalog.test.js` checks current Warden stat parity, spawn/update
-  dispatch and clear errors for unknown IDs; both **added but unrun**.
+  `test/enemy-catalog.test.js` checks Warden parity, drone stats/spawn/patrol,
+  zero-skill-point rewards, registry dispatch and unknown-ID errors;
+  both **added but unrun**. `test/wardens.test.js` now expects four Wardens and
+  two small drones in a default wilderness zone. `test/renderer.test.js` checks
+  the drone is rendered at small size; unrun.
 - `npm start` / `npm run dev` (watch) / `npm test` (node --test) /
   `npm run sprites` (bake art via `tools/generate-sprites.js`).
 - `tools/png.js` — dependency-free PNG writer + supersampled rasteriser.
