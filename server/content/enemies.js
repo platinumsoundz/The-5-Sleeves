@@ -7,7 +7,7 @@ const RUST_WARDEN = Object.freeze({
   behavior: 'warden-patrol-shooter',
   stats: Object.freeze({
     hp: 90, speed: 74, aggro: 330, attackRange: 240, shotCooldown: 1500,
-    damage: 12, projectileSpeed: 300, radius: 15,
+    damage: 12, projectileSpeed: 300, projectileRadius: 7, projectileLifetimeMs: 1800, radius: 15,
     xp: 12, skillPoints: 1, coreCharge: 10, credits: 14
   }),
   scaling: Object.freeze({
