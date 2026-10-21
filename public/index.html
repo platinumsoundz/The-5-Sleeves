@@ -108,8 +108,9 @@
       body[data-input-mode="keyboard"] #joystick, body[data-input-mode="keyboard"] #actions, body[data-input-mode="keyboard"] #aim-joystick, body[data-input-mode="controller"] #joystick, body[data-input-mode="controller"] #actions, body[data-input-mode="controller"] #aim-joystick { display:none; }
       .control-badge { display:inline-block; padding:1px 5px; border:1px solid #54aeaa; border-radius:5px; color:#8dffe7; font-weight:800; }
       .domain-option { text-align:left; font-size:12px; line-height:1.4; }
-      #archive-toast { position:fixed; z-index:4; top:calc(var(--safe-t) + var(--radar-h) + 132px); left:var(--safe-l); transform:translateY(-12px); width:min(300px,calc(100vw - var(--safe-l) - var(--safe-r))); padding:9px 11px; border:1px solid rgba(116,255,224,.7); border-radius:9px; background:rgba(5,19,29,.95); color:#dffff8; text-align:left; font-size:11.5px; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 0 20px rgba(49,232,197,.16); }
-      #archive-toast.visible { opacity:1; transform:translateY(0); }
+      #archive-toast { position:fixed; z-index:4; top:calc(var(--safe-t) + var(--radar-h) + 132px); left:var(--safe-l); transform:translateY(-12px); width:min(300px,calc(100vw - var(--safe-l) - var(--safe-r))); padding:9px 11px; border:1px solid rgba(95,184,255,.7); border-radius:9px; background:rgba(5,19,29,.95); color:#dcedff; text-align:left; font-size:11.5px; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 0 20px rgba(75,150,255,.18); }
+      #system-toast { position:fixed; z-index:4; top:calc(var(--safe-t) + var(--radar-h) + 132px); right:var(--safe-r); left:auto; transform:translateY(-12px); width:min(300px,calc(100vw - var(--safe-l) - var(--safe-r))); padding:9px 11px; border:1px solid rgba(255,224,150,.7); border-radius:9px; background:rgba(5,19,29,.95); color:#ffe9b0; text-align:right; font-size:11.5px; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 0 20px rgba(255,190,70,.16); }
+      #archive-toast.visible, #system-toast.visible { opacity:1; transform:translateY(0); }
       #party-widget { position:fixed; z-index:3; top:auto; bottom:calc(var(--joy) + var(--safe-b) + 34px); left:var(--safe-l); width:min(220px,calc(100vw - 20px)); padding:9px; border:1px solid rgba(100,242,212,.55); border-radius:10px; background:rgba(6,18,28,.9); color:#dcfff6; }
       #party-widget.hidden { display:none; }
       .party-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:12px; font-weight:800; letter-spacing:.08em; color:#76ffe0; }
@@ -306,7 +307,7 @@
       @media (max-width: 620px) {
         :root { --hud-h: 36px; --radar-w: clamp(80px, 24vw, 120px); --joy: clamp(96px, 28vw, 120px); }
         #top-right #hud-controls button { padding: 6px 8px; font-size: 10px; }
-        #archive-toast { top: calc(var(--safe-t) + var(--radar-h) + 132px); font-size: 11px; padding: 8px 10px; }
+        #archive-toast, #system-toast { top: calc(var(--safe-t) + var(--radar-h) + 132px); font-size: 11px; padding: 8px 10px; }
         #party-invite-toast { top: calc(var(--safe-t) + var(--radar-h) + 48px); }
         #party-widget { width: min(204px, 56vw); padding: 8px; }
         #party-minimap { height: 62px; }
@@ -409,6 +410,7 @@
       <div id="hud-center" aria-label="Level, credits, zone and Sleeve ability" role="img"></div>
     </div>
     <div id="archive-toast" role="status" aria-live="polite"></div>
+    <div id="system-toast" role="status" aria-live="polite"></div>
     <aside id="party-widget" class="hidden" aria-label="Operative squad">
       <div class="party-header"><span>OPERATIVE SQUAD</span><button id="party-leave" type="button">LEAVE</button></div>
       <canvas id="party-minimap" width="180" height="84" aria-label="Squad member positions"></canvas>
