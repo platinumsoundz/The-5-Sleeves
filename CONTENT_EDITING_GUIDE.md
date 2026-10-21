@@ -10,7 +10,7 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 |---|---|---|
 | Rust Warden health, speed, range, damage and rewards | `server/content/enemies.js` | `RUST_WARDEN.stats` |
 | How Warden stats rise in harder regions | `server/content/enemies.js` | `RUST_WARDEN.scaling` |
-| Number of Wardens in a normal zone | `server/sim/spec.js` | `MAX_WARDENS` (or the `MAX_WARDENS` server environment setting) |
+| Number of Wardens/drones in a wilderness zone | `server/sim/spec.js` | `MAX_WARDENS`, `MAX_DRONES` (the drone default comes from its catalog `spawnCount`) |
 | How enemies patrol, chase, fire, and respawn | `server/sim/wardens.js` | `updateWardens`, `spawnWarden` |
 | Tower wave count, wave size, clear reward | `server/sim/spec.js`, then `server/modules/tower-services.js` | `TOWER_WAVES`, `TOWER_WAVE_SIZE`, `spawnWave`, `clearTower` |
 | Weapon/armour/supply names, shop prices, ATK bonuses | `server/shop-catalog.js` | `SHOP_ITEMS` |
@@ -41,14 +41,15 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 
 ## Adding enemy types: important current limitation
 
-Rust Warden is currently the only implemented hostile AI type. Its stats now
-live in `server/content/enemies.js`, and zones use the generic spawn/update
-entry points in `server/sim/enemy-registry.js`. The existing behavior handler
-is still specific to Warden patrol/shooting in `server/sim/wardens.js`.
-**Adding only a catalog row does not create a new behavior.** Give a new enemy
-an existing supported behavior or add a server-side behavior handler and
-register it in `enemy-registry.js`. Keep AI, damage, XP, credits, and loot
-server-authoritative.
+The enemy catalog now has the Rust Warden and the proposed small Scavenger
+Drone. Both use the shared patrol-shooter behavior and spawn/update interface.
+Their stats, rewards, size and colors are in `server/content/enemies.js`; the
+normal wilderness counts are controlled by `MAX_WARDENS` and `MAX_DRONES`.
+**Adding only a catalog row does not create a new behavior.** Reuse a supported
+behavior or add a server-side behavior handler and register it in
+`server/sim/enemy-registry.js`. Keep AI, damage, XP, credits, and loot
+server-authoritative. The Scavenger Drone is proposed game content, not an
+established comic enemy.
 
 ## Story and canon guardrails
 
