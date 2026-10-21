@@ -260,10 +260,11 @@ it committed and tested after running the full suite.)
 
 - Root `CONTENT_EDITING_GUIDE.md` maps beginner edits for Warden stats,
   item/loot definitions, XP/credits, score tuning and regional danger. It
-  explicitly records that new enemy types still need behavior/spawn/render
-  integration; adding stats alone is insufficient.
-- `test/content-guide.test.js` checks that the guide covers the live value
-  owners and proposed-content/canon guardrails; **added but unrun**.
+  documents the enemy catalog/registry and that new types still need an
+  implemented behavior handler.
+- `test/content-guide.test.js` checks guide coverage and canon guardrails;
+  `test/enemy-catalog.test.js` checks current Warden stat parity, spawn/update
+  dispatch and clear errors for unknown IDs; both **added but unrun**.
 - `npm start` / `npm run dev` (watch) / `npm test` (node --test) /
   `npm run sprites` (bake art via `tools/generate-sprites.js`).
 - `tools/png.js` — dependency-free PNG writer + supersampled rasteriser.
