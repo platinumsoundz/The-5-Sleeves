@@ -117,6 +117,12 @@ function drawStatusEffects(ctx, player, time) {
   }
 }
 
+export function coreStatusLabel(player, zoneKind) {
+  if (!player?.inCore) return '';
+  if (zoneKind === 'haven') return 'Charging!';
+  return 'CHARGING ' + Math.floor(player.coreCharge) + '% · ' + player.corePoints + ' pts';
+}
+
 export function drawPlayer(ctx, player, localId, time, zoneKind) {
   const domain = DOMAINS[player.energyColor] || DOMAINS.wind;
   const color = player.color || domain.primary;
@@ -145,10 +151,10 @@ export function drawPlayer(ctx, player, localId, time, zoneKind) {
   ctx.fillStyle = player.hp > 35 ? '#4ef2a1' : '#ff596d'; ctx.fillRect(player.x - barWidth / 2, player.y - 30, barWidth * hpRatio, 5);
   ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
   ctx.fillText(player.id === localId ? 'You' : player.name, player.x, player.y - 37);
-  if (player.inCore) {
+  const coreMessage = coreStatusLabel(player, zoneKind);
+  if (coreMessage) {
     ctx.fillStyle = '#70ffe1'; ctx.font = 'bold 10px system-ui';
-    const message = zoneKind === 'haven' ? 'Charging!' : 'CHARGING ' + Math.floor(player.coreCharge) + '% · ' + player.corePoints + ' pts';
-    ctx.fillText(message, player.x, player.y + 30);
+    ctx.fillText(coreMessage, player.x, player.y + 30);
   }
   if (player.hp <= 0) { ctx.fillStyle = '#ff9eaa'; ctx.font = 'bold 10px system-ui'; ctx.fillText('DOWN', player.x, player.y + 31); }
 }
