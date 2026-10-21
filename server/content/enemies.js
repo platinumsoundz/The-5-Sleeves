@@ -4,7 +4,8 @@ const RUST_WARDEN = Object.freeze({
   id: 'rust-warden',
   name: 'Rust Warden',
   size: 'medium',
-  behavior: 'warden-patrol-shooter',
+  behavior: 'patrol-shooter',
+  counterKey: 'warden',
   stats: Object.freeze({
     hp: 90, speed: 74, aggro: 330, attackRange: 240, shotCooldown: 1500,
     damage: 12, projectileSpeed: 300, projectileRadius: 7, projectileLifetimeMs: 1800, radius: 15,
