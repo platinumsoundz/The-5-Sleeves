@@ -16,12 +16,11 @@ const { zoneCatalog, DEFAULT_ZONE_ID, LOBBY_ZONE_IDS, worldMapPayload } = requir
 const { createSimulation } = require('./server/sim/state.js');
 const { stepZone, seedZone } = require('./server/sim/index.js');
 const { spawnEnemy } = require('./server/sim/enemy-registry.js');
-const { SCAVENGER_DRONE } = require('./server/content/enemies.js');
 const { abilityFor, castAbility } = require('./server/sim/abilities.js');
 const { distance, inSafeZone } = require('./server/sim/combat.js');
 const {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
-  MAX_WARDENS, LEVEL_HP_GAIN
+  MAX_WARDENS, MAX_DRONES, LEVEL_HP_GAIN
 } = require('./server/sim/spec.js');
 const { gearAtkFor } = require('./server/shop-catalog.js');
 const { skillBonuses } = require('./server/skill-tree.js');
@@ -110,7 +109,7 @@ for (const catalogZone of CATALOG) {
   zones[sim.id] = sim;
   if (sim.kind === 'wild') {
     for (let i = 0; i < MAX_WARDENS; i += 1) spawnEnemy(sim, 'rust-warden');
-    for (let i = 0; i < SCAVENGER_DRONE.spawnCount; i += 1) spawnEnemy(sim, SCAVENGER_DRONE.id);
+    for (let i = 0; i < MAX_DRONES; i += 1) spawnEnemy(sim, 'scavenger-drone');
     for (const spot of catalogZone.guardianSpawns || []) {
       spawnEnemy(sim, 'rust-warden', { x: spot.x, y: spot.y, tier: catalogZone.danger || 10 });
     }
