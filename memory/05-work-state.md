@@ -3,9 +3,21 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (owner-approved gameplay design added to roadmaps; no gameplay code changed).
+Last updated: recommended-level labels added; tests pending.
 
-## Current session — Owner-approved wilderness, PvP, party and tower design (PLANNING ONLY)
+## Current build — Recommended-level entrance labels (IMPLEMENTED, UNVERIFIED)
+
+- Physical road and tower gates display the existing catalog level band;
+  zone-arrival toasts repeat it. Safe-city arrival text identifies the band as
+  the next challenge. Shared formatting lives in
+  `public/src/level-recommendation.js`.
+- Added `test/recommended-level.test.js` for formatting, catalog bands and UI
+  wiring. No test command or browser runner is available in this workspace;
+  neither focused nor full-suite tests have run. No commit has been made.
+- Next: run the focused test and `npm test`, inspect the rendered gate labels,
+  then commit this build before starting another roadmap item.
+
+## Previous session — Owner-approved wilderness, PvP, party and tower design (PLANNING ONLY)
 
 - Owner decisions recorded in `ROADMAP.md` and `ROADMAP-FUTURE.md`; none of
   these gameplay systems are implemented by this documentation update.
