@@ -1,5 +1,7 @@
 // Physical world landmarks: city NPCs, road gates, tower silhouettes and the
 // interaction prompt. Pure client module so new landmark types stay plug-and-play.
+import { recommendedLevelLabel } from '../level-recommendation.js';
+
 const PROMPT_CSS = 'left:50%;bottom:150px;transform:translateX(-50%);background:rgba(9,16,20,.9);border:1px solid rgba(255,224,150,.6);border-radius:8px;padding:7px 14px;color:#ffe9b0;font:700 12px system-ui,sans-serif;letter-spacing:.08em;pointer-events:none;display:none;';
 
 function drawNpc(draw, npc, time) {
@@ -27,7 +29,7 @@ function drawNpc(draw, npc, time) {
   draw.restore();
 }
 
-function drawGate(draw, state, time, label, x, y, angle, open = true) {
+function drawGate(draw, state, time, label, x, y, angle, open = true, levelBand = null) {
   const pulse = 0.55 + 0.45 * Math.sin(time * 0.003);
   const color = open ? '#7dffd8' : '#ffb36b';
   draw.save();
@@ -40,7 +42,14 @@ function drawGate(draw, state, time, label, x, y, angle, open = true) {
   draw.restore();
   draw.save();
   draw.fillStyle = open ? 'rgba(186,255,238,.9)' : 'rgba(255,211,168,.95)'; draw.font = 'bold 10px system-ui'; draw.textAlign = 'center';
-  draw.fillText(label, x, y + (y < 100 ? 34 : -18));
+  const textX = x > 900 ? x - 90 : x < 100 ? x + 90 : x;
+  const textY = y < 100 ? y + 34 : y > 600 ? y - 18 : y - 18;
+  draw.fillText(label, textX, textY);
+  const recommendation = recommendedLevelLabel(levelBand);
+  if (recommendation) {
+    draw.fillStyle = '#ffe9b0'; draw.font = 'bold 8px system-ui';
+    draw.fillText(recommendation.toUpperCase(), textX, textY + 12);
+  }
   draw.restore();
 }
 
@@ -102,11 +111,11 @@ export default {
       const exits = zone.exits || {};
       if (exits.east) {
         const locked = zone.id === 'haven-citadel' && !state.localPlayer?.towers?.[5] && !clearedTowers.has(5);
-        drawGate(draw, state, time, locked ? 'SEALED · TOWER 5' : zone.id === 'haven-citadel' ? 'EASTERN EXPANSE' : 'EAST ROAD', 966, 350, 0, !locked);
+        drawGate(draw, state, time, locked ? 'SEALED · TOWER 5' : zone.id === 'haven-citadel' ? 'EASTERN EXPANSE' : 'EAST ROAD', 966, 350, 0, !locked, zone.levelBand);
       }
       for (const [index, site] of (zone.bossSites || []).entries()) drawBossSite(draw, site, index + 1, time);
       if (exits.west) drawGate(draw, state, time, 'WEST', 34, 350, Math.PI);
-      if (exits.north) drawGate(draw, state, time, zone.kind === 'haven' ? 'TOWER GATE' : 'NORTH', 500, 34, -Math.PI / 2);
+      if (exits.north) drawGate(draw, state, time, zone.kind === 'haven' ? 'TOWER GATE' : 'NORTH', 500, 34, -Math.PI / 2, true, zone.levelBand);
       if (exits.south) drawGate(draw, state, time, 'CITY', 500, 666, Math.PI / 2);
       if (zone.kind === 'tower' && zone.tower) drawTower(draw, zone.tower, time, state.towerRun, zone.biome);
       for (const npc of state.npcs || []) drawNpc(draw, npc, time);
