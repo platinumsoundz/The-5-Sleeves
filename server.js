@@ -108,10 +108,13 @@ for (const catalogZone of CATALOG) {
   const sim = createSimulation(catalogZone, hostServices());
   zones[sim.id] = sim;
   if (sim.kind === 'wild') {
-    for (let i = 0; i < MAX_WARDENS; i += 1) spawnEnemy(sim, 'rust-warden');
-    for (let i = 0; i < MAX_DRONES; i += 1) spawnEnemy(sim, 'scavenger-drone');
-    for (const spot of catalogZone.guardianSpawns || []) {
-      spawnEnemy(sim, 'rust-warden', { x: spot.x, y: spot.y, tier: catalogZone.danger || 10 });
+    const guardians = catalogZone.guardianSpawns || [];
+    if (guardians.length) {
+      // The frontier's five named sites are its road population, not extras.
+      for (const spot of guardians) spawnEnemy(sim, 'rust-warden', { x: spot.x, y: spot.y, tier: catalogZone.danger || 10 });
+    } else {
+      for (let i = 0; i < MAX_WARDENS; i += 1) spawnEnemy(sim, 'rust-warden');
+      for (let i = 0; i < MAX_DRONES; i += 1) spawnEnemy(sim, 'scavenger-drone');
     }
   }
   if (sim.kind === 'arena' && sim.alignment === 'pve') {
