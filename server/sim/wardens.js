@@ -3,7 +3,6 @@
 // controlled waves through spawnWarden(sim, { x, y, tier }).
 const { RUST_WARDEN } = require('../content/enemies.js');
 const WARDEN = RUST_WARDEN.stats;
-const WARDEN_SCALING = RUST_WARDEN.scaling;
 const { clampToWorld, distance, inSafeZone, spawnBurst } = require('./combat.js');
 const { CORE, PERIMETER_MARGIN } = require('./state.js');
 
