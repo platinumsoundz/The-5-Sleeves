@@ -35,6 +35,6 @@ test('ordinary notices move right while archive/story toasts keep their blue lef
   assert.match(archiveRule, /#dcedff/);
   assert.match(ui, /function showArchiveToast\(/);
   assert.match(ui, /showArchiveToast,/);
-  assert.match(ui, /notice\(message\) \{ showToast\(message, 3200\); \}/);
+  assert.match(ui, /systemToast\.textContent = message/);\n  assert.match(ui, /archiveToast\.textContent = message/);\n  assert.match(ui, /notice\(message\) \{ showToast\(message, 3200\); \}/);
   assert.doesNotMatch(client, /at:\s*Date\.now\(\)/, 'HUD feed timestamps use the animation-frame clock');
 });
