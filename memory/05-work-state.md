@@ -3,7 +3,23 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: 2026-10-20 (enemy catalog and behavior registry added; tests not run).
+Last updated: 2026-10-20 (first small drone added; tests not run).
+
+## Current session — First small drone archetype (IMPLEMENTED, UNVERIFIED)
+
+- Added the proposed small `Scavenger Drone` to `server/content/enemies.js`.
+  Two spawn in a normal wilderness zone when Warden spawns are enabled (or
+  configure `MAX_DRONES`); it shares the server-authoritative patrol-shooter
+  handler, but has lower HP/damage/rewards and a compact procedural visual.
+- Spawn/update registration is data-driven; its zero skill-point bounty is
+  honored. Existing Rust Warden stats remain unchanged. Mutated fauna and other
+  new enemy families remain proposed content, not source-comic canon.
+- Added catalog/reward/patrol tests, updated Warden population and renderer
+  tests. Tests and live playtesting were not run because no test runner or
+  browser is available. Verify `npm test` and wilderness combat before adding
+  more enemy archetypes.
+- Owner preference: batch related code into one cohesive commit per completed
+  build rather than frequent tiny commits; keep separate systems/builds distinct.
 
 ## Current session — Enemy content catalog and behavior registry (IMPLEMENTED, UNVERIFIED)
 
