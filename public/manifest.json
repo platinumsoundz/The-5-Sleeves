@@ -3,11 +3,10 @@
   "name": "The 5 Sleeves Online",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "landscape",
   "background_color": "#0d1117",
   "theme_color": "#00ffff",
   "icons": [
-    { "src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "icon_5sleeves_compass.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon_5sleeves_title.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
