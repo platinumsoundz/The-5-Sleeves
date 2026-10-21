@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -100,7 +100,7 @@
     "Safe-city Cipher Core healing: operatives inside any haven Core radius recover 3% maximum HP per second, capped at max HP; existing idle-credit meditation remains unchanged.",
     "PWA service worker: root-scoped network-first shell cache and offline navigation fallback; API, Socket.IO, writes and cross-origin traffic bypass interception. Registered on load; manifest includes a scalable SVG icon. Implemented, unverified.",
     "iPad touch mode: touch pointerdown and legacy touchstart switch from desktop/keyboard hints to existing touch joystick/action controls, including when startup detection misclassifies the device. Regression coverage added; unverified on device.",
-    "Beginner content editing guide: CONTENT_EDITING_GUIDE.md maps current Warden, item/loot, XP/credit, progression, region-danger and objective-score value owners; documents safe edit steps and the current limitation that new enemies need AI behavior integration. No game balance changed."
+    "Beginner content editing guide: CONTENT_EDITING_GUIDE.md maps current enemy, item/loot, XP/credit, progression, region-danger and objective-score value owners. Added a stable-ID Rust Warden data definition and generic spawn/update behavior registry; current Warden balance is unchanged and new behavior handlers are still required for other enemy families. No new enemy types added."
   ],
   "in_progress_features": [
     "Wilderness zone-hazards system implemented but unverified; run npm test before another build",
@@ -110,7 +110,7 @@
     "Step 13 implemented but unverified: production auth accepts native secure sockets and Render forwarded HTTPS; controller navigation/bindings updated; top HUD health removed, XP moved to a 3px top line, and notifications anchored under the left radar. Tests and browser/controller checks remain unrun.",
     "Steps 14–15 PWA/fullscreen implemented but unverified: standalone landscape manifest, Apple home-screen metadata, root service worker with network-first shell cache and multiplayer/API bypass, SVG app icon, and Settings fullscreen fallback. Run npm test and verify Chrome Android and iOS Home Screen behavior on devices; installation behavior is platform dependent.",
     "iPad touch controls implemented but unverified: first touch pointerdown or legacy touchstart selects touch mode and shows the existing controls even after desktop-mode startup. Run npm test and test on iPad Safari.",
-    "Beginner content guide and regression test added but unverified: run npm test. Next build should create a data-driven enemy catalog/behavior interface before implementing small drones and additional enemy families; proposed mutated wildlife must remain labeled game content unless canon-reviewed.",
+    "Enemy catalog/registry and beginner guide implemented but unverified: run npm test, especially test/enemy-catalog.test.js, test/wardens.test.js and test/world.test.js. Only Rust Warden is registered; next add requested smaller drones and other enemy families in separate builds, preserving proposed-content labels for mutated wildlife.",
     "Cipher welcome/every-clear dialogue and Tower 5 Eastern Expanse implemented but unverified: run npm test and browser playtests. Check camera/movement in 3000×2100 space, Tower 5 gate persistence, and existing Warden guardians.",
     "Safe-city Core healing implemented but unverified: test/core-meditation.test.js updated; npm test and in-game playtesting not run. Approved next build is tougher-but-fair region/tower difficulty; then expand the five-faction passive/special skill tree."
   ],
