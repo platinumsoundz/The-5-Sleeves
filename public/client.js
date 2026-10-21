@@ -61,27 +61,27 @@ const network = createNetcode(state, {
   kill: (kill) => {
     bus.emit('net:kill', kill);
     const label = kill.sourceName ? kill.sourceName + ' destroyed ' + kill.name : kill.name + ' was destroyed';
-    state.killFeed.push({ text: label, xp: kill.xp || 0, at: Date.now(), color: kill.sourceId === state.playerId ? '#8effa1' : '#ffd9a0' });
+    state.killFeed.push({ text: label, xp: kill.xp || 0, at: performance.now(), color: kill.sourceId === state.playerId ? '#8effa1' : '#ffd9a0' });
     if (state.killFeed.length > 5) state.killFeed.shift();
     if (kill.sourceId === state.playerId) audio?.play('hit');
   },
   captured: (capture) => {
-    state.killFeed.push({ text: (capture.faction || '').toUpperCase() + ' captured ' + capture.name, xp: capture.xp || 0, at: Date.now(), color: capture.color || '#8ce0ff' });
+    state.killFeed.push({ text: (capture.faction || '').toUpperCase() + ' captured ' + capture.name, xp: capture.xp || 0, at: performance.now(), color: capture.color || '#8ce0ff' });
     if (state.killFeed.length > 5) state.killFeed.shift();
-    state.banner = { text: (capture.faction || '').toUpperCase() + ' HOLDS THE ' + (capture.name || '').toUpperCase(), color: capture.color || '#8ce0ff', at: Date.now(), ttl: 2600 };
+    state.banner = { text: (capture.faction || '').toUpperCase() + ' HOLDS THE ' + (capture.name || '').toUpperCase(), color: capture.color || '#8ce0ff', at: performance.now(), ttl: 2600 };
     audio?.play('capture');
   },
   matchEnd: (result) => {
-    state.banner = { text: (result.faction || '').toUpperCase() + ' DOMINATES THE TOWER', color: result.color || '#8ce0ff', at: Date.now(), ttl: 6000 };
+    state.banner = { text: (result.faction || '').toUpperCase() + ' DOMINATES THE TOWER', color: result.color || '#8ce0ff', at: performance.now(), ttl: 6000 };
     audio?.play('levelup');
   },
   matchReset: (result) => {
-    state.banner = { text: result?.message || 'THE TOWER RECALIBRATES', color: '#cfefff', at: Date.now(), ttl: 3000 };
+    state.banner = { text: result?.message || 'THE TOWER RECALIBRATES', color: '#cfefff', at: performance.now(), ttl: 3000 };
   },
   levelUp: (level) => {
     const mine = level.playerId === state.playerId;
-    state.banner = { text: (level.name || 'OPERATIVE').toUpperCase() + ' REACHED LEVEL ' + level.level, color: level.color || '#8ce0ff', at: Date.now(), ttl: 3400 };
-    state.killFeed.push({ text: 'LEVEL ' + level.level + ' · ' + (level.name || 'operative') + ' gains a Skill Point', at: Date.now(), color: '#ffe9a0' });
+    state.banner = { text: (level.name || 'OPERATIVE').toUpperCase() + ' REACHED LEVEL ' + level.level, color: level.color || '#8ce0ff', at: performance.now(), ttl: 3400 };
+    state.killFeed.push({ text: 'LEVEL ' + level.level + ' · ' + (level.name || 'operative') + ' gains a Skill Point', at: performance.now(), color: '#ffe9a0' });
     if (state.killFeed.length > 5) state.killFeed.shift();
     if (mine) audio?.play('levelup');
   },
@@ -94,8 +94,8 @@ const network = createNetcode(state, {
   towerState: (payload) => { state.towerRun = payload; },
   towerCleared: (payload) => {
     bus.emit('net:tower-cleared', payload);
-    state.banner = { text: (payload.name || 'TOWER') + ' ONLINE', color: '#7dffd8', at: Date.now(), ttl: 4200 };
-    state.killFeed.push({ text: 'TOWER CLEARED · +' + (payload.credits || 0) + ' CREDITS', at: Date.now(), color: '#ffe9a0' });
+    state.banner = { text: (payload.name || 'TOWER') + ' ONLINE', color: '#7dffd8', at: performance.now(), ttl: 4200 };
+    state.killFeed.push({ text: 'TOWER CLEARED · +' + (payload.credits || 0) + ' CREDITS', at: performance.now(), color: '#ffe9a0' });
     if (state.killFeed.length > 5) state.killFeed.shift();
     ui?.notice((payload.name || 'Tower') + ' online. +' + (payload.credits || 0) + ' credits.');
     audio?.play('levelup');
