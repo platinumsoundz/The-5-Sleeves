@@ -4,6 +4,8 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const module = require('../server/modules/core-meditation.js');
+const { zoneCatalog } = require('../server/zones-catalog.js');
+const { createSimulation, CORE } = require('../server/sim/state.js');
 const hooks = new Map();
 const playerSockets = {};
 const ctx = {
@@ -36,6 +38,24 @@ test('Core meditation pays after idling and stops at the daily cap', () => {
   hooks.get('tick')(zone, 1231000);
   assert.equal(player.credits, 20);
   assert.equal(player.meditationCredits, 20);
+});
+
+test('the first safe-zone Core and every later haven Core heal at the same configured center', () => {
+  const havens = zoneCatalog().filter((zone) => zone.kind === 'haven');
+  assert.ok(havens.some((zone) => zone.id === 'haven-perimeter'), 'includes the first safe zone');
+  for (const [index, catalogZone] of havens.entries()) {
+    const player = makePlayer();
+    player.id = 'meditator-' + index;
+    player.hp = 50;
+    player.x = (catalogZone.core || CORE).x;
+    player.y = (catalogZone.core || CORE).y;
+    const zone = createSimulation(catalogZone, { scoreLimit: 400 });
+    zone.players[player.id] = player;
+    hooks.get('joining')(player, {});
+    hooks.get('tick')(zone, 1000 + index * 1000, 1);
+    assert.equal(player.hp, 53, catalogZone.id + ' restores 3% max HP');
+    hooks.get('left')(player);
+  }
 });
 
 test('every safe-city Cipher Core heals by 3% maximum health per second and caps at full health', () => {
