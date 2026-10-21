@@ -1,8 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tileVariantFrame, sourceRectForView, buildBackground, notificationLayout } from '../public/src/renderer.js';
+import { drawEnemy } from '../public/src/characterRenderer.js';
 
 const WORLD = { width: 1000, height: 700 };
+
+test('small enemies render as compact data-sized drones instead of full Warden sprites', () => {
+  const rectangles = [];
+  const ctx = {
+    save() {}, restore() {}, translate() {}, rotate() {}, beginPath() {}, moveTo() {}, lineTo() {},
+    closePath() {}, fill() {}, fillRect(x, y, width, height) { rectangles.push({ width, height }); }
+  };
+  drawEnemy(ctx, { size: 'small', x: 100, y: 100, radius: 8, hp: 35, maxHp: 35 }, 0);
+  assert.equal(rectangles.length, 2, 'drone body and eye are drawn');
+  assert.ok(rectangles[0].width < 20, 'body stays visibly smaller than the Warden hull');
+});
 
 test('interior tiles cycle through the four floor variants', () => {
   const seen = new Set();
