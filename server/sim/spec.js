@@ -30,7 +30,10 @@ const BURN_TICK_CAP = 60;
 // Hostile PvE drones that patrol the ruins and shoot at operatives.
 const MAX_WARDENS = Number.isFinite(Number(process.env.MAX_WARDENS)) ? Math.max(0, Number(process.env.MAX_WARDENS)) : 4;
 // Legacy imports use these aliases; new enemy data lives in one catalog.
-const { RUST_WARDEN } = require('../content/enemies.js');
+const { RUST_WARDEN, SCAVENGER_DRONE } = require('../content/enemies.js');
+const MAX_DRONES = Number.isFinite(Number(process.env.MAX_DRONES))
+  ? Math.max(0, Number(process.env.MAX_DRONES))
+  : (MAX_WARDENS > 0 ? SCAVENGER_DRONE.spawnCount : 0);
 const WARDEN_SCALING = RUST_WARDEN.scaling;
 const WARDEN = { name: RUST_WARDEN.name, ...RUST_WARDEN.stats };
 
@@ -78,7 +81,7 @@ const ARCHIVE_LOGS = [
 module.exports = {
   SLEEVE_COLORS, SLEEVE_ACCENTS, LEGACY_DOMAINS, ACTIVE_DOMAINS,
   RESPAWN_DELAY, AI_RESPAWN_DELAY, ABILITY_BURST_LIFETIME, BURN_TICK_CAP,
-  MAX_WARDENS, WARDEN, WARDEN_SCALING,
+  MAX_WARDENS, MAX_DRONES, WARDEN, WARDEN_SCALING,
   XP_ECHO, XP_CORE_POINT, XP_PLAYER_KILL, XP_CAPTURE, XP_TOWER, XP_TOWER_CLEAR,
   CREDITS_PLAYER_KILL, CREDITS_TOWER_CLEAR, LEVEL_HP_GAIN, TOWER_WAVES, TOWER_WAVE_SIZE,
   HUB, HUB_NPCS, TOWERS,
