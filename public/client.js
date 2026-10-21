@@ -95,9 +95,9 @@ const network = createNetcode(state, {
   towerCleared: (payload) => {
     bus.emit('net:tower-cleared', payload);
     state.banner = { text: (payload.name || 'TOWER') + ' ONLINE', color: '#7dffd8', at: performance.now(), ttl: 4200 };
-    state.killFeed.push({ text: 'TOWER CLEARED · +' + (payload.credits || 0) + ' CREDITS', at: performance.now(), color: '#ffe9a0' });
+    state.killFeed.push({ text: 'TOWER CLEARED', at: performance.now(), color: '#ffe9a0' });
     if (state.killFeed.length > 5) state.killFeed.shift();
-    ui?.notice((payload.name || 'Tower') + ' online. +' + (payload.credits || 0) + ' credits.');
+    ui?.notice((payload.name || 'Tower') + ' online.');
     audio?.play('levelup');
   },
   cityUnlocked: (payload) => ui?.notice('Spawn point unlocked: ' + payload.name + '.'),
