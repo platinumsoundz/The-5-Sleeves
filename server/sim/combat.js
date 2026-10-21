@@ -82,8 +82,8 @@ function handleDown(sim, target, source) {
     sim.send('combat:kill', { targetId: target.id, name: target.name, sourceId: source?.id || null, sourceName: source?.name || null, x: target.x, y: target.y, xp: target.xp || WARDEN.xp });
     const killer = source && sim.players[source.id];
     if (killer) {
-      killer.skillPoints += target.skillPoints || WARDEN.skillPoints;
-      killer.coreCharge = Math.min(99.99, killer.coreCharge + (target.coreCharge || WARDEN.coreCharge));
+      killer.skillPoints += target.skillPoints ?? WARDEN.skillPoints;
+      killer.coreCharge = Math.min(99.99, killer.coreCharge + (target.coreCharge ?? WARDEN.coreCharge));
       killer.credits = (killer.credits || 0) + (target.credits || 0);
       sim.host.applyXp(killer, target.xp || WARDEN.xp);
       sim.host.awardNearbyParty(killer);
