@@ -1,8 +1,10 @@
 # The 5 Sleeves — Future Roadmap (brainstorm draft)
 
-**Status: discussion document, not commitments.** Nothing here is scheduled or
-approved. Read `memory/02-universe-canon.md` first — canon is law, and any
-item below that would touch canon needs an explicit owner decision.
+**Status: mixed planning queue.** The section marked owner-approved records
+systems the owner wants designed/built; it does not mean they are implemented
+or that every tuning value is settled. Other items remain brainstorms. Read
+`memory/02-universe-canon.md` first — canon is law, and any item below that
+touches canon needs review.
 
 **Standing principles for everything below**
 
@@ -88,8 +90,10 @@ cross-play with console is wanted, server regions.
   shareable replay clips.
 - **Replay improvements** — pause/scrub, export a clip, highlight kills.
 
-**Needs owner input:** how much PvE vs PvP, whether zones should have
-different rulesets or stay identical arenas with different dressing.
+**Owner direction:** wilderness is PvP for non-party players, parties are
+protected from one another, and tower runs are PvE-only. Regional enemy
+rosters should become progressively harder. Exact level bands, densities and
+map layouts are still to be designed.
 
 ## 5. Technical scale
 
@@ -121,16 +125,98 @@ scaling decisions), budget for hosting/monitoring.
   `memory/02-universe-canon.md`).
 - Sprite/art pass per zone once the palette is approved.
 
-## Suggested build order (for discussion)
+## 7. Owner-approved gameplay design queue (NOT IMPLEMENTED)
 
-1. In-game zone switcher + squad travel.
-2. Private rooms / lobby polish.
-3. `auth` module (email) behind optional guest play.
-4. PWA installability (manifest + service worker).
-5. Cosmetic store skeleton (no power, no purchases live yet).
-6. Persistence to a real database + observability.
-7. iOS packaging exploration, then console.
-8. Zone hazards / warden variants as content drops.
+Implement one system per build, with regression tests. Values below are owner
+direction unless marked draft/open; do not present these as shipped behavior.
+
+### Regional wilderness, enemies and tower challenge
+
+- Make each wilderness road larger and worth revisiting for XP and sellable
+  loot, without making traversal empty or annoyingly long. No fixed crossing
+  time is set; playtest on mobile and tune encounter spacing and landmarks.
+- Each road has a configurable cap of **five simultaneous enemies**. Proposed
+  roster by road: 1) small enemies; 2) small + medium; 3) medium; 4) medium +
+  large; 5) large. Small enemies drop cheaper items; larger enemies drop better
+  items. New medium and large archetypes and the boss remain unbuilt.
+- Towers should be notably harder than the preceding wilderness. Escalate by
+  a mix of enemy strength, enemies per wave, and wave count. A first-tower
+  sketch is five small drones, then three medium Wardens, then a boss; this is
+  a draft, not a locked wave script. Each tower needs clear recommended levels.
+- Put beginner-editable recommended levels, regional rosters, enemy caps,
+  scaling and tower wave settings in a clearly commented balance configuration
+  file, with editing tips. Keep behavior/AI implementation separate from data.
+
+### PvP, parties and death economy
+
+- Wilderness: any non-party player may attack another; party members cannot
+  damage each other. Towers are PvE-only; preserve safe-city protections.
+- Every death incurs a **5% medical fee** of current credits, rounded down,
+  without debt. A PvP kill additionally transfers **5% of the defeated
+  player's credits to the victor**, so a PvP death costs the victim 10% total.
+  Show the actual amount taken. Do not apply the PvP transfer to PvE deaths.
+- Party members in the same zone receive the full XP/reward and each eligible
+  member gets a copy of the drop. Respawn with a living party member, otherwise
+  at a safe zone. Exact eligibility/respawn edge cases need tests.
+
+### Tower matchmaking and recurring maintenance
+
+- Each existing party gets a separate private PvE tower instance. Solo players
+  can queue to be matched with other solo players; allow a **30-second** group
+  window and a manual early start with **1–4** operatives.
+- Occasionally, one previously cleared tower can fail and require a return
+  trip to defeat a stronger maintenance wave. Failure must not remove tower
+  unlocks or prior rewards; keep only one failure active at a time. Scale the
+  repair encounter to the operative/party level. Failure frequency and mixed-
+  level scaling formula remain open.
+- The endgame collection goal is to reach the highest level and eventually
+  unlock every item, power and skill, while equipping a limited active loadout.
+  The active-slot limit and respec details remain open.
+
+### Lightweight survival and module systems
+
+- Scrap-based field crafting/repair and temporary supplies (for example,
+  emergency shield cells or ration buffs). Avoid turning durability into a
+  punitive repair tax or making salvage crafting strictly more profitable than
+  selling it.
+- Server-clocked weather/Fogline shifts may alter existing enemy detection or
+  salvage opportunities. Keep cycles deterministic/lightweight, signaled to
+  players, and avoid punishing players for being offline.
+- Sleeve Chips may alter active abilities. Treat this as a proposed game
+  system; preserve spirit agency/consent and check the lore before framing a
+  spirit itself as an item.
+
+### Story/canon review hold
+
+The owner’s current working explanation is that Cipher still needs human
+maintenance of the towers (including clearing vents and installing programs),
+towers regulate planetary elements against natural-disaster collapse, and the
+Fogline relates to towers not operating continuously. Spirits are linked to
+towers and can hide in chips or networks. The player is an ordinary
+smart-sleeve wearer continuing after Ajaye connected the five towers and made
+their purpose known worldwide. These notes need comparison with the universe
+rules; do not silently promote them to established canon. The proposed idea
+that hostile drones detect/destroy technology such as Sleeves is expressly
+parked for later review.
+
+## Suggested build order (discussion; each item is its own build)
+
+1. Select durable profile/account storage and fix account login; Render Free's
+   local filesystem is ephemeral.
+2. Author the novice-editable region-balance table and settle recommended
+   levels, enemy caps/rosters and tower wave budgets.
+3. Expand wilderness layouts and tune enemy/loot placement and revisit value.
+4. Implement wilderness PvP rewards, 5% medical fees, same-zone party rewards,
+   drop copies and safe/party respawns.
+5. Add private tower matchmaking and rising PvE wave difficulty.
+6. Add the random cleared-tower maintenance/failure loop.
+7. Expand permanent progression and limited active loadouts.
+8. Build field crafting, then weather/Fogline shifts, then ability-modifying
+   chips as separate systems after canon review.
+9. Separately address Step 17 performance, network throttling and functional
+   gear stats; do not add an internal self-ping to defeat Render sleep.
+10. Continue with PWA/device audits, account security, observability and
+    accessibility.
 
 ## Open questions for the owner
 
@@ -140,5 +226,5 @@ scaling decisions), budget for hosting/monitoring.
 3. Platform order and rough timeline (Android/PC now, iOS when, console?).
 4. Canon approval for the new terminal flavour text.
 5. Target concurrent players per zone (netcode and hosting budget).
-6. Do zones stay identical arenas with different dressing, or diverge in
-   rules?
+6. How should regional levels, encounter spacing, enemy caps and tower wave
+   budgets be tuned after playtesting?
