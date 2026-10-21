@@ -82,9 +82,6 @@ it committed and tested after running the full suite.)
   and tower spawns route through the registry. Other behaviors and enemy-
   specific loot policies remain future work. `test/enemy-catalog.test.js`
   added, unrun.
-- **enemyRenderer.js** — renders small catalog enemies as compact procedural
-  drones and retains baked/procedural rendering for the medium Warden.
-
 ## Server modules (`server/modules/`)
 
 - **archive-terminals** — 3 canon-lore terminals (Transit Manifest,
@@ -119,7 +116,8 @@ it committed and tested after running the full suite.)
   walk frames, procedural fallback; draws players, wardens, projectiles,
   effects, bursts, relays, echoes, safe-city rectangles, tower rooms and a
   receding fogline, compact top-centre HUD (credits + zone), top-left
-  radar/mode strip and tower-run status; the compact top card omits health,
+  radar/mode strip and tower-run status; `enemyRenderer.js` draws small drones
+  compactly and keeps the Warden sprite; the compact top card omits health,
   a 3 px XP line sits at the viewport top, and alerts stack beneath the left
   minimap/score strip; emits the three module hooks
   (`render:world`, `render:fx`, `render:overlay`).
