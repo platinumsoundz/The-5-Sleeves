@@ -25,10 +25,9 @@ Last updated: 2026-10-20 (enemy catalog and behavior registry added; tests not r
 - Added root `CONTENT_EDITING_GUIDE.md` mapping current editable enemy stats,
   item/weapon fields, loot tiers, XP/credit rewards, progression, region
   danger, and objective scoring to their actual source files.
-- Documented the current limitation: Rust Warden behavior/spawning is
-  hard-coded, so new enemy stats alone cannot create working enemies. Next
-  content-system build should establish a small data-driven enemy catalog and
-  behavior interface before adding drones, other AI, and bosses.
+- Documented the current limitation: Rust Warden behavior is still specific
+  even though a data-driven enemy catalog/spawn-update registry has since been
+  added. New types still need a supported or newly registered AI behavior.
 - New animals/monsters and other enemy families are proposed game content
   unless the canon source documents them. Owner requested climate/fog-altered
   fauna; label and review that content rather than treating it as comic canon.
