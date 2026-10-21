@@ -7,11 +7,13 @@ Last updated: Step 18 opt-in rewarded adverts added (implementation; verificatio
 
 ## Current build — Opt-in rewarded adverts (IMPLEMENTED, UNVERIFIED)
 
-- **The AdSense tag is now in the page** — the owner's
-  `ca-pub-8267279636493149` script sits in `public/index.html` with
-  `data-ad-frequency-hint="90s"`, which is what enables the H5 games
-  `adBreak` rewarded API. Auto ads must stay OFF in the AdSense dashboard:
-  every break in this game is triggered by a tap, never automatically.
+- **AdSense verification is deployed** — `public/index.html` now carries the
+  script tag (with `data-ad-frequency-hint="90s"`, which enables the H5 games
+  `adBreak` API) plus the `google-adsense-account` meta tag.
+  `public/ads.txt` has the publisher line and `public/robots.txt` explicitly
+  allows Mediapartners-Google / AdsBot-Google. Pushed as `03cc265`; the live
+  `the-5-sleeves.onrender.com` page was checked after deploy and serves all
+  four. Auto ads must stay OFF: every break in this game is a tap.
 - **Server owns the payout** — new `server/modules/rewarded-ads.js` issues a
   single-use token on `ad:request`, enforces a 5 s minimum watch, a 3 min
   token life, per-offer cooldowns and UTC-daily caps, then re-checks the
