@@ -137,7 +137,12 @@ it committed and tested after running the full suite.)
 - **uiManager.js** — title/join + boot-status line, MENU coordinator
   (seven pages), shop + arena panels, welcome/toast lifecycle, controller-
   accurate HUD hints, Escape/B-button back handling for dialogs and menus,
-  party widget + minimap, collapsible chat and chat-name action popup.
+  party widget + minimap, collapsible chat and chat-name action popup. Zone
+  arrival toasts include recommended-level bands for wilderness/towers and
+  identify the next challenge from a safe city (implementation unverified).
+- **hub-world.js** — physical city NPCs, road gates and tower landmarks; road
+  and tower entrance gates show the catalog recommended-level band. Uses the
+  shared pure label helper in `public/src/level-recommendation.js` (unverified).
 - **menu.js / menu-pages.js** — menu navigation plus Character, Skill Tree,
   Inventory, Party & Friends, Inbox, Map and Settings renderers.
 - **keybinds.js** — remappable combat/menu action keys with localStorage
