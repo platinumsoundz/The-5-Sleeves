@@ -8,8 +8,8 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 
 | What you want to change | Start here | What to look for |
 |---|---|---|
-| Rust Warden health, speed, range, damage and rewards | `server/sim/spec.js` | `WARDEN` |
-| How Warden stats rise in harder regions | `server/sim/spec.js` | `WARDEN_SCALING` |
+| Rust Warden health, speed, range, damage and rewards | `server/content/enemies.js` | `RUST_WARDEN.stats` |
+| How Warden stats rise in harder regions | `server/content/enemies.js` | `RUST_WARDEN.scaling` |
 | Number of Wardens in a normal zone | `server/sim/spec.js` | `MAX_WARDENS` (or the `MAX_WARDENS` server environment setting) |
 | How enemies patrol, chase, fire, and respawn | `server/sim/wardens.js` | `updateWardens`, `spawnWarden` |
 | Tower wave count, wave size, clear reward | `server/sim/spec.js`, then `server/modules/tower-services.js` | `TOWER_WAVES`, `TOWER_WAVE_SIZE`, `spawnWave`, `clearTower` |
@@ -41,13 +41,14 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 
 ## Adding enemy types: important current limitation
 
-Rust Warden is currently the only implemented hostile AI type. Its data is
-partly separated into `WARDEN`/`WARDEN_SCALING`, but its movement, targeting,
-projectiles, spawn logic, and tower-wave integration are still Warden-specific
-in `server/sim/wardens.js` and its callers. **Adding a row of stats alone will
-not make a new enemy work.** Build a small enemy catalog and generic spawn /
-behavior interface before adding multiple enemy families; keep the server
-authoritative for AI, damage, XP, credits, and loot.
+Rust Warden is currently the only implemented hostile AI type. Its stats now
+live in `server/content/enemies.js`, and zones use the generic spawn/update
+entry points in `server/sim/enemy-registry.js`. The existing behavior handler
+is still specific to Warden patrol/shooting in `server/sim/wardens.js`.
+**Adding only a catalog row does not create a new behavior.** Give a new enemy
+an existing supported behavior or add a server-side behavior handler and
+register it in `enemy-registry.js`. Keep AI, damage, XP, credits, and loot
+server-authoritative.
 
 ## Story and canon guardrails
 
