@@ -3,9 +3,18 @@
 **Resume point.** Read this to know exactly where the last session stopped.
 Update it after every build (protocol rule 9).
 
-Last updated: five-enemy wilderness cap implemented; tests intentionally deferred for the owner's future batch.
+Last updated: PROJECT_INDEX.md added as a compact code-navigation map.
 
-## Current build — Five-enemy wilderness cap (IMPLEMENTED, UNVERIFIED)
+## Current build — Codebase navigation index (DOCUMENTATION)
+
+- Added root `PROJECT_INDEX.md`, mapping features to primary source files and
+  focused regression files. It is a navigation aid, not an alternate source of
+  truth; roadmap, work-state, canon and owning code remain authoritative.
+- Linked the index from `AGENTS.md` and `memory/00-index.md` so future agents
+  can find it before broad searches. No tests were run for this documentation-
+  only addition.
+
+## Previous build — Five-enemy wilderness cap (IMPLEMENTED, UNVERIFIED)
 
 - `MAX_WILD_ENEMIES = 5` is enforced centrally by `server/sim/enemy-registry.js`
   across all catalogued enemy types in wild zones; arenas and PvE tower waves are
