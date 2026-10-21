@@ -10,7 +10,7 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 |---|---|---|
 | Rust Warden health, speed, range, damage and rewards | `server/content/enemies.js` | `RUST_WARDEN.stats` |
 | How Warden stats rise in harder regions | `server/content/enemies.js` | `RUST_WARDEN.scaling` |
-| Number of Wardens/drones in a wilderness zone | `server/sim/spec.js` | `MAX_WARDENS`, `MAX_DRONES` (the drone default comes from its catalog `spawnCount`) |
+| Number of Wardens/drones in a wilderness zone | `server/sim/spec.js` | `MAX_WARDENS`, `MAX_DRONES` (the drone default comes from its catalog `spawnCount`; setting `MAX_WARDENS=0` disables drones unless `MAX_DRONES` is set) |
 | How enemies patrol, chase, fire, and respawn | `server/sim/wardens.js` | `updateWardens`, `spawnWarden` |
 | Tower wave count, wave size, clear reward | `server/sim/spec.js`, then `server/modules/tower-services.js` | `TOWER_WAVES`, `TOWER_WAVE_SIZE`, `spawnWave`, `clearTower` |
 | Weapon/armour/supply names, shop prices, ATK bonuses | `server/shop-catalog.js` | `SHOP_ITEMS` |
