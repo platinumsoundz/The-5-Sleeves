@@ -45,6 +45,7 @@ function spawnPatrolShooter(sim, options = {}, definition = RUST_WARDEN) {
     kind: 'ai',
     enemyType: definition.id,
     behavior: definition.behavior,
+    size: definition.size,
     name: definition.name,
     tier,
     level: stats.level,
