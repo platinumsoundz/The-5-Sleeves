@@ -81,7 +81,7 @@ function createSimulation(catalogZone, host) {
     echoes: {},
     memberCount: 0,
     scoreLimit: catalogZone.scoreLimit || host.scoreLimit,
-    next: { echo: 1, effect: 1, burst: 1, projectile: 1, warden: 1 },
+    next: { echo: 1, effect: 1, burst: 1, projectile: 1, warden: 1, drone: 1 },
     // Zone-scoped broadcast: only operatives inside this zone hear it.
     send(event, payload) {
       host.io.to('zone:' + sim.id).emit(event, payload);
