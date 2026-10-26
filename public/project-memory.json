@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.9.3",
+  "version": "2.9.4",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -105,7 +105,8 @@
     "Safe-haven Cipher Core status now says Charging! instead of point totals; healing and inCore detection use each simulation Core position, with regressions for the starting Perimeter and other havens (unverified).",
     "Step 16 branded PWA icons: owner-supplied 192×192 compass and 512×512 title PNGs are manifest icons; orientation is unlocked for natural device rotation. Service-worker shell cache v2 precaches both. PWA tests added but unrun.",
     "Optional account password policy: 6–128 characters; matching title-screen copy and regression coverage added on build/auth-password-minimum-six, verification deferred and not merged.",
-    "Wilderness environmental hazard rings display a seconds countdown to the current phase end; regression coverage added in test/zone-hazard-ui.test.js, verification deferred on build/hazard-countdown-feedback."
+    "Wilderness environmental hazard rings display a seconds countdown to the current phase end; regression coverage added in test/zone-hazard-ui.test.js, verification deferred on build/hazard-countdown-feedback.",
+    "Beginner-editable regional balance configuration: server/content/region-balance.js centralizes recommended level bands, the shared five-enemy wilderness cap and escalating tower wave budgets; regression tests added, verification deferred."
   ],
   "in_progress_features": [
     "Phase 1 reliability foundation — read-only hosting/storage audit started; durable provider unresolved; no code changes yet. See ROADMAP-FUTURE.md and memory/05-work-state.md.",
@@ -120,7 +121,8 @@
     "Cipher welcome/every-clear dialogue and Tower 5 Eastern Expanse implemented but unverified: run npm test and browser playtests. Check camera/movement in 3000×2100 space, Tower 5 gate persistence, and existing Warden guardians.",
     "Safe-city Core healing implemented but unverified: test/core-meditation.test.js updated; npm test and in-game playtesting not run. Approved next build is tougher-but-fair region/tower difficulty; then expand the five-faction passive/special skill tree.",
     "Core feedback/first-haven consistency implemented but unverified: run test/core-meditation.test.js and test/renderer.test.js and confirm healing in the starting Perimeter.",
-    "Owner requests still unbuilt as separate systems: move system notifications right and show earned-credit feedback like XP while preserving blue story/log/quest notices; audit account registration/login, reduce the current password minimum to 6, and make progress durable across Render restarts. Storage-provider selection is deferred; no database/disk migration is implemented."
+    "Owner requests still unbuilt as separate systems: move system notifications right and show earned-credit feedback like XP while preserving blue story/log/quest notices; audit account registration/login, reduce the current password minimum to 6, and make progress durable across Render restarts. Storage-provider selection is deferred; no database/disk migration is implemented.",
+    "Regional balance configuration and tower wave scaling are implemented on build/region-balance-config-accumulated; test/region-balance.test.js and the accumulated suite have not been run."
   ],
   "upcoming_features": [
     "URGENT: push to origin — local git history was lost once (2026-10-20 object-store incident); never delete .git/objects/**/.l2s.tmp_obj_* files (PRoot hardlink backing data)",
@@ -155,6 +157,7 @@
   ],
   "dev_notes": [
     "Phase 1 read-only audit: Render remains the multiplayer host; GitHack is static only. JSON profile/account files are not durable on ephemeral hosting. Cloudflare D1 is a candidate, not selected; its Free-tier daily row read/write limits are enforced. No resources or production settings changed. Compare free durable options and export/rollback before owner approval.",
-    "2026-10-26: Added phased delivery roadmap. Phase 1 starts with a read-only audit of Render/Socket.IO hosting, JSON account/profile persistence, and free-tier durable storage options. Do not buy a domain, incur paid resources, change DNS, or migrate real data without owner approval. Account password minimum is currently 12; the requested 6-character minimum is queued with UI copy and regression tests. Test execution deferred until owner-authorized batch."
+    "2026-10-26: Added phased delivery roadmap. Phase 1 starts with a read-only audit of Render/Socket.IO hosting, JSON account/profile persistence, and free-tier durable storage options. Do not buy a domain, incur paid resources, change DNS, or migrate real data without owner approval. Account password minimum is currently 12; the requested 6-character minimum is queued with UI copy and regression tests. Test execution deferred until owner-authorized batch.",
+    "2026-10-26: Added regional balance config and tower wave escalation. Towers 1–2 use three waves, Tower 3 four waves, Tower 4 four larger waves, Tower 5 five larger waves. Regression coverage added; tests/deployment deferred by owner workflow."
   ]
 }
