@@ -317,3 +317,22 @@ One system per build, regression coverage added with the change, memory and
 inventory updated, then owner-authorized batch verification before code is
 committed. Record test/browser/deployment status honestly; unverified code is
 not shipped. Documentation-only planning updates may be committed separately.
+
+
+### Phase 1 audit finding (2026-10-26)
+
+- Current game host: Render Node.js/Express/Socket.IO; keep it for now. The
+  GitHack URL is a static page path, not a replacement for the Socket.IO host.
+- Current persistence: local JSON files for game profiles and account records;
+  not safe to treat as durable across an ephemeral-host restart/replacement.
+- Cloudflare D1 is a candidate, not selected. The existing account has no D1
+  database yet. Current Cloudflare documentation says Free-tier daily row-read
+  and row-write limits are enforced and queries fail until the UTC daily reset
+  if exceeded. D1 access should be through a narrowly scoped Worker API with
+  authenticated, fixed-purpose endpoints—not a public arbitrary-SQL proxy.
+- No production resources, secrets, DNS, or hosting settings were changed.
+  Next: compare a small authenticated D1-backed storage Worker against other
+  genuinely free durable options, including operational limits and export/
+  rollback. Then seek owner approval before creating/binding a database or
+  migrating data. The six-character password minimum remains queued as part of
+  the auth slice so UI text and regression coverage change together.
