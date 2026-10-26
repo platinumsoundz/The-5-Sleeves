@@ -57,6 +57,8 @@ it committed and tested after running the full suite.)
 
 ## Server support files
 
+- **region-balance.js** — beginner-editable recommended level bands for every road/tower, the shared five-enemy wilderness cap, and tower wave budgets. Towers 1–2 use three waves; Tower 3 uses four; Tower 4 uses four larger waves; Tower 5 uses five larger waves. Regression coverage added in `test/region-balance.test.js`; verification deferred.
+
 - **account-store.js / auth module** — separate account ledger (`users.json`) with salted
   scrypt password hashes and atomic temp-file replacement; optional account passwords
   accept 6–128 characters (build unverified on `build/auth-password-minimum-six`);
