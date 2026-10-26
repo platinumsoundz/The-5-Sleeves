@@ -1,7 +1,7 @@
-// Tower rooms: three waves of scaled Rust Wardens, then the tower is marked
+// Tower rooms: region-configured waves of scaled Rust Wardens, then the tower is marked
 // complete for everyone inside. Clearing a city's tower opens its east road.
 const { spawnEnemy } = require('../sim/enemy-registry.js');
-const { TOWER_WAVES, TOWER_WAVE_SIZE, XP_TOWER_CLEAR, CREDITS_TOWER_CLEAR } = require('../sim/spec.js');
+const { XP_TOWER_CLEAR, CREDITS_TOWER_CLEAR } = require('../sim/spec.js');
 const { markIntroSeen } = require('./cipher-companion-memory.js');
 const { towerBalanceFor } = require('../content/region-balance.js');
 
