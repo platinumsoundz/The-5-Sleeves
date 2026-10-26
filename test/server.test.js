@@ -40,6 +40,17 @@ test('server serves the health endpoint and the client shell', async (t) => {
   assert.match(html, /THE 5 SLEEVES/);
   assert.match(html, /gameCanvas/);
 
+  // Exercise the Engine.IO polling handshake used by Socket.IO clients.
+  // This verifies the multiplayer transport is mounted, not just the HTML shell.
+  const socketHandshake = await fetch(`http://127.0.0.1:${PORT}/socket.io/?EIO=4&transport=polling&t=integration-smoke`);
+  assert.equal(socketHandshake.status, 200);
+  const handshakePayload = await socketHandshake.text();
+  assert.match(handshakePayload, /^0\{/);
+  const handshake = JSON.parse(handshakePayload.slice(1));
+  assert.equal(typeof handshake.sid, 'string');
+  assert.ok(Array.isArray(handshake.upgrades));
+  assert.ok(handshake.pingInterval > 0);
+
   const client = await fetch(`http://127.0.0.1:${PORT}/client.js`);
   assert.equal(client.status, 200);
   assert.match(await client.text(), /createCamera/);
