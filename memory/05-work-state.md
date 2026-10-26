@@ -1,3 +1,13 @@
+# Current build — Regional balance configuration (IMPLEMENTED, UNVERIFIED)
+
+- Added `server/content/region-balance.js` as the novice-editable source for recommended level bands, the shared five-enemy wilderness cap, and per-tower wave budgets.
+- The tower encounter budgets now escalate: Towers 1–2 use 3 waves of 3 base enemies; Tower 3 uses 4 waves; Tower 4 uses 4 waves starting at 4 enemies; Tower 5 uses 5 waves starting at 4 enemies. Every second wave after the first adds one enemy.
+- `server/zones-catalog.js`, `server/sim/spec.js`, and `server/modules/tower-services.js` read the shared config. Added `test/region-balance.test.js` and updated `CONTENT_EDITING_GUIDE.md`.
+- Tests remain deferred; no tests were run and no deployment occurred. Branch: `build/region-balance-config-accumulated`, which includes the previous password-minimum and hazard-countdown builds.
+- Next: continue with one scoped improvement per game, then perform the owner-authorized verification batch before merging.
+
+---
+
 # Current build — Environmental hazard countdown (IMPLEMENTED, UNVERIFIED)
 
 - The wilderness hazard ring now displays a seconds countdown to the end of its current phase, alongside its existing idle/warning/active label. The countdown rounds up and never goes below zero.
