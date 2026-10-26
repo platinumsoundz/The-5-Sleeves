@@ -1,3 +1,13 @@
+# Current build — Account password minimum (IMPLEMENTED, UNVERIFIED)
+
+- Lowered the server-side optional-account password minimum from 12 to 6 characters; maximum remains 128. Salted scrypt hashing, secure-transport checks, rate limits, and guest/profile separation are unchanged.
+- Updated the title-screen password input to use `minlength="6"` and “Password (6+ characters)”.
+- Added regression coverage: five-character passwords must be rejected and six-character passwords accepted.
+- Verification is deferred under the owner’s batch workflow. No tests were run. Changes are on branch `build/auth-password-minimum-six`, not merged to the default branch.
+- Next: continue with the next small approved build; run the accumulated verification batch only when the owner requests it.
+
+---
+
 # Current phase — Phase 1: Reliability foundation (AUDIT STARTED; IMPLEMENTATION NOT STARTED)
 
 - Added the phased delivery plan to `ROADMAP-FUTURE.md` and committed it as
