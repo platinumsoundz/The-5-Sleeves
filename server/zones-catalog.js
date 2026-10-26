@@ -13,6 +13,7 @@
 //   tower  - wave encounter, no relay objectives, death returns to the city
 //   arena  - team deathmatch / domination / tower capture instance
 const { HUB } = require('./sim/spec.js');
+const { levelBandFor } = require('./content/region-balance.js');
 
 const WORLD = Object.freeze({ width: 1000, height: 700 });
 const EASTERN_EXPANSE_WORLD = Object.freeze({ width: 3000, height: 2100 });
@@ -141,7 +142,7 @@ const ZONES = [
     biome: 'wasteland',
     order: 1,
     danger: 1,
-    levelBand: [1, 4],
+    levelBand: levelBandFor('wild-perimeter'),
     terminals: [],
     exits: { west: 'haven-perimeter', east: 'haven-coast' }
   }),
@@ -172,7 +173,7 @@ const ZONES = [
     biome: 'wasteland',
     order: 3,
     danger: 2,
-    levelBand: [5, 9],
+    levelBand: levelBandFor('wild-coast'),
     exits: { west: 'haven-coast', east: 'haven-scorched' }
   }),
 
@@ -202,7 +203,7 @@ const ZONES = [
     biome: 'wasteland',
     order: 5,
     danger: 3,
-    levelBand: [10, 14],
+    levelBand: levelBandFor('wild-scorched'),
     exits: { west: 'haven-scorched', east: 'haven-frozen' }
   }),
 
@@ -232,7 +233,7 @@ const ZONES = [
     biome: 'wasteland',
     order: 7,
     danger: 4,
-    levelBand: [15, 19],
+    levelBand: levelBandFor('wild-frozen'),
     exits: { west: 'haven-frozen', east: 'haven-apex' }
   }),
 
@@ -262,7 +263,7 @@ const ZONES = [
     biome: 'wasteland',
     order: 9,
     danger: 5,
-    levelBand: [20, 25],
+    levelBand: levelBandFor('wild-apex'),
     exits: { west: 'haven-apex', east: 'haven-citadel' }
   }),
 
@@ -291,7 +292,7 @@ const ZONES = [
     biome: 'wasteland',
     order: 11,
     danger: 10,
-    levelBand: [30, 40],
+    levelBand: levelBandFor('wild-eastern-expanse'),
     world: EASTERN_EXPANSE_WORLD,
     spawn: { x: 92, y: 1050 },
     exits: { west: 'haven-citadel' },
@@ -302,27 +303,27 @@ const ZONES = [
 
   tower({
     id: 'tower-1', name: 'Tower 1 · Drowned Pylon', havenId: 'haven-coast', towerIndex: 1,
-    order: 2, danger: 2, levelBand: [5, 9],
+    order: 2, danger: 2, levelBand: levelBandFor('tower-1'),
     book: 'Tower 1', spirit: 'Water', tint: 'rgba(70, 130, 255, 0.1)', biome: 'water'
   }),
   tower({
     id: 'tower-2', name: 'Tower 2 · Ember Spire', havenId: 'haven-scorched', towerIndex: 2,
-    order: 4, danger: 4, levelBand: [10, 14],
+    order: 4, danger: 4, levelBand: levelBandFor('tower-2'),
     book: 'Tower 2', spirit: 'Earth', tint: 'rgba(255, 170, 80, 0.1)', biome: 'earth'
   }),
   tower({
     id: 'tower-3', name: 'Tower 3 · White Kiln', havenId: 'haven-frozen', towerIndex: 3,
-    order: 6, danger: 6, levelBand: [15, 19],
+    order: 6, danger: 6, levelBand: levelBandFor('tower-3'),
     book: 'Tower 3', spirit: 'Fire', tint: 'rgba(200, 235, 255, 0.1)', biome: 'fire'
   }),
   tower({
     id: 'tower-4', name: 'Tower 4 · Rebind Bastion', havenId: 'haven-apex', towerIndex: 4,
-    order: 8, danger: 8, levelBand: [20, 24],
+    order: 8, danger: 8, levelBand: levelBandFor('tower-4'),
     book: 'Tower 4', spirit: 'Cipher + Dark', tint: 'rgba(180, 90, 255, 0.1)', biome: 'cipher'
   }),
   tower({
     id: 'tower-5', name: 'Tower 5 · Apex Spire', havenId: 'haven-citadel', towerIndex: 5,
-    order: 10, danger: 10, levelBand: [25, 30],
+    order: 10, danger: 10, levelBand: levelBandFor('tower-5'),
     book: 'Tower 5', spirit: 'Cipher + Dark', tint: 'rgba(200, 120, 255, 0.12)', biome: 'cipher'
   }),
 
