@@ -73,11 +73,12 @@ as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
   five-enemy cap per wild zone. Ordinary roads currently seed four Wardens and
   one Scavenger Drone; the Eastern Expanse uses its five existing guardians
   instead of extra ambient spawns. These slices are implemented but unverified.
-  Still pending: expand roads and make them rewarding to revisit; centralize and
-  tune novice-editable rosters, levels, scaling and tower waves. Proposed road
-  roster: small; small + medium; medium; medium + large; large. New medium/large
-  types and a boss remain unbuilt. Towers should be substantially harder than
-  their preceding road; exact map sizes and wave counts need tuning.
+  Still pending: expand roads and make them rewarding to revisit and add the
+  proposed small/medium/large enemy archetypes and boss. The new
+  `server/content/region-balance.js` now owns recommended road/tower level bands,
+  the shared five-enemy cap, and tower wave budgets. Towers 1–2 use 3 waves,
+  Tower 3 uses 4 waves, Tower 4 uses 4 larger waves, and Tower 5 uses 5 larger
+  waves. These tuning changes are implemented but unverified.
 - [ ] **Wilderness PvP, party rewards and death fees** — non-party players may
   fight in wilderness; parties are mutually protected. Every death charges a
   5% medical fee; PvP deaths additionally transfer 5% of the victim's credits
