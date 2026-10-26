@@ -9,7 +9,7 @@ const serviceWorker = readFileSync(new URL('../public/sw.js', import.meta.url), 
 
 test('PWA manifest uses branded PNG icons and leaves orientation unlocked', () => {
   assert.deepEqual(manifest, {
-    short_name: '5 Sleeves', name: 'The 5 Sleeves Online', start_url: '/',
+    short_name: '5 Sleeves', name: 'The 5 Sleeves 2D', start_url: '/',
     display: 'standalone',
     background_color: '#0d1117', theme_color: '#00ffff',
     icons: [
