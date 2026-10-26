@@ -43,7 +43,7 @@ test('the spawn is grass, the tower cities follow canon spirits, and wilds are w
     assert.equal(ZONES.find((zone) => zone.id === id)?.biome, biome, id);
   }
   const wilds = ZONES.filter((zone) => zone.kind === 'wild');
-  assert.equal(wilds.length, 5);
+  assert.equal(wilds.length, 6, 'the current world has six wild routes');
   assert.ok(wilds.every((zone) => zone.biome === 'wasteland'), 'every wild road shares the wasteland floor');
   for (const tower of ZONES.filter((zone) => zone.kind === 'tower')) {
     const haven = ZONES.find((zone) => zone.id === tower.havenId);

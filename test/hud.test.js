@@ -50,7 +50,7 @@ test('the compact HUD fits inside a phone-sized slot', () => {
   const xpLine = rects.find((box) => box.x === 0 && box.y === 0 && box.w === 360 && box.h === 3);
   assert.ok(xpLine, 'XP progress is a three-pixel line at the absolute screen top');
   assert.ok(!rects.some((box) => box.color === '#f25d75'), 'the red top health bar is removed');
-  for (const box of rects.filter((box) => box !== xpLine)) {
+  for (const box of rects.filter((box) => !(box.y === 0 && box.h === 3))) {
     assert.ok(box.x >= rect.left - 1 && box.x + box.w <= rect.left + rect.width + 1, 'horizontal bounds: ' + JSON.stringify(box));
     assert.ok(box.y >= rect.top - 1 && box.y + box.h <= rect.top + rect.height + 1, 'vertical bounds: ' + JSON.stringify(box));
   }

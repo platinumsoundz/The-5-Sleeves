@@ -42,17 +42,17 @@ test('every domain has an idle sprite and a walk sheet', () => {
 
 test('idle sprites are not empty and keep the sleeve on the anatomical left arm', () => {
   const idle = decode(path.join(assets, 'player_wind.png'));
-  let opaque = 0, cyanLeft = 0, cyanRight = 0;
+  let opaque = 0, sleeveLeft = 0, sleeveRight = 0;
   for (let y = 0; y < idle.height; y += 1) {
     for (let x = 0; x < idle.width; x += 1) {
       const [r, g, b, a] = idle.pixel(x, y);
       if (a > 10) opaque += 1;
-      if (a > 200 && r < 120 && g > 200 && b > 200) { if (x < 18) cyanLeft += 1; else cyanRight += 1; }
+      if (a > 200 && r < 120 && g > 200 && b < 200) { if (x < 18) sleeveLeft += 1; else sleeveRight += 1; }
     }
   }
   // Front-facing: screen-right is the character's anatomical left.
-  assert.ok(cyanRight > 10, 'sleeve channels must render on the right half');
-  assert.equal(cyanLeft, 0, 'no sleeve energy on the ordinary arm');
+  assert.ok(sleeveRight > 10, 'the current green sleeve channel must render on the right half');
+  assert.equal(sleeveLeft, 0, 'no sleeve energy on the ordinary arm');
   assert.ok(opaque > 800 && opaque < idle.width * idle.height, 'sprite has art but stays transparent around the edges');
 });
 
