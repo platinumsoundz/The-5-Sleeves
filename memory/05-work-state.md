@@ -14,9 +14,8 @@
 - Existing account validation currently requires 12–128 password characters.
   The requested six-character minimum remains an explicit Phase 1 code task;
   change server validation, UI copy and regression coverage together.
-- Next action: complete the read-only hosting/storage comparison and identify
-  the best free-tier persistence option. Then implement one small storage/auth
-  slice with regression coverage. Test execution remains deferred until the
+- Read-only audit finding: Render remains the current multiplayer host; GitHack is static only. Cloudflare D1 is a candidate but no database exists, and current docs confirm Free-tier daily row-read/write enforcement. If selected, expose only fixed-purpose authenticated Worker endpoints; never expose arbitrary SQL. No infrastructure was changed.
+- Next action: compare free durable storage choices, including export/rollback and operational limits; then obtain owner approval before provisioning or migrating. The six-character password minimum remains queued with matching UI copy and tests. Test execution remains deferred until the
   owner-authorized verification batch; no Phase 1 code has been changed yet.
 
 ---
