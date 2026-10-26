@@ -57,9 +57,10 @@ it committed and tested after running the full suite.)
 
 ## Server support files
 
-- **account-store.js** — separate account ledger (`users.json`) with salted
-  scrypt password hashes and atomic temp-file replacement; legacy named
-  profiles remain separate.
+- **account-store.js / auth module** — separate account ledger (`users.json`) with salted
+  scrypt password hashes and atomic temp-file replacement; optional account passwords
+  accept 6–128 characters (build unverified on `build/auth-password-minimum-six`);
+  legacy named profiles remain separate.
 - **secure-transport.js** — recognizes native secure sockets, Render's
   `the-5-sleeves.onrender.com` HTTPS proxy headers, and explicitly trusted
   reverse proxies (`TRUSTED_PROXY_TLS=true`).
