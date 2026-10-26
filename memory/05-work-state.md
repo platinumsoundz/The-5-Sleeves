@@ -1,3 +1,26 @@
+# Current phase — Phase 1: Reliability foundation (AUDIT STARTED; IMPLEMENTATION NOT STARTED)
+
+- Added the phased delivery plan to `ROADMAP-FUTURE.md` and committed it as
+  `6fa3aa69164353023ec71b9999d476861ca11e7b`.
+- Phase 1 starts with a read-only hosting/storage audit. The game currently
+  uses Render for the documented Node/Express/Socket.IO host; GitHack is only
+  a static-file route and must not be treated as the multiplayer server.
+- Code inspection confirms account records are stored in `users.json` and
+  operative profiles in `player-profiles.json`. These local JSON stores are
+  not durable on an ephemeral host filesystem. A durable provider is not yet
+  selected; do not migrate real records, create paid resources, change DNS, or
+  purchase a domain until the owner approves the free-first option and its
+  rollback/export path.
+- Existing account validation currently requires 12–128 password characters.
+  The requested six-character minimum remains an explicit Phase 1 code task;
+  change server validation, UI copy and regression coverage together.
+- Next action: complete the read-only hosting/storage comparison and identify
+  the best free-tier persistence option. Then implement one small storage/auth
+  slice with regression coverage. Test execution remains deferred until the
+  owner-authorized verification batch; no Phase 1 code has been changed yet.
+
+---
+
 # Memory — Chapter 05: Work State
 
 **Resume point.** Read this to know exactly where the last session stopped.
