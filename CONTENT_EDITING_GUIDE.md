@@ -10,7 +10,7 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 |---|---|---|
 | Rust Warden health, speed, range, damage and rewards | `server/content/enemies.js` | `RUST_WARDEN.stats` |
 | How Warden stats rise in harder regions | `server/content/enemies.js` | `RUST_WARDEN.scaling` |
-| Wilderness enemy population | `server/sim/spec.js`, `server/sim/enemy-registry.js` | `MAX_WILD_ENEMIES` is a shared five-enemy ceiling; `MAX_WARDENS`/`MAX_DRONES` tune the ordinary-road startup mix (default 4 Wardens + 1 Drone). The Eastern Expanse's five existing guardians use its full population. Setting `MAX_WARDENS=0` disables the default drone group unless `MAX_DRONES` is set. |
+| Wilderness enemy population | `server/content/region-balance.js`, `server/sim/spec.js`, `server/sim/enemy-registry.js` | `MAX_WILD_ENEMIES` is the shared five-enemy ceiling. `MAX_WARDENS`/`MAX_DRONES` still tune the ordinary-road startup mix (default 4 Wardens + 1 Drone). The Eastern Expanse's five existing guardians use its full population. |
 | How enemies patrol, chase, fire, and respawn | `server/sim/wardens.js` | `updateWardens`, `spawnWarden` |
 | Tower wave count, wave size, clear reward | `server/sim/spec.js`, then `server/modules/tower-services.js` | `TOWER_WAVES`, `TOWER_WAVE_SIZE`, `spawnWave`, `clearTower` |
 | Weapon/armour/supply names, shop prices, ATK bonuses | `server/shop-catalog.js` | `SHOP_ITEMS` |
@@ -22,7 +22,7 @@ loop. Make one small change at a time and run `npm test` before keeping it.
 | Rewarded-ad payouts, cooldowns, daily caps | `server/modules/rewarded-ads.js` | `OFFERS` (credits, shieldMs, reviveRatio, cooldownMs, dailyCap); `MIN_WATCH_MS` is the anti-abuse floor |
 | Relay capture speed and points per second | `server/sim/objectives.js` | `OBJECTIVE_CAPTURE_RATE`, `OBJECTIVE_SCORE_RATE` |
 | Match score limit and reset time | `server/sim/state.js`, `server/zones-catalog.js` | `scoreLimit`, `MATCH_RESET_DELAY` |
-| Wilderness enemy danger/level by region | `server/zones-catalog.js` | each `wild-*` zone's `danger` and `levelBand` |
+| Wilderness/tower recommended levels | `server/content/region-balance.js` | `REGION_LEVEL_BANDS` — level bands are guidance, not hard gates. |\n| Tower difficulty by region | `server/content/region-balance.js` | `TOWER_BALANCE` — each tower's wave count and starting wave size. Later waves add one enemy every two waves. |\n| Enemy danger/level by region | `server/zones-catalog.js` | each zone's `danger`; recommended level bands come from `region-balance.js` |
 
 ## Editing an existing value safely
 
@@ -60,3 +60,14 @@ be labelled **proposed game content** unless the source canon documents them.
 The game can explore them as new content, but do not silently present them as
 comic canon. Keep each enemy's region, size, behavior, rewards and drops
 readable in the future content catalog.
+
+
+## New: regional balance configuration
+
+For safe, beginner-friendly tuning, start with `server/content/region-balance.js`:
+
+- `REGION_LEVEL_BANDS`: recommended level range for each road and tower.
+- `MAX_WILD_ENEMIES`: shared maximum of five simultaneous enemies in each wilderness zone.
+- `TOWER_BALANCE`: wave count and starting wave size for Towers 1–5. Later towers now use larger encounter budgets; AI, damage authority, and enemy behavior remain in their existing modules.
+
+Change one region at a time. Keep tower difficulty clearly above the road before it, and review the complete verification batch before treating tuning as final. Automated tests have been added for this configuration but are not run during the owner's deferred-verification workflow.
