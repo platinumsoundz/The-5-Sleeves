@@ -96,6 +96,7 @@ as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
   useful temporary supplies, scheduled Fogline/weather shifts, and spirit-linked
   Sleeve Chip ability variants. New lore and creature content requires canon
   review; do not treat a chip as a spirit without consent.
+- [~] **Environmental hazard feedback** — wilderness hazard rings now show a seconds countdown for the current phase; regression coverage added, verification deferred on `build/hazard-countdown-feedback`.
 - [ ] **Step 17 technical work** — empty-zone simulation efficiency, renderer
   entity culling, movement delta/throttling, and functional armor/boots/headgear
   stats. Do not add a self-ping to prevent Render Free sleep; it does not keep
