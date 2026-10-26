@@ -1,0 +1,115 @@
+name: Automated hourly build and roadmap check
+
+on:
+  schedule:
+    # Offset from the top of the hour to reduce GitHub queue delays.
+    - cron: '17 * * * *'
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: automated-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-roadmap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
+
+      - name: Install Node dependencies
+        if: hashFiles('package.json') != ''
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Run project checks when scripts exist
+        if: hashFiles('package.json') != ''
+        shell: bash
+        run: |
+          node <<'NODE'
+          const p = require('./package.json');
+          const scripts = p.scripts || {};
+          const { spawnSync } = require('node:child_process');
+          const checks = ['typecheck', 'lint', 'test', 'build'];
+          let ran = 0;
+          for (const name of checks) {
+            if (!scripts[name]) {
+              console.log('Skipping absent npm script: ' + name);
+              continue;
+            }
+            console.log('\n=== npm run ' + name + ' ===');
+            const r = spawnSync('npm', ['run', name], { stdio: 'inherit', shell: process.platform === 'win32' });
+            if (r.status !== 0) process.exit(r.status || 1);
+            ran++;
+          }
+          if (!ran) console.log('No standard check scripts found; dependency installation completed.');
+          NODE
+
+      - name: Run plain Node test suite when no package manifest exists
+        if: hashFiles('package.json') == '' && hashFiles('**/*.test.js', '**/*.test.mjs', '**/*.spec.js', '**/*.spec.mjs') != ''
+        run: node --test
+
+      - name: Create roadmap/build report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p automation-report
+          {
+            echo "# Automated build report"
+            echo
+            echo "- Repository: ${{ github.repository }}"
+            echo "- Commit: ${{ github.sha }}"
+            echo "- Trigger: ${{ github.event_name }}"
+            echo "- Result: ${{ job.status }}"
+            echo
+            echo "## Roadmap files found"
+            find . -maxdepth 4 -type f \( -iname 'ROADMAP.md' -o -iname 'MASTER_BLUEPRINT.md' -o -iname 'TODO.md' \) -not -path './node_modules/*' -print
+            echo
+            echo "## Roadmap excerpts"
+            for f in ROADMAP.md MASTER_BLUEPRINT.md TODO.md; do
+              if [ -f "$f" ]; then
+                echo
+                echo "### $f"
+                sed -n '1,180p' "$f"
+              fi
+            done
+          } > automation-report/roadmap-build-report.md
+          git status --short > automation-report/working-tree-status.txt
+
+      - name: Upload build outputs and roadmap report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automated-build-${{ github.run_number }}
+          path: |
+            automation-report/
+            dist/
+            build/
+            out/
+            .next/
+            coverage/
+            test-results/
+            artifacts/
+          if-no-files-found: warn
+          retention-days: 7
