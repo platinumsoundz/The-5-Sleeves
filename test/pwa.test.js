@@ -66,7 +66,7 @@ test('fullscreen reports unsupported or rejected requests without throwing', asy
 
 test('Settings offers an in-game fullscreen control with a platform fallback note', () => {
   const pages = readFileSync(new URL('../public/src/menu-pages.js', import.meta.url), 'utf8');
-  assert.match(pages, /section(root, 'DISPLAY')/);
+  assert.match(pages, /export function renderSettingsPage\(root/);
   assert.match(pages, /ENTER FULLSCREEN/);
   assert.match(pages, /Add this page to your Home Screen/);
 });
