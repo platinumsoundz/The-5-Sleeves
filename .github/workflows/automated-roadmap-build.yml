@@ -3,7 +3,7 @@ name: Automated hourly build and roadmap check
 on:
   schedule:
     # Offset from the top of the hour to reduce GitHub queue delays.
-    - cron: '17 * * * *'
+    - cron: '37 * * * *'
   push:
     branches: ['**']
   pull_request:
