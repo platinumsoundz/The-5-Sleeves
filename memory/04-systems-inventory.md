@@ -262,7 +262,7 @@ it committed and tested after running the full suite.)
 
 ## Client modules (`public/src/modules/`, auto-discovered)
 
-- **zone-hazards** (priority 35) — draws the server-timed idle, warning and
+- **zone-hazards** (priority 35) — draws server-timed idle, warning and active rings, now with a seconds countdown; regression coverage added, unverified. It draws the server-timed idle, warning and
   active danger fields in world space.
 - **world-decor** (priority 20) — ruin props + landmark name labels.
 - **zone-atmosphere** (priority 30) — per-zone colour wash + arrival
