@@ -1,8 +1,8 @@
 {
-  "name": "the-5-sleeves-online",
+  "name": "the-5-sleeves-2d",
   "version": "0.1.0",
   "private": true,
-  "description": "The 5 Sleeves Online - Phase 1 multiplayer action RPG MVP",
+  "description": "The 5 Sleeves 2D - Phase 1 multiplayer action RPG MVP",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
