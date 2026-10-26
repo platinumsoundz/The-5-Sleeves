@@ -1,6 +1,6 @@
 {
   "project_name": "The 5 Sleeves Online",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "architecture": "Master-Slave / Modular ES6 Modules",
   "world_canon_version": "2.0",
   "canon_sources": [
@@ -29,7 +29,7 @@
   ],
   "session_rules": [
     "Every session reads memory/ chapters first (start at memory/00-index.md, follow memory/01-session-protocol.md)",
-    "One system per build: build, npm test, commit, update memory, then start the next",
+    "One system per build: add regression coverage and update memory; owner has deferred test execution and commits until an explicitly requested verification batch.",
     "New systems are plug-and-play modules auto-scanned from server/modules/ and public/src/modules/ — small files (<150 lines), one job, novice-friendly; never edit the master to add a feature",
     "Canon is law: lore/ + memory/02-universe-canon.md; raise conflicts, never invent lore",
     "Save state after every build (memory/05-work-state.md + this ledger) so interruptions never lose work"
@@ -103,7 +103,8 @@
     "iPad touch mode: touch pointerdown and legacy touchstart switch from desktop/keyboard hints to existing touch joystick/action controls, including when startup detection misclassifies the device. Regression coverage added; unverified on device.",
     "Beginner content editing guide: CONTENT_EDITING_GUIDE.md maps current enemy, item/loot, XP/credit, progression, region-danger and objective-score value owners. Added a stable-ID enemy catalog and generic spawn/update registry, then a small proposed Scavenger Drone sharing patrol-shooter behavior; two are seeded in normal wilderness zones when wardens are enabled. Rust Warden balance unchanged.",
     "Safe-haven Cipher Core status now says Charging! instead of point totals; healing and inCore detection use each simulation Core position, with regressions for the starting Perimeter and other havens (unverified).",
-    "Step 16 branded PWA icons: owner-supplied 192×192 compass and 512×512 title PNGs are manifest icons; orientation is unlocked for natural device rotation. Service-worker shell cache v2 precaches both. PWA tests added but unrun."
+    "Step 16 branded PWA icons: owner-supplied 192×192 compass and 512×512 title PNGs are manifest icons; orientation is unlocked for natural device rotation. Service-worker shell cache v2 precaches both. PWA tests added but unrun.",
+    "Optional account password policy: 6–128 characters; matching title-screen copy and regression coverage added on build/auth-password-minimum-six, verification deferred and not merged."
   ],
   "in_progress_features": [
     "Phase 1 reliability foundation — read-only hosting/storage audit started; durable provider unresolved; no code changes yet. See ROADMAP-FUTURE.md and memory/05-work-state.md.",
