@@ -234,3 +234,86 @@ parked for later review.
 5. Target concurrent players per zone (netcode and hosting budget).
 6. How should regional levels, encounter spacing, enemy caps and tower wave
    budgets be tuned after playtesting?
+
+
+## Delivery roadmap and phase gates (owner direction, 2026-10-26)
+
+This section turns the existing design queue into an ordered delivery plan. It
+is a plan, not a claim that any feature below has shipped. Preserve the current
+free-first constraint: do not buy a domain, enable paid resources, or incur
+charges without explicit owner approval. Keep the existing Render URL as a
+fallback. Cloudflare can complement the current setup; do not move the live
+multiplayer server or change DNS until the replacement path is verified.
+
+### Phase 1 — Reliability foundation (STARTED: read-only audit / decision gate)
+
+**Goal:** protect player accounts and progress before adding more gameplay.
+
+1. Map the live request path and confirm which host serves the browser shell,
+   Socket.IO game server, and static GitHub/GitHack preview. Keep Render as the
+   current game-server host until a tested alternative exists.
+2. Choose a durable account/profile storage target that fits the free-first
+   requirement. Current account records are written to `users.json` and game
+   profiles to `player-profiles.json`; Render's ephemeral filesystem means
+   local JSON files are not a durable production store across replacement or
+   restart. Do not wire a database until the provider, credentials/secrets,
+   backup/export path, and failure behavior are decided.
+3. Reproduce and fix the reported account login issue; reduce the password
+   minimum from 12 to 6 characters as previously requested, keeping the 128
+   character maximum, salted scrypt hashes, timing-safe comparison, rate
+   limiting, and secure-transport enforcement. Update visible validation copy
+   and regression tests together.
+4. Add a storage adapter behind the existing module boundary; preserve guest
+   play and existing profile keys. Define migration/export and rollback before
+   moving real player records. Never silently claim a guest profile for an
+   account.
+5. Verify with the owner-authorized test batch, then browser/device checks and
+   a deployed smoke check. Only mark this phase complete when account login,
+   profile persistence across restart/redeploy, and rollback are demonstrated.
+
+**Phase 1 gate:** provider choice is unresolved. No paid database, Render disk,
+custom domain, DNS change, or production migration is authorized by this plan.
+The immediate task is to finish the read-only hosting/storage audit and present
+an informed free-tier choice before implementing the adapter.
+
+### Phase 2 — Regional balance and wilderness content
+
+Create the novice-editable balance configuration; settle level bands, road
+rosters/caps, enemy scaling and tower wave budgets. Expand road layouts and
+rewarding revisits only after the first balance data is reviewed. Keep proposed
+new creatures and lore-bearing content subject to the canon review rules.
+
+### Phase 3 — Wilderness PvP and party rewards
+
+Implement wilderness-only PvP, party immunity, rounded-down 5% medical fees,
+the additional 5% PvP transfer, visible amounts, same-zone full party rewards
+and eligible drop copies, and party/safe-city respawns. Towers remain PvE-only.
+Cover edge cases with regression tests before verification.
+
+### Phase 4 — Tower matchmaking and maintenance
+
+Private tower run per party; solo matchmaking for 30 seconds with manual early
+start for 1–4 players; then a separate, one-at-a-time maintenance failure loop
+for a previously cleared tower. Never revoke prior clears or rewards. Keep open
+frequency and mixed-level scaling as explicit tuning decisions.
+
+### Phase 5 — Long-term progression and optional systems
+
+Limited active loadouts while allowing long-term collection; then separate
+builds for scrap crafting/repair, temporary supplies, weather/Fogline shifts,
+and Sleeve Chips. Review canon and spirit consent before lore-bearing changes.
+
+### Phase 6 — Performance, security, accessibility and platform polish
+
+Profile empty-zone simulation and renderer culling, throttle movement updates,
+review gear stats, harden socket events, add load tests and observability, then
+complete PWA/device, accessibility and account-security audits. Never use a
+self-ping to defeat Render Free sleep. Monetization stays cosmetic-only; no
+pay-to-win.
+
+### Phase completion rule
+
+One system per build, regression coverage added with the change, memory and
+inventory updated, then owner-authorized batch verification before code is
+committed. Record test/browser/deployment status honestly; unverified code is
+not shipped. Documentation-only planning updates may be committed separately.
