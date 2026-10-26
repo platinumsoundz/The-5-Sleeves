@@ -1,4 +1,4 @@
-# The 5 Sleeves Online
+# The 5 Sleeves 2D
 
 **A browser-based multiplayer action RPG set after *The 5 Sleeves*.** Play a new operative in the comic’s aftermath, explore a chain of settlements and dangerous roads, fight hostile Rust Warden drones, develop your operative, and clear regional towers to open the way east.
 
