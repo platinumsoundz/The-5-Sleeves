@@ -100,8 +100,10 @@ as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
   entity culling, movement delta/throttling, and functional armor/boots/headgear
   stats. Do not add a self-ping to prevent Render Free sleep; it does not keep
   the instance awake.
-- [ ] **Accounts and durable progress** — reproduce the reported account
-  login issue, reduce the password minimum to six characters, and move progress
+- [~] **Accounts and durable progress** — password minimum changed to six
+  characters with matching title-screen copy and regression coverage on
+  `build/auth-password-minimum-six` (verification deferred; not merged).
+  Still pending: reproduce the reported account login issue and move progress
   off Render Free's ephemeral filesystem after the owner selects a durable
   storage provider.
 - [~] **Notification polish** — ordinary system notices now use a dedicated
