@@ -3,10 +3,11 @@
 const { spawnEnemy } = require('../sim/enemy-registry.js');
 const { TOWER_WAVES, TOWER_WAVE_SIZE, XP_TOWER_CLEAR, CREDITS_TOWER_CLEAR } = require('../sim/spec.js');
 const { markIntroSeen } = require('./cipher-companion-memory.js');
+const { towerBalanceFor } = require('../content/region-balance.js');
 
 function freshRun(zone) {
   return {
-    state: 'idle', wave: 0, waves: TOWER_WAVES, enemies: 0,
+    state: 'idle', wave: 0, waves: towerBalanceFor(zone.towerIndex).waves, enemies: 0,
     nextWaveAt: 0, clearedAt: 0, towerIndex: zone.towerIndex
   };
 }
@@ -21,7 +22,8 @@ function aliveEnemies(zone) {
 
 function spawnWave(zone, wave) {
   const tower = zone.tower || { x: 500, y: 260 };
-  const count = TOWER_WAVE_SIZE + Math.floor((wave - 1) / 2);
+  const { baseWaveSize } = towerBalanceFor(zone.towerIndex);
+  const count = baseWaveSize + Math.floor((wave - 1) / 2);
   for (let i = 0; i < count; i += 1) {
     const angle = (Math.PI * 2 * i) / count + wave * 0.37;
     const radius = 145 + (i % 3) * 34;
@@ -96,7 +98,7 @@ module.exports = {
         run.nextWaveAt = now + 2200;
         run.enemies = 0;
         publish(zone);
-        zone.send('hub:notice', (zone.tower?.name || 'The tower') + ' wakes. Three waves incoming.');
+        zone.send('hub:notice', (zone.tower?.name || 'The tower') + ' wakes. ' + run.waves + ' waves incoming.');
         return;
       }
 
