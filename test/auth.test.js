@@ -44,6 +44,25 @@ test('Render forwarded HTTPS and secure sockets pass while plaintext and untrust
   assert.equal(secureTransport({ handshake: { headers: { host: 'trusted.example', 'x-forwarded-proto': 'https' } } }), true);
 });
 
+test('account passwords accept six characters and reject five', async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'sleeves-auth-min-'));
+  const filename = path.join(directory, 'users.json');
+  const oldFile = process.env.USERS_FILE;
+  t.after(() => {
+    if (oldFile === undefined) delete process.env.USERS_FILE; else process.env.USERS_FILE = oldFile;
+    fs.rmSync(directory, { recursive: true, force: true });
+  });
+
+  const { handlers } = buildAuth(filename);
+  const shortSocket = makeSocket('socket-five');
+  await handlers['auth:register'](null, { username: 'ShortFive', password: '12345' }, shortSocket);
+  assert.ok(shortSocket.events.some(([event]) => event === 'auth:error'));
+
+  const validSocket = makeSocket('socket-six');
+  await handlers['auth:register'](null, { username: 'ShortSix', password: '123456' }, validSocket);
+  assert.ok(validSocket.events.some(([event]) => event === 'auth:accepted'));
+});
+
 test('accounts hash passwords, isolate profiles, and reserve their usernames', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'sleeves-auth-'));
   const filename = path.join(directory, 'users.json');

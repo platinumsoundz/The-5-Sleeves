@@ -27,8 +27,8 @@ const AI_RESPAWN_DELAY = 9000;
 const ABILITY_BURST_LIFETIME = 380;
 const BURN_TICK_CAP = 60;
 
-// One documented road cap covers all enemy types, not a separate count per type.
-const MAX_WILD_ENEMIES = 5;
+// Shared five-enemy road cap is owned by the beginner-editable balance config.
+const { MAX_WILD_ENEMIES } = require('../content/region-balance.js');
 // Hostile PvE drones that patrol the ruins and shoot at operatives.
 const MAX_WARDENS = Number.isFinite(Number(process.env.MAX_WARDENS)) ? Math.max(0, Number(process.env.MAX_WARDENS)) : 4;
 // Legacy imports use these aliases; new enemy data lives in one catalog.

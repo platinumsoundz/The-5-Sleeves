@@ -6,7 +6,7 @@ const { loadAccounts, saveAccounts, hashPassword, verifyPassword } = require('..
 const secureTransport = require('../secure-transport.js');
 
 const USERNAME_RE = /^[\p{L}\p{N}_-]{2,18}$/u;
-const PASSWORD_MIN = 12;
+const PASSWORD_MIN = 6;
 const PASSWORD_MAX = 128;
 const ATTEMPTS_PER_MINUTE = 6;
 
@@ -61,7 +61,7 @@ module.exports = {
       const key = username.toLowerCase();
       const password = payload?.password;
       if (!allowAttempt(socket)) { socket.emit('auth:error', 'Too many attempts. Wait a minute and try again.'); return; }
-      if (!validCredentials(username, password)) { socket.emit('auth:error', 'Use a 2–18 character username and a 12–128 character password.'); return; }
+      if (!validCredentials(username, password)) { socket.emit('auth:error', 'Use a 2–18 character username and a 6–128 character password.'); return; }
       if (accounts[key] || pendingNames.has(key) || ctx.legacyProfileExists(username)) {
         socket.emit('auth:error', 'That username is unavailable. Legacy guest profiles are not claimed automatically.');
         return;

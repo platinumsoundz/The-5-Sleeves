@@ -73,11 +73,12 @@ as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
   five-enemy cap per wild zone. Ordinary roads currently seed four Wardens and
   one Scavenger Drone; the Eastern Expanse uses its five existing guardians
   instead of extra ambient spawns. These slices are implemented but unverified.
-  Still pending: expand roads and make them rewarding to revisit; centralize and
-  tune novice-editable rosters, levels, scaling and tower waves. Proposed road
-  roster: small; small + medium; medium; medium + large; large. New medium/large
-  types and a boss remain unbuilt. Towers should be substantially harder than
-  their preceding road; exact map sizes and wave counts need tuning.
+  Still pending: expand roads and make them rewarding to revisit and add the
+  proposed small/medium/large enemy archetypes and boss. The new
+  `server/content/region-balance.js` now owns recommended road/tower level bands,
+  the shared five-enemy cap, and tower wave budgets. Towers 1–2 use 3 waves,
+  Tower 3 uses 4 waves, Tower 4 uses 4 larger waves, and Tower 5 uses 5 larger
+  waves. These tuning changes are implemented but unverified.
 - [ ] **Wilderness PvP, party rewards and death fees** — non-party players may
   fight in wilderness; parties are mutually protected. Every death charges a
   5% medical fee; PvP deaths additionally transfer 5% of the victim's credits
@@ -96,12 +97,15 @@ as its own tested build; see `ROADMAP-FUTURE.md` for rules and open details.
   useful temporary supplies, scheduled Fogline/weather shifts, and spirit-linked
   Sleeve Chip ability variants. New lore and creature content requires canon
   review; do not treat a chip as a spirit without consent.
+- [~] **Environmental hazard feedback** — wilderness hazard rings now show a seconds countdown for the current phase; regression coverage added, verification deferred on `build/hazard-countdown-feedback`.
 - [ ] **Step 17 technical work** — empty-zone simulation efficiency, renderer
   entity culling, movement delta/throttling, and functional armor/boots/headgear
   stats. Do not add a self-ping to prevent Render Free sleep; it does not keep
   the instance awake.
-- [ ] **Accounts and durable progress** — reproduce the reported account
-  login issue, reduce the password minimum to six characters, and move progress
+- [~] **Accounts and durable progress** — password minimum changed to six
+  characters with matching title-screen copy and regression coverage on
+  `build/auth-password-minimum-six` (verification deferred; not merged).
+  Still pending: reproduce the reported account login issue and move progress
   off Render Free's ephemeral filesystem after the owner selects a durable
   storage provider.
 - [~] **Notification polish** — ordinary system notices now use a dedicated

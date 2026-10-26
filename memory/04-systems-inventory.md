@@ -57,9 +57,12 @@ it committed and tested after running the full suite.)
 
 ## Server support files
 
-- **account-store.js** — separate account ledger (`users.json`) with salted
-  scrypt password hashes and atomic temp-file replacement; legacy named
-  profiles remain separate.
+- **region-balance.js** — beginner-editable recommended level bands for every road/tower, the shared five-enemy wilderness cap, and tower wave budgets. Towers 1–2 use three waves; Tower 3 uses four; Tower 4 uses four larger waves; Tower 5 uses five larger waves. Regression coverage added in `test/region-balance.test.js`; verification deferred.
+
+- **account-store.js / auth module** — separate account ledger (`users.json`) with salted
+  scrypt password hashes and atomic temp-file replacement; optional account passwords
+  accept 6–128 characters (build unverified on `build/auth-password-minimum-six`);
+  legacy named profiles remain separate.
 - **secure-transport.js** — recognizes native secure sockets, Render's
   `the-5-sleeves.onrender.com` HTTPS proxy headers, and explicitly trusted
   reverse proxies (`TRUSTED_PROXY_TLS=true`).
@@ -261,7 +264,7 @@ it committed and tested after running the full suite.)
 
 ## Client modules (`public/src/modules/`, auto-discovered)
 
-- **zone-hazards** (priority 35) — draws the server-timed idle, warning and
+- **zone-hazards** (priority 35) — draws server-timed idle, warning and active rings, now with a seconds countdown; regression coverage added, unverified. It draws the server-timed idle, warning and
   active danger fields in world space.
 - **world-decor** (priority 20) — ruin props + landmark name labels.
 - **zone-atmosphere** (priority 30) — per-zone colour wash + arrival

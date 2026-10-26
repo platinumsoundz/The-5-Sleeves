@@ -1,4 +1,8 @@
 // Draw server-timed hazard fields so players can see warning and danger areas.
+export function formatRemaining(endsAt, now) {
+  return Math.max(0, Math.ceil((endsAt - now) / 1000)) + 's';
+}
+
 export default {
   name: 'zone-hazards',
   summary: 'World-space warning rings for periodic wilderness hazards.',
@@ -24,7 +28,8 @@ export default {
         draw.beginPath(); draw.arc(hazard.x, hazard.y, hazard.radius, 0, Math.PI * 2); draw.fill(); draw.stroke();
         draw.globalAlpha = 0.95;
         draw.textAlign = 'center'; draw.font = 'bold 11px system-ui';
-        draw.fillText(active ? hazard.label : hazard.phase === 'warning' ? 'INCOMING · ' + hazard.label : hazard.label, hazard.x, hazard.y - hazard.radius - 10);
+        const phaseLabel = active ? hazard.label : hazard.phase === 'warning' ? 'INCOMING · ' + hazard.label : hazard.label;
+        draw.fillText(phaseLabel + ' · ' + formatRemaining(hazard.endsAt, Date.now()), hazard.x, hazard.y - hazard.radius - 10);
         draw.restore();
       }
     });
