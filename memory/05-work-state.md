@@ -1,3 +1,13 @@
+# Current build — Environmental hazard countdown (IMPLEMENTED, UNVERIFIED)
+
+- The wilderness hazard ring now displays a seconds countdown to the end of its current phase, alongside its existing idle/warning/active label. The countdown rounds up and never goes below zero.
+- Added `test/zone-hazard-ui.test.js` for rounding and zero-floor behavior.
+- Verification is deferred under the owner’s batch workflow. No tests were run. Changes remain on `build/hazard-countdown-feedback`; not merged to the default branch.
+- Previous build on this branch: account password minimum is 6–128 characters with matching title-screen copy and regression coverage, also unverified.
+- Next: continue one small roadmap build at a time, preserving the deferred verification workflow.
+
+---
+
 # Current build — Account password minimum (IMPLEMENTED, UNVERIFIED)
 
 - Lowered the server-side optional-account password minimum from 12 to 6 characters; maximum remains 128. Salted scrypt hashing, secure-transport checks, rate limits, and guest/profile separation are unchanged.
