@@ -45,7 +45,7 @@ test('server serves the health endpoint and the client shell', async (t) => {
   const socketHandshake = await fetch(`http://127.0.0.1:${PORT}/socket.io/?EIO=4&transport=polling&t=integration-smoke`);
   assert.equal(socketHandshake.status, 200);
   const handshakePayload = await socketHandshake.text();
-  assert.match(handshakePayload, /^0\\{/);
+  assert.match(handshakePayload, /^0\{/);
   const handshake = JSON.parse(handshakePayload.slice(1));
   assert.equal(typeof handshake.sid, 'string');
   assert.ok(Array.isArray(handshake.upgrades));
