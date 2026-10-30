@@ -1,0 +1,25 @@
+name: Cloudflare Guild Hosting Checks
+
+on:
+  push:
+    branches:
+      - integration/cloudflare-guild-host-2d
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'test/**'
+      - 'HOSTING-CLOUDFLARE.md'
+      - '.github/workflows/cloudflare-hosting-checks.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: node --test test/cloudflare-guild-hosting.test.js
