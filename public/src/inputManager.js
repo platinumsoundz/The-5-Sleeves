@@ -37,7 +37,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   let uiBlocked = uiBlocksGameplay();
   const isUiBlocked = () => uiBlocked;
   const setDirection = (direction, active) => active ? held.add(direction) : held.delete(direction);
-  const triggerAction = (name) => { audio?.unlock(); audio?.play(name); onAction(name); };
+  const triggerAction = (name) => { if (paused) return; audio?.unlock(); audio?.play(name); onAction(name); };
   const shooting = createShootingControls({
     onFire: () => triggerAction('attack'), getMouseAim, setMode, isUiBlocked
   });
@@ -61,23 +61,25 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     };
     const reset = () => { stick.vector = { x: 0, y: 0 }; base.classList.remove('active'); moveNub(0, 0); };
     base.addEventListener('pointerdown', (event) => {
+      if (paused) return;
       event.preventDefault(); audio?.unlock(); setMode('touch');
       base.setPointerCapture(event.pointerId); base.classList.add('active'); apply(event.clientX, event.clientY);
     });
     base.addEventListener('pointermove', (event) => {
-      if (base.classList.contains('active')) { event.preventDefault(); apply(event.clientX, event.clientY); }
+      if (!paused && base.classList.contains('active')) { event.preventDefault(); apply(event.clientX, event.clientY); }
     });
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => base.addEventListener(type, reset));
   }
   setupMovementJoystick();
   document.querySelectorAll('.action-button:not([data-action="attack"])').forEach((button) => {
     button.addEventListener('pointerdown', (event) => {
+      if (paused) return;
       event.preventDefault(); setMode('touch'); triggerAction(button.dataset.action);
     });
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.target?.closest?.('input, textarea')) return;
+    if (paused || event.target?.closest?.('input, textarea')) return;
     const code = event.code;
     if (code === binds.menu) {
       setMode('keyboard'); shooting.clearFire(); event.preventDefault();
