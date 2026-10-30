@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
 
 const functionSource = readFileSync(new URL('../public/functions/[[path]].js', import.meta.url), 'utf8');
 const clientSource = readFileSync(new URL('../public/client.js', import.meta.url), 'utf8');
