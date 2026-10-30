@@ -24,7 +24,7 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
   window.addEventListener('keybinds:changed', () => Object.assign(binds, loadKeybinds()));
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let mode = hasTouch ? 'touch' : 'keyboard';
-  let padVector = { x: 0, y: 0 }, previousButtons = [];
+  let padVector = { x: 0, y: 0 }, previousButtons = [], paused = false;
   const stick = { vector: { x: 0, y: 0 } };
   const setMode = (next) => { mode = next; onMode(next); };
   // Some iPads expose desktop-class capabilities and miss the startup touch check.
@@ -143,7 +143,27 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
     if (edge(GAMEPAD_ACTION_BUTTONS.menu)) { shooting.clearFire(); onMenu(); }
     previousButtons = pressed;
   }
-  function update() { uiBlocked = uiBlocksGameplay(); updateGamepad(); shooting.update(); }
+  function releaseAll() {
+    held.clear();
+    padVector = { x: 0, y: 0 };
+    stick.vector = { x: 0, y: 0 };
+    previousButtons = [];
+    shooting.clearFire();
+    const base = document.getElementById('joystick');
+    const nub = document.getElementById('joystick-nub');
+    base?.classList.remove('active');
+    if (nub) nub.style.transform = 'translate(0px, 0px)';
+  }
+  function setPaused(value) {
+    paused = !!value;
+    if (paused) releaseAll();
+  }
+  function update() {
+    if (paused) return;
+    uiBlocked = uiBlocksGameplay();
+    updateGamepad();
+    shooting.update();
+  }
   window.addEventListener('gamepadconnected', () => { previousButtons = []; setMode('controller'); });
   window.addEventListener('gamepaddisconnected', () => {
     previousButtons = []; padVector = { x: 0, y: 0 }; shooting.updateGamepad(null);
@@ -154,6 +174,8 @@ export function createInputManager({ onAction, onMenu, onMode, audio, getMouseAi
 
   return {
     update,
+    releaseAll,
+    setPaused,
     aimVector: () => shooting.aimVector(mode),
     vector() {
       if (mode === 'controller') return { ...padVector };
