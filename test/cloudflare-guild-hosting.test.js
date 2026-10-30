@@ -1,11 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
+const path = require('node:path');
 
-const functionSource = readFileSync(new URL('../public/functions/[[path]].js', import.meta.url), 'utf8');
-const clientSource = readFileSync(new URL('../public/client.js', import.meta.url), 'utf8');
-const inputSource = readFileSync(new URL('../public/src/inputManager.js', import.meta.url), 'utf8');
-const serviceWorkerSource = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8');
+const functionSource = readFileSync(path.join(__dirname, '../public/functions/[[path]].js'), 'utf8');
+const clientSource = readFileSync(path.join(__dirname, '../public/client.js'), 'utf8');
+const inputSource = readFileSync(path.join(__dirname, '../public/src/inputManager.js'), 'utf8');
+const serviceWorkerSource = readFileSync(path.join(__dirname, '../public/sw.js'), 'utf8');
 
 test('Pages Function proxies only backend paths and requires a private HTTPS origin', () => {
   assert.match(functionSource, /\/socket\.io\//);
