@@ -180,6 +180,31 @@ input = createInputManager({
 
 let lastFrame = 0;
 let lastPositionSend = 0;
+let guildPaused = false;
+const GUILD_GAME_ID = 'the-5-sleeves-2d';
+let guildParentOrigin = null;
+try { if (window.parent !== window && document.referrer) guildParentOrigin = new URL(document.referrer).origin; } catch { guildParentOrigin = null; }
+function setGuildPaused(value) {
+  guildPaused = !!value;
+  input?.setPaused(guildPaused);
+}
+if (guildParentOrigin && window.parent !== window) {
+  window.addEventListener('message', (event) => {
+    if (event.source !== window.parent || event.origin !== guildParentOrigin) return;
+    const message = event.data;
+    if (!message || message.channel !== 'guild.5-sleeves' || message.version !== 1 || message.game !== GUILD_GAME_ID) return;
+    if (message.command !== 'pause' && message.command !== 'resume') return;
+    setGuildPaused(message.command === 'pause');
+    if (typeof message.requestId === 'string') {
+      window.parent.postMessage({ channel: 'guild.5-sleeves', version: 1, game: GUILD_GAME_ID, type: 'ack', command: message.command, requestId: message.requestId }, guildParentOrigin);
+    }
+  });
+  window.parent.postMessage({ channel: 'guild.5-sleeves', version: 1, game: GUILD_GAME_ID, type: 'ready' }, guildParentOrigin);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') setGuildPaused(true);
+  else if (window.parent === window) setGuildPaused(false);
+});
 // Observer modes (roadmap #14): ?spectate=<zone> watches live,
 // ?replay=1&zone=<zone> plays the server's rolling 60 s buffer.
 const params = new URLSearchParams(window.location.search);
@@ -195,11 +220,11 @@ if (spectateZone) network.spectate(spectateZone);
 function frame(time) {
   const dt = Math.min((time - lastFrame) / 1000 || 0, 0.05);
   lastFrame = time;
-  input.update();
+  if (!guildPaused) input.update();
 
-  const direction = input.vector();
+  const direction = guildPaused ? { x: 0, y: 0 } : input.vector();
   const player = state.localPlayer;
-  if (player && state.playerId && player.hp > 0 && (direction.x || direction.y)) {
+  if (!guildPaused && player && state.playerId && player.hp > 0 && (direction.x || direction.y)) {
     state.lastAim = { ...direction };
     // Slows and hastes are resolved server-side; the client just honours them.
     const speedScale = (player.slowRemaining > 0 ? 0.55 : 1) * (player.hasteRemaining > 0 ? 1.35 : 1);
